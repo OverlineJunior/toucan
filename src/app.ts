@@ -4,6 +4,7 @@ import { stdPhases, stdPipelines } from './stdPhases'
 import { RunService } from '@rbxts/services'
 import { findSystems, System } from './system'
 import { findPlugins, Plugin } from './plugin'
+import { stdPlugins } from './stdPlugins'
 
 export type SystemDeltaTimes = Map<System, number>
 
@@ -21,6 +22,8 @@ export class App {
 			.insert(stdPhases.preAnimation, RunService, 'PreAnimation')
 			.insert(stdPhases.preSimulation, RunService, 'PreSimulation')
 			.insert(stdPhases.postSimulation, RunService, 'PostSimulation')
+
+		this.addPlugins(...stdPlugins)
 	}
 
 	addSources(...sources: Instance[]): this {
