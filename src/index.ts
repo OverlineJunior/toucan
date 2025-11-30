@@ -8,7 +8,7 @@ export { stdPhases, stdPipelines } from './stdPhases'
 
 export { Phase, Pipeline } from '@rbxts/planck'
 
-export { useDeltaTime, useThrottle } from './stdHooks'
+export { useDeltaTime, useThrottle, useThrottledMemo } from './stdHooks'
 export { useHookState } from './topoRuntime'
 
 // Global Jecs re-exports.
