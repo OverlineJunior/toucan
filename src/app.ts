@@ -91,7 +91,10 @@ export class App {
 	 * @returns The app instance for chaining.
 	 */
 	addPlugins(...plugins: Plugin[]): this {
-		this.plugins.push(...plugins)
+		plugins.forEach((plugin) => {
+			this.plugins.push(plugin)
+		})
+
 		return this
 	}
 
