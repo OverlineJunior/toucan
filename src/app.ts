@@ -9,9 +9,10 @@ import { stdPlugins } from './stdPlugins'
 export type SystemDeltaTimes = Map<System, number>
 
 export class App {
-	world: World = world()
-	scheduler: Scheduler<[App]> = new Scheduler(this)
 	readonly systemDeltaTimes: SystemDeltaTimes = new Map()
+	private world: World = world()
+	private scheduler: Scheduler<[App]> = new Scheduler(this)
+	private plugins: Plugin[] = []
 
 	constructor() {
 		// Set up standard pipelines and phases.
@@ -50,10 +51,7 @@ export class App {
 	}
 
 	addPlugins(...plugins: Plugin[]): this {
-		plugins.forEach((plugin) => {
-			plugin.build(this)
-		})
-
+		this.plugins.push(...plugins)
 		return this
 	}
 
@@ -79,7 +77,13 @@ export class App {
 	}
 
 	start(): this {
+		// Must run before we run the scheduler to ensure plugins can add systems beforehand.
+		this.plugins.forEach((plugin) => {
+			plugin.build(this)
+		})
+
 		this.scheduler.runAll()
+
 		return this
 	}
 
