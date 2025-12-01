@@ -90,6 +90,8 @@ export class App {
 		return this
 	}
 
+	// TODO! `addPhaseAfter` and `addPhaseBefore` and still unstable.
+	// ! We need to check whether bad usage of it breaks the standard that allows for third-party plugins.
 	/**
 	 * Adds a new _phase_ to be ran after another (except for `stdPhases.last`).
 	 */
