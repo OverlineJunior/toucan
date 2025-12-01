@@ -22,7 +22,7 @@ export type SystemDeltaTimes = Map<System, number>
  */
 export class App {
 	readonly systemDeltaTimes: SystemDeltaTimes = new Map()
-	private scheduler: Scheduler<[World]> = new Scheduler(new World())
+	private scheduler: Scheduler<[World, App]> = new Scheduler(new World(), this)
 	private plugins: Plugin[] = []
 
 	constructor() {
@@ -54,10 +54,10 @@ export class App {
 		systems.forEach((systemFn) => {
 			const system = new System(systemFn, phase)
 
-			const wrappedFn = (world: World) => {
+			const wrappedFn = (...args: unknown[]) => {
 				debug.profilebegin(`System ${system.name}`)
 				const t = os.clock()
-				system.fn(world)
+				system.fn(...args)
 				const dt = os.clock() - t
 				debug.profileend()
 				this.systemDeltaTimes.set(system, dt)
