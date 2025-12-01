@@ -2,6 +2,8 @@ export { App } from './app'
 
 export type { World } from './world'
 
+export { component } from './component'
+
 export { Plugin } from './plugin'
 
 export { stdPhases, stdPipelines } from './stdPhases'
@@ -14,7 +16,6 @@ export { useHookState } from './topoRuntime'
 // Global Jecs re-exports.
 // TODO! Items commented out need more thought before being re-exported.
 export {
-	component,
 	// pair,
 	// pair_first,
 	// pair_second,
