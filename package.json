@@ -4,11 +4,11 @@
   "main": "out/init.lua",
   "scripts": {
     "build": "rbxtsc",
-    "watch": "rbxtsc -w",
+    "watch": "yalc-watch",
     "prepublishOnly": "npm run build",
     "lint": "eslint ./src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "updateTest": "rimraf --glob \"*.tgz\" && npm run build && npm pack && cd ../mesa-test && npm i ../mesa/*.tgz"
+    "packInstall": "rimraf --glob \"*.tgz\" && npm run build && npm pack && cd ../mesa-test && npm i ../mesa/*.tgz"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +22,11 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "yalcWatch": {
+    "watchFolder": "src",
+    "buildWatchCommand": "rbxtsc -w",
+    "extensions": "ts, luau"
   },
   "devDependencies": {
     "@rbxts/compiler-types": "^3.0.0-types.0",
