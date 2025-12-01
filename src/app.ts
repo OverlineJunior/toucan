@@ -121,12 +121,14 @@ export class App {
 	 * Builds all added _plugins_ and starts the app's scheduler, running all
 	 * _systems_ on their respective phases.
 	 */
-	run(): void {
+	run(): this {
 		// Must run before we run the scheduler to ensure plugins can add systems beforehand.
 		this.plugins.forEach((plugin) => {
 			plugin.build(this)
 		})
 
 		this.scheduler.runAll()
+
+		return this
 	}
 }
