@@ -111,10 +111,6 @@ export class App {
 	 * systems on their respective phases.
 	 */
 	run(): void {
-		// TODO! If we create the world earlier, component declarations fail because
-		// ! they must happen before the world is created. This calls for a builder.
-
-
 		// Must run before we run the scheduler to ensure plugins can add systems beforehand.
 		this.plugins.forEach((plugin) => {
 			plugin.build(this)
