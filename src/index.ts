@@ -16,14 +16,14 @@ export { useHookState } from './topoRuntime'
 // Global Jecs re-exports.
 // TODO! Items commented out need more thought before being re-exported.
 export {
-	// pair,
-	// pair_first,
-	// pair_second,
+	pair,
+	pair_first,
+	pair_second,
 	Entity,
 	// InferComponent,
 	// InferComponents,
 	Component,
-	// ChildOf,
+	ChildOf,
 	// Wildcard,
 	// Rest,
 	// Exclusive,

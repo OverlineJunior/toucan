@@ -1,4 +1,4 @@
-import { World as Ecs, world as newEcs, Entity, Id, StatefulHook, StatelessHook, InferComponent } from '@rbxts/jecs'
+import { World as Ecs, world as newEcs, Entity, Id, StatefulHook, StatelessHook, InferComponent, Tag, Pair } from '@rbxts/jecs'
 
 export class World {
 	private ecs: Ecs = newEcs()
@@ -58,6 +58,45 @@ export class World {
 		return entity
 	}
 
+
+	/**
+	 * Assigns a value to a component on the given entity.
+	 *
+	 * @Example
+	 * ```ts
+	 * app.set(entity, Health, 100)
+	 * ```
+	 *
+	 * Additionally, one can also set relationship pairs:
+	 * @Example
+	 * ```ts
+	 * app.set(bob, pair(ChildOf, alice))
+	 * ```
+	 */
+	set<Comp extends Id<unknown>>(entity: Entity, component: Comp, value: InferComponent<Comp>): void
+	/**
+	 * Assigns a tag component on the given entity.
+	 *
+	 * @Example
+	 * ```ts
+	 * app.set(entity, IsAlive)
+	 * ```
+	 *
+	 * Additionally, one can also set relationship pairs:
+	 * @Example
+	 * ```ts
+	 * app.set(bob, pair(ChildOf, alice))
+	 * ```
+	 */
+	set(entity: Entity, tagOrPair: Tag | Pair): void
+	set(entity: Entity, id: defined, value?: defined): void {
+		if (value === undefined) {
+			this.ecs.add(entity, id as Tag)
+		} else {
+			this.ecs.set(entity, id as Id<unknown>, value)
+		}
+	}
+
 	// -------------------------------------------------------------------------
 	// Jecs' world re-exports.
 	// -------------------------------------------------------------------------
@@ -99,42 +138,6 @@ export class World {
 	 * ```
 	 */
 	has = ((...args) => this.ecs.has(...args)) as Ecs['has']
-
-	/**
-	 * Adds a component (with no value) to the entity.
-	 *
-	 * Example:
-	 * ```ts
-	 * app.add(entity, IsAlive)
-	 * ```
-	 */
-	add = ((...args) => this.ecs.add(...args)) as Ecs['add']
-
-	/**
-	 * Installs a hook on the given component.
-	 * @param component The target component.
-	 * @param hook The hook to install.
-	 * @param value The hook callback.
-	 */
-	set<T>(component: Entity<T>, hook: StatefulHook, value: (e: Entity<T>, id: Id<T>, data: T) => void): void
-	set<T>(component: Entity<T>, hook: StatelessHook, value: (e: Entity<T>, id: Id<T>) => void): void
-	/**
-	 * Assigns a value to a component on the given entity.
-	 *
-	 * Example:
-	 * ```ts
-	 * app.set(entity, Health, 100)
-	 * ```
-	 *
-	 * Additionally, one can also set pairs:
-	 * ```ts
-	 * app.set(bob, pair(ChildOf, alice))
-	 * ```
-	 */
-	set<E extends Id<unknown>>(entity: Entity, component: E, value: InferComponent<E>): void
-	set(entity: any, component: any, value: any): void {
-		return this.ecs.set(entity, component, value)
-	}
 
 	/**
 	 * Gets the target of a relationship.
