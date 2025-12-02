@@ -1,5 +1,27 @@
 import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair } from '@rbxts/jecs'
 
+type SpawnArgumentShape = [Entity<any>, any] | [Tag]
+
+type SpawnComponentDefinition<T> =
+	// Handle `[Component, Value]`.
+	T extends [infer C, infer V]
+		? C extends Entity
+			? // Ensure the value matches the component's type.
+				V extends InferComponent<C>
+				? T
+				: [C, InferComponent<C>]
+			: never
+		: // Handle `[ComponentTag]`.
+			T extends [infer C]
+			? C extends Tag
+				? T
+				: never
+			: never
+
+function isArray<T = unknown>(value: unknown): value is T[] {
+	return typeIs(value, 'table') && 1 in value
+}
+
 /**
  * Stores and exposes operations on _entities_ and _components_.
  */
@@ -10,6 +32,16 @@ export class World {
 	 * Spawns a new, empty entity and returns it.
 	 */
 	spawn(): Entity
+	/**
+	 * Spawns a new entity with a single tag component, and returns it.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const entity = app.spawn(IsAlive)
+	 * ```
+	 */
+	spawn(component: Tag): Entity
 	/**
 	 * Spawns a new entity with a single component and value, and returns it.
 	 *
@@ -33,29 +65,34 @@ export class World {
 	 * )
 	 * ```
 	 */
-	spawn<const Pairs extends [Entity<unknown>, unknown][]>(
-		...components: {
-			[I in keyof Pairs]: Pairs[I] extends [infer E, infer V]
-				? E extends Entity<infer T>
-					? V extends T
-						? [E, V]
-						: never
-					: never
-				: never
-		}
-	): Entity
+	spawn<Arg extends SpawnArgumentShape[]>(...args: { [K in keyof Arg]: SpawnComponentDefinition<Arg[K]> }): Entity
 	spawn(...args: defined[]): Entity {
+		// Possible shapes of `args`:
+		// - Shape 1: []
+		// - Shape 2: [Tag]
+		// - Shape 3: [Entity, Value]
+		// - Shape 4: [[Entity, Value], [Tag], [Entity, Value], ...]
+
 		const entity = this.ecs.entity()
 
-		if (args.size() === 2) {
-			const [component, value] = args as [Entity<unknown>, unknown]
-			this.set(entity, component, value)
-		} else {
-			args.forEach((pair) => {
-				const [component, value] = pair as [Entity<unknown>, unknown]
-				this.set(entity, component, value)
-			})
+		// Shape 1.
+		if (args.size() === 0) {
+			return entity
 		}
+
+		// Shape 4.
+		if (isArray(args[0])) {
+			args.forEach((pair) => {
+				const [first, second] = pair as [Id, defined?]
+				this.set(entity, first, second)
+			})
+
+			return entity
+		}
+
+		// Shape 2 & 3.
+		const [first, second] = args as [Id, defined?]
+		this.set(entity, first, second)
 
 		return entity
 	}
