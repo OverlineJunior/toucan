@@ -3,3 +3,78 @@ import { App } from './app'
 export interface Plugin {
 	build(app: App): void
 }
+
+export interface ResolvedPlugin extends Plugin {
+	id: unknown
+	name: string
+	owner: 'user' | 'third-party'
+	built: boolean
+}
+
+export type PluginAddError = 'duplicatePlugin' | 'duplicateThirdPartyPlugin'
+
+function getConstructor<T extends object>(instance: T): Callback {
+	return (instance as unknown as { constructor: Callback }).constructor
+}
+
+// TODO! Plugin management needs more testing.
+export class PluginRegistry {
+	plugins: Map<ResolvedPlugin['id'], ResolvedPlugin> = new Map()
+
+	add(plugin: Plugin, owner: ResolvedPlugin['owner']): [ResolvedPlugin, PluginAddError | undefined] {
+		const resolvedPlugin = this.resolve(plugin, owner)
+
+		const existing = this.plugins.get(resolvedPlugin.id)
+		if (existing) {
+			const [argNum] = debug.info(getConstructor(plugin), 'a')
+			// Two of the same third-party plugin with constructor parameters (excluding self)
+			// might indicate a conflict that the user needs to resolve manually.
+			if (argNum > 1 && existing.owner === 'third-party' && owner === 'third-party') {
+				return [resolvedPlugin, 'duplicateThirdPartyPlugin']
+			}
+
+			return [resolvedPlugin, 'duplicatePlugin']
+		}
+
+		this.plugins.set(resolvedPlugin.id, resolvedPlugin)
+
+		return [resolvedPlugin, undefined]
+	}
+
+	build(plugin: ResolvedPlugin, app: App): void {
+		plugin.build(app)
+		plugin.built = true
+	}
+
+	buildAll(app: App): void {
+		let builtCount = 0
+
+		// Because plugins can add more plugins when built, we loop until all are built.
+		while (builtCount < this.plugins.size()) {
+			const snapshot = [...this.plugins]
+			// Sort so that user plugins build before third-party plugins.
+			// This is important so that user plugins can override third-party plugins.
+			snapshot.sort(([, p1], [, p2]) => {
+				if (p1.owner === 'user' && p2.owner === 'third-party') return true
+				if (p1.owner === 'third-party' && p2.owner === 'user') return false
+				return false
+			})
+
+			for (const [_, plugin] of [...this.plugins]) {
+				if (plugin.built) continue
+
+				this.build(plugin, app)
+				builtCount++
+			}
+		}
+	}
+
+	private resolve(plugin: Plugin, owner: ResolvedPlugin['owner']): ResolvedPlugin {
+		const resolved = plugin as ResolvedPlugin
+		resolved.id = getmetatable(plugin)
+		resolved.name = tostring(getmetatable(plugin))
+		resolved.owner = owner
+		resolved.built = false
+		return resolved
+	}
+}

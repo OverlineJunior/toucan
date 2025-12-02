@@ -1,7 +1,7 @@
 import { Phase, Scheduler } from '@rbxts/planck'
 import { RunService } from '@rbxts/services'
 import { System, SystemFn } from './system'
-import { Plugin } from './plugin'
+import { Plugin, PluginRegistry } from './plugin'
 import { stdPlugins } from './stdPlugins'
 import { World } from './world'
 import {
@@ -32,7 +32,7 @@ export type SystemDeltaTimes = Map<System, number>
 export class App {
 	readonly systemDeltaTimes: SystemDeltaTimes = new Map()
 	private scheduler: Scheduler<[World, App]> = new Scheduler(new World(), this)
-	private plugins: Plugin[] = []
+	private plugins: PluginRegistry = new PluginRegistry()
 	private running = false
 	private debugMode = false
 
@@ -99,28 +99,24 @@ export class App {
 	 * ```
 	 */
 	addPlugins(...plugins: Plugin[]): this {
+		const callerScriptPath = debug.info(2, 's')[0]
+		const isThirdParty = callerScriptPath.match('node_modules')[0] !== undefined
+
 		plugins.forEach((plugin) => {
-			// TODO! This needs testing.
-			// TODO! Also, what if user doesn't add PluginA, but Package1 and Package2 adds PluginA?
-			// ! The user would need to intervene manually (by adding PluginA themselves), like a merge conflict.
-			// Since user plugin addition runs first, this check means that if a third-party
-			// plugin adds the same plugin the user added, the user's addition takes precedence.
+			const [resolvedPlugin, err] = this.plugins.add(plugin, isThirdParty ? 'third-party' : 'user')
 
-			for (let i = 1; i < 6; i++) {
-				const [name] = debug.info(i, 's')
-				const [line] = debug.info(i, 'l')
-				print(`${getmetatable(plugin)}: ${name}:${line}`)
-			}
-
-			if (this.plugins.some((p) => getmetatable(p) === getmetatable(plugin))) {
-				this.tryDebug(`Plugin '${getmetatable(plugin)}' was already added; skipping duplicate addition.`)
-				return
-			}
-
-			this.plugins.push(plugin)
-
-			if (this.running) {
-				plugin.build(this)
+			if (!err && this.running) {
+				// If the app is already running, we build the plugin immediately.
+				this.plugins.build(resolvedPlugin, this)
+			} else if (err === 'duplicatePlugin') {
+				this.tryDebug(`Plugin '${resolvedPlugin.name}' was already added; skipping duplicate.`)
+			} else if (err === 'duplicateThirdPartyPlugin') {
+				error(`
+					Two third-party plugins attempted to add the same plugin '${resolvedPlugin.name}'.
+					Because of this and the fact that '${resolvedPlugin.name}' has constructor parameters,
+					Mesa cannot determine which one to use.\n\nPlease resolve this conflict by adding
+					${resolvedPlugin.name} manually to your app with the desired parameters.
+				`)
 			}
 		})
 
@@ -170,14 +166,9 @@ export class App {
 	 */
 	run(): this {
 		// Must run before we run the scheduler to ensure plugins can add systems beforehand.
-		this.plugins.forEach((plugin) => {
-			plugin.build(this)
-		})
-
+		this.plugins.buildAll(this)
 		this.scheduler.runAll()
-
 		this.running = true
-
 		return this
 	}
 
