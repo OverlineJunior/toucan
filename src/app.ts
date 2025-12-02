@@ -106,6 +106,12 @@ export class App {
 			// Since user plugin addition runs first, this check means that if a third-party
 			// plugin adds the same plugin the user added, the user's addition takes precedence.
 
+			for (let i = 1; i < 6; i++) {
+				const [name] = debug.info(i, 's')
+				const [line] = debug.info(i, 'l')
+				print(`${getmetatable(plugin)}: ${name}:${line}`)
+			}
+
 			if (this.plugins.some((p) => getmetatable(p) === getmetatable(plugin))) {
 				this.tryDebug(`Plugin '${getmetatable(plugin)}' was already added; skipping duplicate addition.`)
 				return
