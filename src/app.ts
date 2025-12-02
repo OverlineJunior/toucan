@@ -105,7 +105,8 @@ export class App {
 			// ! The user would need to intervene manually (by adding PluginA themselves), like a merge conflict.
 			// Since user plugin addition runs first, this check means that if a third-party
 			// plugin adds the same plugin the user added, the user's addition takes precedence.
-			if (plugins.some((p) => getmetatable(p) === getmetatable(plugin))) {
+
+			if (this.plugins.some((p) => getmetatable(p) === getmetatable(plugin))) {
 				this.tryDebug(`Plugin '${getmetatable(plugin)}' was already added; skipping duplicate addition.`)
 				return
 			}
