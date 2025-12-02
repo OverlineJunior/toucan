@@ -24,6 +24,7 @@ export class App {
 	readonly systemDeltaTimes: SystemDeltaTimes = new Map()
 	private scheduler: Scheduler<[World, App]> = new Scheduler(new World(), this)
 	private plugins: Plugin[] = []
+	private running = false
 
 	constructor() {
 		// Set up standard pipelines and phases.
@@ -84,7 +85,18 @@ export class App {
 	 */
 	addPlugins(...plugins: Plugin[]): this {
 		plugins.forEach((plugin) => {
+			// TODO! This needs testing.
+			// Since user plugin addition runs first, this check means that if a third-party
+			// plugin adds the same plugin the user added, the user's addition takes precedence.
+			if (plugins.some((p) => getmetatable(p) === getmetatable(plugin))) {
+				return
+			}
+
 			this.plugins.push(plugin)
+
+			if (this.running) {
+				plugin.build(this)
+			}
 		})
 
 		return this
@@ -130,6 +142,8 @@ export class App {
 		})
 
 		this.scheduler.runAll()
+
+		this.running = true
 
 		return this
 	}
