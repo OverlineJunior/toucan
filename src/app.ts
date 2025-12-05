@@ -5,6 +5,8 @@ import { Plugin, PluginRegistry, ResolvedPlugin } from './plugin'
 import { stdPlugins } from './stdPlugins'
 import { World } from './world'
 import {
+	ABSOLUTE_FIRST,
+	ABSOLUTE_LAST,
 	FIRST,
 	LAST,
 	POST_SIMULATION,
@@ -130,13 +132,13 @@ export class App {
 	// TODO! `addPhaseAfter` and `addPhaseBefore` and still unstable.
 	// ! We need to check whether bad usage of it breaks the standard that allows for third-party plugins.
 	/**
-	 * Adds a new _phase_ to be ran after another (except for `LAST`).
+	 * Adds a new _phase_ to be ran after another (except for `LAST` and `ABSOLUTE_LAST`).
 	 */
 	addPhaseAfter(phase: Phase, after: Phase): this {
 		// Reason: maintains the meaning of "first" and "last" phases, while also making
 		// sure `internalPhases.{absoluteFirst, absoluteLast}` remain at the absolute ends.
-		if (after === LAST) {
-			error('Inserting phases after `LAST` is not allowed.')
+		if (after === LAST || after === ABSOLUTE_LAST) {
+			error("Inserting phases after 'LAST' or 'ABSOLUTE_LAST' is not allowed.")
 		}
 
 		this.scheduler.insertAfter(phase, after)
@@ -144,12 +146,12 @@ export class App {
 	}
 
 	/**
-	 * Adds a new _phase_ to be ran before another (except for `FIRST`).
+	 * Adds a new _phase_ to be ran before another (except for `FIRST` and `ABSOLUTE_FIRST`).
 	 */
 	addPhaseBefore(phase: Phase, before: Phase): this {
 		// Reason: same as in `addPhaseAfter`.
-		if (before === FIRST) {
-			error('Inserting phases before `FIRST` is not allowed.')
+		if (before === FIRST || before === ABSOLUTE_FIRST) {
+			error("Inserting phases before 'FIRST' or 'ABSOLUTE_FIRST' is not allowed.")
 		}
 
 		this.scheduler.insertBefore(phase, before)
