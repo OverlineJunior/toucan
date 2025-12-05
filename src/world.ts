@@ -1,4 +1,4 @@
-import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair, InferComponents } from '@rbxts/jecs'
+import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair, InferComponents, world } from '@rbxts/jecs'
 
 type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
 type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
@@ -100,6 +100,7 @@ export class World {
 		return entity
 	}
 
+	// TODO! Should deny getting the value of a tag component at type level.
 	/**
 	 * Retrieves the values of up to 4 components on a given entity. Missing
 	 * components will return `undefined`.
@@ -166,11 +167,28 @@ export class World {
 	 * ```
 	 */
 	set(entity: Entity, tagOrPair: Tag | Pair): void
-	set(entity: Entity, id: defined, value?: defined): void {
+	/**
+	 * Sets the value of a resource.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const GameState = resource('lobby')
+	 *
+	 * world.set(GameState, 'in-game')
+	 * ```
+	 */
+	set<V>(resource: Entity<V>, value: V): void
+	set(entOrRes: Entity, compOrValue: defined, value?: defined): void {
+		if (this.get(entOrRes, entOrRes)) {
+			print('Set resource')
+			this.ecs.set(entOrRes, entOrRes, compOrValue)
+		}
+
 		if (value === undefined) {
-			this.ecs.add(entity, id as Tag)
+			this.ecs.add(entOrRes, compOrValue as Tag)
 		} else {
-			this.ecs.set(entity, id as Id<unknown>, value)
+			this.ecs.set(entOrRes, compOrValue as Id<unknown>, value)
 		}
 	}
 
