@@ -18,14 +18,28 @@ import {
 } from './stdPhases'
 
 /**
- * Stores and exposes operations on _systems_, _plugins_ and _phases_.
+ * The starting point of a Mesa application. It stores and exposes operations on _systems_, _plugins_ and _phases_.
  *
  * # Example
  *
  * ```ts
+ * const Person = component()
+ * const Name = component<string>()
+ *
+ * function spawnPeople({ world }: SystemContext) {
+ *     world.spawn([Person], [Name, 'Alice'])
+ *     world.spawn([Person], [Name, 'Bob'])
+ * }
+ *
+ * function greet({ world }: SystemContext) {
+ *     for (const [, name] of world.query(Name)) {
+ *         print(`Hello, ${name}!`)
+ *     }
+ * }
+ *
  * const app = new App()
- *     .addSystems(UPDATE, updateStamina, logPositions)
- *     .addPlugins(movementPlugin)
+ *     .addSystems(STARTUP, spawnPeople)
+ *     .addSystems(UPDATE, greet)
  *     .run()
  * ```
  */
