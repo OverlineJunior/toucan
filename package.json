@@ -1,6 +1,6 @@
 {
   "name": "@rbxts/mesa",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "main": "out/init.lua",
   "scripts": {
     "build": "rbxtsc",
