@@ -4,6 +4,8 @@ export type { World } from './world'
 
 export { component } from './component'
 
+export { System, SystemContext } from './system'
+
 export { Plugin } from './plugin'
 
 export {

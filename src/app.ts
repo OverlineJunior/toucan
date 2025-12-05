@@ -1,7 +1,7 @@
 import { Phase, Scheduler } from '@rbxts/planck'
 import { RunService } from '@rbxts/services'
-import { System, SystemFn } from './system'
-import { Plugin, PluginRegistry } from './plugin'
+import { System, ResolvedSystem } from './system'
+import { Plugin, PluginRegistry, ResolvedPlugin } from './plugin'
 import { stdPlugins } from './stdPlugins'
 import { World } from './world'
 import {
@@ -14,8 +14,6 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './stdPhases'
-
-export type SystemDeltaTimes = Map<System, number>
 
 /**
  * Stores and exposes operations on _systems_, _plugins_ and _phases_.
@@ -30,8 +28,9 @@ export type SystemDeltaTimes = Map<System, number>
  * ```
  */
 export class App {
-	readonly systemDeltaTimes: SystemDeltaTimes = new Map()
-	private scheduler: Scheduler<[World, App]> = new Scheduler(new World(), this)
+	readonly systemDeltaTimes: Map<ResolvedSystem, number> = new Map()
+	private world: World = new World()
+	private scheduler: Scheduler<[]> = new Scheduler()
 	private plugins: PluginRegistry = new PluginRegistry()
 	private running = false
 	private debugMode = false
@@ -61,23 +60,28 @@ export class App {
 	 * app.addSystems(UPDATE, updateHealth, logPositions)
 	 * ```
 	 */
-	addSystems(phase: Phase, ...systems: SystemFn[]): this {
-		systems.forEach((systemFn) => {
-			const system = new System(systemFn, phase)
-			let fn = system.fn
+	addSystems(phase: Phase, ...systems: System[]): this {
+		const plugin = this.findPluginInCallStack()
 
-			if (this.debugMode) {
-				fn = (...args: unknown[]) => {
-					debug.profilebegin(`System ${system.name}`)
-					const t = os.clock()
-					system.fn(...args)
-					const dt = os.clock() - t
-					debug.profileend()
-					this.systemDeltaTimes.set(system, dt)
-				}
+		systems.forEach((system) => {
+			const resolvedSystem = new ResolvedSystem(system, phase)
+
+			const wrappedSystem = () => {
+				debug.profilebegin(`System ${resolvedSystem.name}`)
+				const t = os.clock()
+
+				resolvedSystem.fn({
+					world: this.world,
+					app: this,
+					plugin,
+				})
+
+				const dt = os.clock() - t
+				debug.profileend()
+				this.systemDeltaTimes.set(resolvedSystem, dt)
 			}
 
-			this.scheduler.addSystem(fn, system.phase)
+			this.scheduler.addSystem(wrappedSystem, resolvedSystem.phase)
 		})
 
 		return this
@@ -113,9 +117,9 @@ export class App {
 			} else if (err === 'duplicateThirdPartyPlugin') {
 				error(
 					`Two third-party plugins attempted to add the same plugin '${resolvedPlugin.name}'. ` +
-					`Because of this and the fact that '${resolvedPlugin.name}' has constructor parameters, ` +
-					`Mesa cannot determine which one to use.\n\nPlease resolve this conflict by adding ` +
-					`'${resolvedPlugin.name}' manually to your app with the desired parameters.`,
+						`Because of this and the fact that '${resolvedPlugin.name}' has constructor parameters, ` +
+						`Mesa cannot determine which one to use.\n\nPlease resolve this conflict by adding ` +
+						`'${resolvedPlugin.name}' manually to your app with the desired parameters.`,
 				)
 			}
 		})
@@ -176,5 +180,33 @@ export class App {
 		if (!this.debugMode) return
 
 		warn(`[Mesa Debug] ${message}`)
+	}
+
+	private findPluginInCallStack(): ResolvedPlugin | undefined {
+		function hasBuildInCallStack(build: Callback): boolean {
+			let depth = 2
+
+			while (true) {
+				const f = debug.info(depth, 'f')[0]
+				if (f === undefined) {
+					return false
+				} else if (f === build) {
+					return true
+				}
+				depth++
+			}
+		}
+
+		let plugin: ResolvedPlugin | undefined = undefined
+
+		this.plugins.getAll().forEach((p) => {
+			const hasBuild = hasBuildInCallStack(p.build)
+			if (hasBuild) {
+				plugin = p
+				return
+			}
+		})
+
+		return plugin
 	}
 }

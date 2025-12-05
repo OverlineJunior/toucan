@@ -5,7 +5,7 @@ export interface Plugin {
 }
 
 export interface ResolvedPlugin extends Plugin {
-	id: unknown
+	constructorFn: Callback
 	name: string
 	owner: 'user' | 'third-party'
 	built: boolean
@@ -13,20 +13,15 @@ export interface ResolvedPlugin extends Plugin {
 
 export type PluginAddError = 'duplicatePlugin' | 'duplicateThirdPartyPlugin'
 
-function getConstructor<T extends object>(instance: T): Callback {
-	return (instance as unknown as { constructor: Callback }).constructor
-}
-
-// TODO! Plugin management needs more testing.
 export class PluginRegistry {
-	plugins: Map<ResolvedPlugin['id'], ResolvedPlugin> = new Map()
+	plugins: Map<ResolvedPlugin['constructorFn'], ResolvedPlugin> = new Map()
 
 	add(plugin: Plugin, owner: ResolvedPlugin['owner']): [ResolvedPlugin, PluginAddError | undefined] {
 		const resolvedPlugin = this.resolve(plugin, owner)
 
-		const existing = this.plugins.get(resolvedPlugin.id)
+		const existing = this.plugins.get(resolvedPlugin.constructorFn)
 		if (existing) {
-			const [argNum] = debug.info(getConstructor(plugin), 'a')
+			const [argNum] = debug.info(resolvedPlugin.constructorFn, 'a')
 			// Two of the same third-party plugin with constructor parameters (excluding self)
 			// might indicate a conflict that the user needs to resolve manually.
 			if (argNum > 1 && existing.owner === 'third-party' && owner === 'third-party') {
@@ -36,7 +31,7 @@ export class PluginRegistry {
 			return [resolvedPlugin, 'duplicatePlugin']
 		}
 
-		this.plugins.set(resolvedPlugin.id, resolvedPlugin)
+		this.plugins.set(resolvedPlugin.constructorFn, resolvedPlugin)
 
 		return [resolvedPlugin, undefined]
 	}
@@ -69,9 +64,23 @@ export class PluginRegistry {
 		}
 	}
 
+	getAll(): ResolvedPlugin[] {
+		return ([...this.plugins]).map(([, plugin]) => plugin)
+	}
+
+	getByBuildFn(build: Callback): ResolvedPlugin | undefined {
+		for (const [, plugin] of this.plugins) {
+			if (plugin.build === build) {
+				return plugin
+			}
+		}
+
+		return undefined
+	}
+
 	private resolve(plugin: Plugin, owner: ResolvedPlugin['owner']): ResolvedPlugin {
 		const resolved = plugin as ResolvedPlugin
-		resolved.id = getmetatable(plugin)
+		resolved.constructorFn = (plugin as unknown as { constructor: Callback }).constructor
 		resolved.name = tostring(getmetatable(plugin))
 		resolved.owner = owner
 		resolved.built = false
