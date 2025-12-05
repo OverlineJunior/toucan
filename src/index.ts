@@ -2,7 +2,7 @@ export { App } from './app'
 
 export type { World } from './world'
 
-export { component } from './component'
+export { component, resource } from './component'
 
 export { System, SystemContext } from './system'
 

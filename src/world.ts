@@ -1,4 +1,7 @@
-import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair } from '@rbxts/jecs'
+import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair, InferComponents } from '@rbxts/jecs'
+
+type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
+type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
 
 type SpawnArgumentShape = [Entity<any>, any] | [Tag]
 
@@ -98,6 +101,42 @@ export class World {
 	}
 
 	/**
+	 * Retrieves the values of up to 4 components on a given entity. Missing
+	 * components will return `undefined`.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const [position, velocity] = world.get(entity, Position, Velocity)
+	 * ```
+	 */
+	get<T extends [Id] | [Id, Id] | [Id, Id, Id] | [Id, Id, Id, Id]>(
+		entity: Entity,
+		...components: T
+	): FlattenTuple<Nullable<InferComponents<T>>>
+	/**
+	 * Retrieves the value of a resource.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const IsMatchRunning = resource(true)
+	 *
+	 * const isRunning = world.get(IsMatchRunning) // `true`.
+	 * ```
+	 */
+	get<V extends defined>(resource: Entity<V>): V
+	get(entOrRes: Entity, ...components: Id[]): unknown {
+		if (components.size() === 0) {
+			// Resource overload.
+			return this.ecs.get(entOrRes, entOrRes)
+		} else {
+			// Component overload.
+			return this.ecs.get(entOrRes, ...(components as [Id]))
+		}
+	}
+
+	/**
 	 * Assigns a value to a component on the given entity.
 	 *
 	 * # Example
@@ -153,18 +192,6 @@ export class World {
 	 * }
 	 */
 	query = ((...args: Id[]) => this.ecs.query(...args)) as Ecs['query']
-
-	/**
-	 * Retrieves the values of up to 4 components on a given entity. Missing
-	 * components will return `undefined`.
-	 *
-	 * # Example
-	 *
-	 * ```ts
-	 * const [position, velocity] = app.get(entity, Position, Velocity)
-	 * ```
-	 */
-	get = ((e: Entity, ...args: [Id]) => this.ecs.get(e, ...args)) as Ecs['get']
 
 	/**
 	 * Returns `true` if the given entity has all of the specified components.
