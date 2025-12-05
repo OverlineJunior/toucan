@@ -1,7 +1,19 @@
-import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair, InferComponents, world } from '@rbxts/jecs'
+import {
+	World as Ecs,
+	world as newEcs,
+	Entity,
+	Id,
+	InferComponent,
+	Tag,
+	Pair,
+	InferComponents,
+} from '@rbxts/jecs'
 
 type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
+
 type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
+
+type RejectTags<T, Err> = T extends Tag ? Err : T
 
 type SpawnArgumentShape = [Entity<any>, any] | [Tag]
 
@@ -100,7 +112,6 @@ export class World {
 		return entity
 	}
 
-	// TODO! Should deny getting the value of a tag component at type level.
 	/**
 	 * Retrieves the values of up to 4 components on a given entity. Missing
 	 * components will return `undefined`.
@@ -113,7 +124,9 @@ export class World {
 	 */
 	get<T extends [Id] | [Id, Id] | [Id, Id, Id] | [Id, Id, Id, Id]>(
 		entity: Entity,
-		...components: T
+		...components: {
+			[K in keyof T]: RejectTags<T[K], "❌ 'world.get()' cannot be used with Tags. Use 'world.has()' instead.">
+		}
 	): FlattenTuple<Nullable<InferComponents<T>>>
 	/**
 	 * Retrieves the value of a resource.
