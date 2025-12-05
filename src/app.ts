@@ -44,6 +44,11 @@ import {
  * ```
  */
 export class App {
+	/**
+	 * Maps each _system_ to its last recorded delta time (in seconds).
+	 *
+	 * ⚠️ Only populated if debug mode is enabled with `app.setDebug(true)`.
+	 */
 	readonly systemDeltaTimes: Map<ResolvedSystem, number> = new Map()
 	private world: World = new World()
 	private scheduler: Scheduler<[]> = new Scheduler()
@@ -82,19 +87,25 @@ export class App {
 		systems.forEach((system) => {
 			const resolvedSystem = new ResolvedSystem(system, phase)
 
-			const wrappedSystem = () => {
-				debug.profilebegin(`System ${resolvedSystem.name}`)
-				const t = os.clock()
+			let wrappedSystem = () => resolvedSystem.fn({
+				world: this.world,
+				app: this,
+				plugin,
+			})
 
-				resolvedSystem.fn({
-					world: this.world,
-					app: this,
-					plugin,
-				})
+			if (this.debugMode) {
+				const original = wrappedSystem
 
-				const dt = os.clock() - t
-				debug.profileend()
-				this.systemDeltaTimes.set(resolvedSystem, dt)
+				wrappedSystem = () => {
+					debug.profilebegin(`System ${resolvedSystem.name}`)
+					const t = os.clock()
+
+					original()
+
+					const dt = os.clock() - t
+					debug.profileend()
+					this.systemDeltaTimes.set(resolvedSystem, dt)
+				}
 			}
 
 			this.scheduler.addSystem(wrappedSystem, resolvedSystem.phase)
@@ -173,7 +184,8 @@ export class App {
 	}
 
 	/**
-	 * Enables or disables debug mode.
+	 * Enables or disables debug mode, which logs some framework actions and profiles
+	 * each _system_ on every run, storing their delta times in `app.systemDeltaTimes`.
 	 */
 	setDebug(enabled: boolean): this {
 		this.debugMode = enabled
