@@ -1,5 +1,6 @@
 import { Entity, component as jecsComponent, Tag, meta } from '@rbxts/jecs'
 
+// TODO! Should work like `world.spawn()`, having overloads to automatically add components.
 /**
  * Creates a new _component_.
  *
@@ -17,6 +18,7 @@ export function component<Value = undefined>(): Value extends undefined ? Tag : 
 	return jecsComponent() as Value extends undefined ? Tag : Entity<Value>
 }
 
+// TODO! Should (?) work like `world.spawn()`, having overloads to automatically add components.
 /**
  * Creates a new _resource_ with the given initial value.
  *
