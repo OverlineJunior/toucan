@@ -1,23 +1,8 @@
-import {
-	World as Ecs,
-	world as newEcs,
-	Entity,
-	Id,
-	InferComponent,
-	Tag,
-	Pair,
-	InferComponents,
-} from '@rbxts/jecs'
+import { World as Ecs, world as newEcs, Entity, Id, InferComponent, Tag, Pair, InferComponents } from '@rbxts/jecs'
 
-type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
+export type ComponentEntry = [Entity<any>, any] | Tag
 
-type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
-
-type RejectTags<T, Err> = T extends Tag ? Err : T
-
-type SpawnArgumentShape = [Entity<any>, any] | Tag
-
-type SpawnComponentDefinition<T> =
+export type InferredComponentEntry<T> =
 	// Handle `[Component, Value]`.
 	T extends [infer C, infer V]
 		? C extends Entity
@@ -30,6 +15,12 @@ type SpawnComponentDefinition<T> =
 			T extends Tag
 			? T
 			: never
+
+type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
+
+type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
+
+type RejectTags<T, Err> = T extends Tag ? Err : T
 
 function isArray<T = unknown>(value: unknown): value is T[] {
 	return typeIs(value, 'table') && 1 in value
@@ -60,16 +51,16 @@ export class World {
 	 * )
 	 * ```
 	 */
-	spawn<Arg extends SpawnArgumentShape[]>(...args: { [K in keyof Arg]: SpawnComponentDefinition<Arg[K]> }): Entity
-	spawn(...args: defined[]): Entity {
+	spawn<Entries extends ComponentEntry[]>(...args: { [K in keyof Entries]: InferredComponentEntry<Entries[K]> }): Entity
+	spawn(...compEntries: defined[]): Entity {
 		const entity = this.ecs.entity()
 
-		args.forEach((arg) => {
+		compEntries.forEach((arg) => {
 			// Handle `[Entity, Value]`.
 			if (isArray(arg)) {
 				const [component, value] = arg
 				this.ecs.set(entity, component as Entity<unknown>, value)
-			// Handle `Tag`.
+				// Handle `Tag`.
 			} else {
 				this.ecs.add(entity, arg as Tag)
 			}
