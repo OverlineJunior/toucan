@@ -1,45 +1,75 @@
-import { Entity, component as jecsComponent, Tag, meta } from '@rbxts/jecs'
+import { Entity, GetComponents, GetResultComponents, UpToFour } from './entity'
+import { Id, Entity as RawEntity } from '@rbxts/jecs'
+import { world } from './world'
 
-// TODO! Should work like `world.spawn()`, having overloads to automatically add components.
-/**
- * Creates a new _component_.
- *
- * # Example
- *
- * ```ts
- * // A component with a value.
- * const Health = component<number>()
- *
- * // A tag component.
- * const IsAlive = component()
- * ```
- */
-export function component<Value = undefined>(): Value extends undefined ? Tag : Entity<Value> {
-	return jecsComponent() as Value extends undefined ? Tag : Entity<Value>
+export type InferComponent<C> = C extends Component<infer T> ? T : never
+
+export type InferComponents<Cs extends Component<unknown>[]> = { [K in keyof Cs]: InferComponent<Cs[K]> }
+
+export type RejectTag<T, Err> = T extends Component<undefined> ? Err : T
+
+export class Component<Value = undefined> extends Entity {
+	constructor(override readonly id: RawEntity<Value>) {
+		super(id)
+	}
+
+	added(listener: (e: Entity, id: Component<Value>, value: Value) => void): () => void {
+		return world.added(this.id, (rawE, rawComp, v) => {
+			listener(new Entity(rawE), new Component(rawComp as RawEntity<Value>), v)
+		})
+	}
+
+	removed(listener: (e: Entity, id: Component<Value>) => void): () => void {
+		return world.removed(this.id, (rawE, rawComp) => {
+			listener(new Entity(rawE), new Component(rawComp as RawEntity<Value>))
+		})
+	}
+
+	changed(listener: (e: Entity, id: Component<Value>, value: Value) => void): () => void {
+		return world.changed(this.id, (rawE, rawComp, v) => {
+			listener(new Entity(rawE), new Component(rawComp as RawEntity<Value>), v)
+		})
+	}
 }
 
-// TODO! Should (?) work like `world.spawn()`, having overloads to automatically add components.
-/**
- * Creates a new _resource_ with the given initial value.
- *
- * _Resources_ are components that always hold a value themselves, rather than
- * having an entity associated with them. They are useful to represent global state,
- * such as game state, settings and so on.
- *
- * # Example
- *
- * ```ts
- * const GameState = resource('lobby')
- *
- * // Later, in a system:
- * function startGame({ world }: SystemContext) {
- *     print(`Game state transitioning from ${world.get(GameState)} to in-game.`)
- *     world.set(GameState, 'in-game')
- * }
- * ```
- */
-export function resource<Value>(value: Value): Entity<Value> {
-	const comp = jecsComponent<Value>()
-	meta(comp, comp, value)
-	return comp
+export function component<Value = undefined>(): Component<Value> {
+	return new Component<Value>(world.component<Value>())
+}
+
+export class Resource<Value> extends Entity {
+	/**
+	 * Resource overload.
+	 */
+	set(value: Value): this
+	set(tagComponent: Component<undefined>): this
+	set<V>(component: Component<V>, value: V): this
+	set(componentOrValue: Component<unknown> | Value, value?: unknown): this {
+		if (componentOrValue instanceof Component) {
+			super.set(componentOrValue, value)
+		} else {
+			world.set(this.id, this.id, componentOrValue)
+		}
+
+		return this
+	}
+
+	/**
+	 * Resource overload.
+	 */
+	get(): Value
+	get<Cs extends UpToFour<Component<unknown>>>(...components: GetComponents<Cs>): GetResultComponents<Cs>
+	get(...components: Component<unknown>[]) {
+		if (components.size() === 0) {
+			return world.get(this.id, this.id)
+		} else {
+			return super.get(...(components as [Component<unknown>]))
+		}
+	}
+}
+
+export function resource<Value>(value: Value): Resource<Value> {
+	const id = world.component<Value>()
+	world.set(id, id, value)
+
+	return new Resource<Value>(id)
 }

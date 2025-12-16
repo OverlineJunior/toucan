@@ -3,7 +3,6 @@ import { RunService } from '@rbxts/services'
 import { System, ResolvedSystem } from './system'
 import { Plugin, PluginRegistry, ResolvedPlugin } from './plugin'
 import { stdPlugins } from './stdPlugins'
-import { World } from './world'
 import {
 	ABSOLUTE_FIRST,
 	ABSOLUTE_LAST,
@@ -50,7 +49,6 @@ export class App {
 	 * ⚠️ Only populated if debug mode is enabled with `app.setDebug(true)`.
 	 */
 	readonly systemDeltaTimes: Map<ResolvedSystem, number> = new Map()
-	private world: World = new World()
 	private scheduler: Scheduler<[]> = new Scheduler()
 	private plugins: PluginRegistry = new PluginRegistry()
 	private running = false
@@ -87,11 +85,7 @@ export class App {
 		systems.forEach((system) => {
 			const resolvedSystem = new ResolvedSystem(system, phase)
 
-			let wrappedSystem = () => resolvedSystem.fn({
-				world: this.world,
-				app: this,
-				plugin,
-			})
+			let wrappedSystem = () => resolvedSystem.fn(this, plugin)
 
 			if (this.debugMode) {
 				const original = wrappedSystem

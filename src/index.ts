@@ -1,10 +1,12 @@
 export { App } from './app'
 
-export type { World } from './world'
+export { entity, Entity } from './entity'
 
-export { component, resource } from './component'
+export { component, resource, Component } from './component'
 
-export { System, SystemContext } from './system'
+export { query } from './query'
+
+export { System } from './system'
 
 export { Plugin } from './plugin'
 
@@ -29,13 +31,13 @@ export { useHookState } from './topoRuntime'
 // Global Jecs re-exports.
 // TODO! Items commented out need more thought before being re-exported.
 export {
-	pair,
-	pair_first,
-	pair_second,
-	Entity,
+	// pair,
+	// pair_first,
+	// pair_second,
+	// Entity,
 	// InferComponent,
 	// InferComponents,
-	Component,
+	// Component,
 	ChildOf,
 	// Wildcard,
 	// Rest,

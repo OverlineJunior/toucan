@@ -1,38 +1,6 @@
 import { Phase } from '@rbxts/planck'
-import { World } from './world'
 import { App } from './app'
 import { Plugin, ResolvedPlugin } from './plugin'
-
-/**
- * The context provided to a system when it is executed.
- *
- * A plugin type parameter may be provided to type the plugin property, assuming
- * the system is registered by a plugin.
- *
- * # Example
- *
- * ```ts
- * function applyGravity({ world, plugin }: SystemContext<GravityPlugin>) {
- *     for (const [e, accel] of world.query(Acceleration)) {
- *         // In order to access plugin properties, the plugin type parameter must be provided.
- *	       accel.y += plugin.gravity
- *     }
- * }
- *
- * class GravityPlugin extends Plugin {
- *     constructor(public gravity: number = -9.81) { }
- *
- *     build(app: App) {
- *         app.addSystems(UPDATE, applyGravity)
- *     }
- * }
- * ```
- */
-export interface SystemContext<P extends Plugin | undefined = undefined> {
-	world: World
-	app: App
-	plugin: P
-}
 
 /**
  * Systems are functions that operate on entities and components within a world.
@@ -53,7 +21,7 @@ export interface SystemContext<P extends Plugin | undefined = undefined> {
  * }
  * ```
  */
-export type System = (context: SystemContext<any>) => void | undefined
+export type System = (app: App, plugin?: Plugin) => void | undefined
 
 export class ResolvedSystem {
 	readonly fn: System
