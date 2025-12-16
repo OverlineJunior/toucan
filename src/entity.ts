@@ -13,7 +13,7 @@ export type InferValues<Ts extends ComponentOrPair[]> = { [K in keyof Ts]: Infer
 
 export type GetParams<Cs extends ComponentOrPair[]> = {
 	[K in keyof Cs]: InferValue<Cs[K]> extends undefined
-		? "❌ 'entity.get()' cannot be used with tag components. Use 'entity.has()' instead."
+		? "❌ 'entity.get()' cannot be used with tag components/pairs. Use 'entity.has()' instead."
 		: Cs[K]
 }
 
