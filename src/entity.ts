@@ -1,6 +1,7 @@
 import { Entity as RawEntity } from '@rbxts/jecs'
 import { world } from './world'
-import { Component, InferComponents, RejectTag } from './component'
+import { Component, InferComponents } from './component'
+import { Pair } from './relationship'
 
 export type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
 
@@ -8,35 +9,45 @@ export type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
 
 export type UpToFour<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T]
 
-export type GetComponents<Cs extends Component<unknown>[]> = {
-	[K in keyof Cs]: RejectTag<
-		Cs[K],
-		"❌ 'entity.get()' cannot be used with tag components. Use 'entity.has()' instead."
-	>
+export type ComponentOrPair<V = unknown> = Component<V> | Pair<V>
+
+export type InferValue<T> = T extends Component<infer V> ? V : T extends Pair<infer R> ? R : never
+
+export type GetParams<Cs extends ComponentOrPair[]> = {
+	[K in keyof Cs]: InferValue<Cs[K]> extends undefined
+		? "❌ 'entity.get()' cannot be used with tag components. Use 'entity.has()' instead."
+		: Cs[K]
 }
 
-export type GetResultComponents<Cs extends Component<unknown>[]> = FlattenTuple<Nullable<InferComponents<Cs>>>
+export type GetResult<Cs extends ComponentOrPair[]> = FlattenTuple<
+	Nullable<{ [K in keyof Cs]: InferValue<Cs[K]> }>
+>
 
 export class Entity {
 	constructor(protected readonly id: RawEntity) {}
 
+	set(tagPair: Pair<undefined>): this
+	set<V>(pair: Pair<V>, value: V): this
 	set(tagComponent: Component<undefined>): this
 	set<V>(component: Component<V>, value: V): this
-	set(component: Entity, value?: unknown) {
-		world.set(this.id, component.id, value)
+	set(componentOrPair: Entity, value?: unknown) {
+		world.set(this.id, (componentOrPair as Entity).id, value)
 		return this
 	}
 
-	get<Cs extends UpToFour<Component<unknown>>>(...components: GetComponents<Cs>): GetResultComponents<Cs> {
-		return world.get(this.id, ...(components.map((c) => c.id) as UpToFour<RawEntity>)) as GetResultComponents<Cs>
+	get<Args extends UpToFour<ComponentOrPair>>(...componentsOrPairs: GetParams<Args>): GetResult<Args> {
+		return world.get(
+			this.id,
+			...(componentsOrPairs.map((c) => (c as Entity).id) as UpToFour<RawEntity>),
+		) as GetResult<Args>
 	}
 
-	has(component: Component<unknown>): boolean {
-		return world.has(this.id, component.id)
+	has(componentOrPair: ComponentOrPair): boolean {
+		return world.has(this.id, (componentOrPair as Entity).id)
 	}
 
-	remove(component: Component<unknown>): this {
-		world.remove(this.id, component.id)
+	remove(componentOrPair: ComponentOrPair): this {
+		world.remove(this.id, (componentOrPair as Entity).id)
 		return this
 	}
 

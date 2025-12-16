@@ -2,9 +2,11 @@ export { App } from './app'
 
 export { entity, Entity } from './entity'
 
-export { component, resource, Component } from './component'
+export { component, resource, Component, Resource } from './component'
 
-export { query } from './query'
+export { pair, Pair } from './relationship'
+
+export { query, Query } from './query'
 
 export { System } from './system'
 

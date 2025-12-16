@@ -1,6 +1,7 @@
-import { Entity, GetComponents, GetResultComponents, UpToFour } from './entity'
+import { ComponentOrPair, Entity, GetParams, GetResult, UpToFour } from './entity'
 import { Id, Entity as RawEntity } from '@rbxts/jecs'
 import { world } from './world'
+import { Pair } from './relationship'
 
 export type InferComponent<C> = C extends Component<infer T> ? T : never
 
@@ -37,13 +38,12 @@ export function component<Value = undefined>(): Component<Value> {
 }
 
 export class Resource<Value> extends Entity {
-	/**
-	 * Resource overload.
-	 */
 	set(value: Value): this
+	set(pair: Pair<undefined>): this
+	set<V>(pair: Pair<V>, value: V): this
 	set(tagComponent: Component<undefined>): this
 	set<V>(component: Component<V>, value: V): this
-	set(componentOrValue: Component<unknown> | Value, value?: unknown): this {
+	set(componentOrValue: ComponentOrPair | Value, value?: unknown): this {
 		if (componentOrValue instanceof Component) {
 			super.set(componentOrValue, value)
 		} else {
@@ -53,11 +53,8 @@ export class Resource<Value> extends Entity {
 		return this
 	}
 
-	/**
-	 * Resource overload.
-	 */
 	get(): Value
-	get<Cs extends UpToFour<Component<unknown>>>(...components: GetComponents<Cs>): GetResultComponents<Cs>
+	get<Cs extends UpToFour<Component<unknown>>>(...components: GetParams<Cs>): GetResult<Cs>
 	get(...components: Component<unknown>[]) {
 		if (components.size() === 0) {
 			return world.get(this.id, this.id)
