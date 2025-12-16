@@ -1,17 +1,15 @@
-import { Entity as RawEntity } from '@rbxts/jecs'
+import { FlattenTuple, Nullable, Entity as RawEntity } from '@rbxts/jecs'
 import { world } from './world'
-import { Component, InferComponents } from './component'
+import { Component } from './component'
 import { Pair } from './relationship'
-
-export type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
-
-export type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
-
-export type UpToFour<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T]
+import { UpToFour } from './util'
 
 export type ComponentOrPair<V = unknown> = Component<V> | Pair<V>
 
-export type InferValue<T> = T extends Component<infer V> ? V : T extends Pair<infer R> ? R : never
+export type InferValue<T extends ComponentOrPair> =
+	T extends Component<infer V> ? V : T extends Pair<infer R> ? R : never
+
+export type InferValues<Ts extends ComponentOrPair[]> = { [K in keyof Ts]: InferValue<Ts[K]> }
 
 export type GetParams<Cs extends ComponentOrPair[]> = {
 	[K in keyof Cs]: InferValue<Cs[K]> extends undefined
@@ -19,9 +17,7 @@ export type GetParams<Cs extends ComponentOrPair[]> = {
 		: Cs[K]
 }
 
-export type GetResult<Cs extends ComponentOrPair[]> = FlattenTuple<
-	Nullable<{ [K in keyof Cs]: InferValue<Cs[K]> }>
->
+export type GetResult<Cs extends ComponentOrPair[]> = FlattenTuple<Nullable<{ [K in keyof Cs]: InferValue<Cs[K]> }>>
 
 export class Entity {
 	constructor(protected readonly id: RawEntity) {}

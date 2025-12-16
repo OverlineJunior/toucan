@@ -1,13 +1,8 @@
-import { ComponentOrPair, Entity, GetParams, GetResult, UpToFour } from './entity'
-import { Id, Entity as RawEntity } from '@rbxts/jecs'
+import { ComponentOrPair, Entity, GetParams, GetResult } from './entity'
+import { Entity as RawEntity } from '@rbxts/jecs'
 import { world } from './world'
 import { Pair } from './relationship'
-
-export type InferComponent<C> = C extends Component<infer T> ? T : never
-
-export type InferComponents<Cs extends Component<unknown>[]> = { [K in keyof Cs]: InferComponent<Cs[K]> }
-
-export type RejectTag<T, Err> = T extends Component<undefined> ? Err : T
+import { UpToFour } from './util'
 
 export class Component<Value = undefined> extends Entity {
 	constructor(override readonly id: RawEntity<Value>) {

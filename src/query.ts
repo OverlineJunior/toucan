@@ -1,19 +1,10 @@
-import { Component, InferComponents } from './component'
-import { Entity } from './entity'
+import { Component } from './component'
+import { ComponentOrPair, Entity, InferValues } from './entity'
+import { UpToEight } from './util'
 import { world } from './world'
 import { Entity as RawEntity, Query as RawQuery } from '@rbxts/jecs'
 
-type UpToEight<T> =
-	| [T]
-	| [T, T]
-	| [T, T, T]
-	| [T, T, T, T]
-	| [T, T, T, T, T]
-	| [T, T, T, T, T, T]
-	| [T, T, T, T, T, T, T]
-	| [T, T, T, T, T, T, T, T]
-
-export type QueryResult<Cs extends UpToEight<Component<unknown>>> = [Entity, ...InferComponents<Cs>]
+export type QueryResult<Cs extends UpToEight<ComponentOrPair>> = [Entity, ...InferValues<Cs>]
 
 // We use the Flyweight pattern here to avoid creating a new Entity instance for
 // every entity in a query, almost doubling performance.
@@ -28,8 +19,8 @@ class ReusableEntity extends Entity {
 
 const sharedEntity = new ReusableEntity()
 
-export class Query<Cs extends UpToEight<Component<unknown>>> {
-	private readonly filters: ((entity: Entity, ...components: InferComponents<Cs>) => boolean)[] = []
+export class Query<Cs extends UpToEight<ComponentOrPair>> {
+	private readonly filters: ((entity: Entity, ...components: InferValues<Cs>) => boolean)[] = []
 	private readonly excludedIds: RawEntity[] = []
 
 	constructor(private readonly rawQuery: RawQuery<RawEntity[]>) {}
@@ -39,12 +30,12 @@ export class Query<Cs extends UpToEight<Component<unknown>>> {
 		return this
 	}
 
-	filter(predicate: (entity: Entity, ...components: InferComponents<Cs>) => boolean): Query<Cs> {
+	filter(predicate: (entity: Entity, ...components: InferValues<Cs>) => boolean): Query<Cs> {
 		this.filters.push(predicate)
 		return this
 	}
 
-	forEach(callback: (entity: Entity, ...componentValues: InferComponents<Cs>) => void): void {
+	forEach(callback: (entity: Entity, ...componentValues: InferValues<Cs>) => void): void {
 		const fn = callback as unknown as (e: Entity, ...args: unknown[]) => void
 		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
 
@@ -67,7 +58,7 @@ export class Query<Cs extends UpToEight<Component<unknown>>> {
 		}
 	}
 
-	map<R extends defined>(mapper: (entity: Entity, ...componentValues: InferComponents<Cs>) => R): R[] {
+	map<R extends defined>(mapper: (entity: Entity, ...componentValues: InferValues<Cs>) => R): R[] {
 		const results: R[] = []
 
 		this.forEach((e, ...components) => {
@@ -77,10 +68,7 @@ export class Query<Cs extends UpToEight<Component<unknown>>> {
 		return results
 	}
 
-	reduce<R>(
-		reducer: (accumulator: R, entity: Entity, ...componentValues: InferComponents<Cs>) => R,
-		initialValue: R,
-	): R {
+	reduce<R>(reducer: (accumulator: R, entity: Entity, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
 		let accumulator = initialValue
 
 		this.forEach((e, ...components) => {
@@ -91,7 +79,7 @@ export class Query<Cs extends UpToEight<Component<unknown>>> {
 	}
 
 	// We duplicate a lot of code from `forEach` here so can early exit, resulting in great performance improvements.
-	find(predicate: (entity: Entity, ...componentValues: InferComponents<Cs>) => boolean): QueryResult<Cs> | undefined {
+	find(predicate: (entity: Entity, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
 		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
 		const pred = predicate as unknown as (e: Entity, ...args: unknown[]) => boolean
 
@@ -174,7 +162,7 @@ export class Query<Cs extends UpToEight<Component<unknown>>> {
 	}
 }
 
-export function query<Cs extends UpToEight<Component<unknown>>>(...components: Cs): Query<Cs> {
-	const q = world.query(...components.map((c) => c.id))
+export function query<Cs extends UpToEight<ComponentOrPair>>(...components: Cs): Query<Cs> {
+	const q = world.query(...components.map((c) => (c as Component).id))
 	return new Query(q)
 }
