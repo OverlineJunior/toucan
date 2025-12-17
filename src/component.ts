@@ -33,7 +33,7 @@ export function component<Value = undefined>(): Component<Value> {
 }
 
 export const Wildcard = new Component<unknown>(RawWildcard)
-export const MetaComponent = new Component(RawComponent)
+export const ComponentTag = new Component(RawComponent)
 
 export class Resource<Value> extends Entity {
 	set(value: Value): this
