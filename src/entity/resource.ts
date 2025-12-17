@@ -1,7 +1,7 @@
 import { Component } from './component'
-import { Entity, ComponentOrPair, GetParams, GetResult } from './entity'
-import { UpToFour } from './util'
-import { world } from './world'
+import { Entity, ComponentOrPair, GetParams, GetResult } from './index'
+import { UpToFour } from '../util'
+import { world } from '../world'
 import { Pair } from './pair'
 
 export class Resource<Value> extends Entity {

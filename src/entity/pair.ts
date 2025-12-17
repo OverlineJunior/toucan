@@ -1,5 +1,5 @@
 import { Component } from './component'
-import { Entity } from './entity'
+import { Entity } from './index'
 import { pair as jecsPair, Entity as RawEntity } from '@rbxts/jecs'
 
 export class Pair<R> extends Component<R> {

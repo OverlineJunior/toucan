@@ -1,4 +1,4 @@
-import { Component } from './component'
+import { Component } from './entity/component'
 import { ComponentOrPair, Entity, InferValues } from './entity'
 import { UpToEight } from './util'
 import { world } from './world'

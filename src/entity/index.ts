@@ -1,8 +1,8 @@
 import { FlattenTuple, Nullable, Entity as RawEntity } from '@rbxts/jecs'
-import { world } from './world'
+import { world } from '../world'
 import { Component } from './component'
 import { Pair } from './pair'
-import { UpToFour } from './util'
+import { UpToFour } from '../util'
 
 export type ComponentOrPair<V = unknown> = Component<V>
 
