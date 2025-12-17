@@ -2,7 +2,9 @@ export { App } from './app'
 
 export { entity, Entity } from './entity'
 
-export { component, resource, Component, Resource, Wildcard, ComponentTag } from './component'
+export { component, Component, Wildcard, ComponentTag } from './component'
+
+export { resource, Resource } from './resource'
 
 export { pair, Pair } from './pair'
 
