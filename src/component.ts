@@ -1,8 +1,6 @@
-import { ComponentOrPair, Entity, GetParams, GetResult } from './entity'
+import { Entity } from './entity'
 import { Entity as RawEntity, Wildcard as RawWildcard, Component as RawComponent } from '@rbxts/jecs'
 import { world } from './world'
-import { Pair } from './pair'
-import { UpToFour } from './util'
 
 export class Component<Value = unknown> extends Entity {
 	constructor(override readonly id: RawEntity<Value>) {

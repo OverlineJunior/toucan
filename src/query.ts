@@ -2,7 +2,7 @@ import { Component } from './component'
 import { ComponentOrPair, Entity, InferValues } from './entity'
 import { UpToEight } from './util'
 import { world } from './world'
-import { Entity as RawEntity, Query as RawQuery, World } from '@rbxts/jecs'
+import { Entity as RawEntity, Query as RawQuery } from '@rbxts/jecs'
 
 export type QueryResult<Cs extends UpToEight<ComponentOrPair> | []> = [Entity, ...InferValues<Cs>]
 
