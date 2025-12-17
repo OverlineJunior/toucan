@@ -45,6 +45,21 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
 		const hasFilters = filters.size() > 0
 
+		// Empty queries are a special case where we want all entities.
+		if (this.isEmpty) {
+			world.entity_index.dense_array.forEach((e) => {
+				sharedEntity.id = e
+
+				if (hasFilters && !this.useFilters(sharedEntity)) {
+					return
+				}
+
+				fn(sharedEntity)
+			})
+
+			return
+		}
+
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
 		for (const [e, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery.without(...this.excludedIds)) {
 			sharedEntity.id = e
@@ -83,6 +98,22 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		const pred = predicate as unknown as (e: Entity, ...args: unknown[]) => boolean
 		const hasFilters = filters.size() > 0
 
+		if (this.isEmpty) {
+			for (const e of world.entity_index.dense_array) {
+				sharedEntity.id = e
+
+				if (hasFilters && !this.useFilters(sharedEntity)) {
+					continue
+				}
+
+				if (pred(sharedEntity)) {
+					return [new Entity(sharedEntity.id)] as unknown as QueryResult<Cs>
+				}
+			}
+
+			return undefined
+		}
+
 		for (const [e, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery.without(...this.excludedIds)) {
 			sharedEntity.id = e
 
@@ -91,17 +122,7 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 			}
 
 			if (pred(sharedEntity, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				return [
-					new Entity((sharedEntity as ReusableEntity).id),
-					v1,
-					v2,
-					v3,
-					v4,
-					v5,
-					v6,
-					v7,
-					v8,
-				] as unknown as QueryResult<Cs>
+				return [new Entity(sharedEntity.id), v1, v2, v3, v4, v5, v6, v7, v8] as unknown as QueryResult<Cs>
 			}
 		}
 	}
@@ -117,15 +138,15 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	}
 
 	private useFilters(
-		e: ReusableEntity,
-		v1: unknown,
-		v2: unknown,
-		v3: unknown,
-		v4: unknown,
-		v5: unknown,
-		v6: unknown,
-		v7: unknown,
-		v8: unknown,
+		e: Entity,
+		v1?: unknown,
+		v2?: unknown,
+		v3?: unknown,
+		v4?: unknown,
+		v5?: unknown,
+		v6?: unknown,
+		v7?: unknown,
+		v8?: unknown,
 	): boolean {
 		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
 
