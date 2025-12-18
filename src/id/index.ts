@@ -1,9 +1,9 @@
 import { world } from '../world'
-import { FlattenTuple, Nullable, Entity as JecsEntity } from '@rbxts/jecs'
-import { component, Component } from './component'
+import { Entity as JecsEntity } from '@rbxts/jecs'
+import { Component } from './component'
 import { Pair } from './pair'
-import { OneUpToFour } from '../util'
-import { entity, Entity } from './entity'
+import { Flatten, Nullable, OneUpToFour } from '../util'
+import { Entity } from './entity'
 
 export type RawId = JecsEntity
 
@@ -46,8 +46,8 @@ export class Id {
 			Args,
 			"❌ 'entity.get()' cannot be used with tag components/pairs. Use 'entity.has()' instead."
 		>
-	): FlattenTuple<Nullable<InferValues<Args>>> {
-		return world.get(this.id, ...(componentsOrPairs.map((c) => c['id']) as OneUpToFour<RawId>)) as FlattenTuple<
+	): Flatten<Nullable<InferValues<Args>>> {
+		return world.get(this.id, ...(componentsOrPairs.map((c) => c['id']) as OneUpToFour<RawId>)) as Flatten<
 			Nullable<InferValues<Args>>
 		>
 	}
@@ -115,7 +115,3 @@ export class Id {
 		world.delete(this.id)
 	}
 }
-
-const Name = component<string>()
-const bob = entity().set(Name, 'Bob')
-const name = bob.get(Name)

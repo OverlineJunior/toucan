@@ -1,4 +1,4 @@
-export type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTuple<T>
+export type Flatten<T extends unknown[]> = T extends [infer U] ? U : T
 
 export type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
 
