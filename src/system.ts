@@ -3,20 +3,31 @@ import { App } from './app'
 import { Plugin, ResolvedPlugin } from './plugin'
 
 /**
- * Systems are functions that operate on entities and components within a world.
+ * Systems are functions scheduled to run on specific _phases_. They usually
+ * operate on _entities_ queried by their _components_.
  *
- * They receive a `SystemContext` object when executed, which provides access to the
- * _world_, the _app_, and optionally the _plugin_ that registered the system.
- *
- * As an alternative to defining systems as functions that accept a `SystemContext`,
- * one can also define systems as closures typed as `System`.
+ * Every _system_ receives the running `app` instance as its first parameter,
+ * and an optional `plugin` instance as its second parameter, assuming the _system_
+ * was registered by a _plugin_.
  *
  * # Example
  *
  * ```ts
- * const greet: System = ({ world }) => {
- *     for (const [_entity, name] of world.query(Name)) {
- *         print(`Hello, ${name.value}!`)
+ * function applyGravity(app: App, plugin: GravityPlugin) {
+ *     query(Velocity).forEach((entity, velocity) => {
+ *         entity.set(Velocity, new Vector3(
+ *             velocity.X,
+ *             velocity.Y + plugin.gravity * useDeltaTime(),
+ *             velocity.Z,
+ *         ))
+ *     })
+ * }
+ *
+ * class GravityPlugin implements Plugin {
+ *     constructor(public gravity = -9.81) { }
+ *
+ *     build(app: App) {
+ *         app.addSystems(UPDATE, applyGravity)
  *     }
  * }
  * ```

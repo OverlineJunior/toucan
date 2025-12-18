@@ -17,7 +17,10 @@ import {
 } from './stdPhases'
 
 /**
- * The starting point of a Mesa application. It stores and exposes operations on _systems_, _plugins_ and _phases_.
+ * The starting point of a Mesa application.
+ *
+ * It stores and exposes operations on _systems_, _plugins_ and _phases_, allowing
+ * you to manipulate your _entities_ and _components_ in an organized manner.
  *
  * # Example
  *
@@ -25,15 +28,15 @@ import {
  * const Person = component()
  * const Name = component<string>()
  *
- * function spawnPeople({ world }: SystemContext) {
- *     world.spawn([Person], [Name, 'Alice'])
- *     world.spawn([Person], [Name, 'Bob'])
+ * function spawnPeople() {
+ * 	entity().set(Person).set(Name, 'Alice')
+ *     entity().set(Person).set(Name, 'Bob')
  * }
  *
- * function greet({ world }: SystemContext) {
- *     for (const [, name] of world.query(Name)) {
+ * function greet() {
+ *     query(Name).forEach((_, name) => {
  *         print(`Hello, ${name}!`)
- *     }
+ *     })
  * }
  *
  * const app = new App()
@@ -73,8 +76,8 @@ export class App {
 	 * # Example
 	 *
 	 * ```ts
-	 * function updateHealth(world: World) { }
-	 * function logPositions(world: World) { }
+	 * function updateHealth() { }
+	 * function logPositions() { }
 	 *
 	 * app.addSystems(UPDATE, updateHealth, logPositions)
 	 * ```
