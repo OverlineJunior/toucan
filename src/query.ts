@@ -30,16 +30,27 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		this.rawQuery = world.query(...components.map((c) => (c as Component).id))
 	}
 
+	/**
+	 * Excludes _entities_ with the specified _components_ from the _query_ results.
+	 */
 	without(...components: Component[]): Query<Cs> {
 		components.forEach((c) => this.excludedIds.push(c.id))
 		return this
 	}
 
+	/**
+	 * Adds a filter predicate to the _query_ that _entities_ must satisfy in order
+	 * to be included in the results.
+	 */
 	filter(predicate: (entity: Entity, ...components: InferValues<Cs>) => boolean): Query<Cs> {
 		this.filters.push(predicate)
 		return this
 	}
 
+	/**
+	 * Iterates over each _entity_ in the _query_, calling the provided `callback`
+	 * with the _entity_ and its corresponding _component_ values.
+	 */
 	forEach(callback: (entity: Entity, ...componentValues: InferValues<Cs>) => void): void {
 		const fn = callback as unknown as (e: Entity, ...args: unknown[]) => void
 		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
@@ -72,6 +83,15 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		}
 	}
 
+	/**
+	 * Maps each _entity_ in the _query_ to a new value using the provided
+	 * `mapper` function, returning an array of the resulting values.
+	 *
+	 * # Warning
+	 *
+	 * This method allocates memory for all _entities_ in the _query_ and should be
+	 * used sparingly in performance-critical code.
+	 */
 	map<R extends defined>(mapper: (entity: Entity, ...componentValues: InferValues<Cs>) => R): R[] {
 		const results: R[] = []
 
@@ -82,6 +102,10 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		return results
 	}
 
+	/**
+	 * Reduces the _entities_ in the _query_ to a single value using the provided
+	 * `reducer` function and `initialValue`.
+	 */
 	reduce<R>(reducer: (accumulator: R, entity: Entity, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
 		let accumulator = initialValue
 
@@ -93,6 +117,11 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	}
 
 	// We duplicate a lot of code from `forEach` here so can early exit, resulting in great performance improvements.
+	/**
+	 * Finds the first _entity_ in the _query_ that satisfies the provided
+	 * `predicate` function, returning the _entity_ and its corresponding
+	 * _component_ values, or `undefined` if no such _entity_ exists.
+	 */
 	find(predicate: (entity: Entity, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
 		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
 		const pred = predicate as unknown as (e: Entity, ...args: unknown[]) => boolean
@@ -127,6 +156,15 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		}
 	}
 
+	/**
+	 * Collects all _entities_ in the _query_, returning an array of the _entities_
+	 * and their corresponding _component_ values.
+	 *
+	 * # Warning
+	 *
+	 * This method allocates memory for all _entities_ in the _query_ and should be
+	 * used sparingly in performance-critical code.
+	 */
 	collect(): QueryResult<Cs>[] {
 		const results: [Entity, ...unknown[]][] = []
 
@@ -162,6 +200,35 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	}
 }
 
+/**
+ * Creates a new _query_ for _entities_ that have all of the specified
+ * _components_ or relationship _pairs_.
+ *
+ * Special cases:
+ * - Queries with no _components_ will match all _entities_;
+ * - The `Wildcard` standard component can be used in queries with relationship
+ * _pairs_ to match any `relation` or `target`.
+ *
+ * # Example
+ *
+ * ```ts
+ * // Query for entities with Position and Velocity components.
+ * const Position = component<Vector3>()
+ * const Velocity = component<Vector3>()
+ * query(Position, Velocity).forEach((entity, pos, vel) => { ... })
+ *
+ * // Query for all entities.
+ * query().forEach((entity) => { ... })
+ *
+ * // Query for entities that like `car`.
+ * const Likes = component()
+ * const car = entity()
+ * query(pair(Likes, car)).forEach((entity) => { ... })
+ *
+ * // Query for entities that like anything.
+ * query(pair(Likes, Wildcard)).forEach((entity) => { ... })
+ * ```
+ */
 export function query<Cs extends UpToEight<ComponentOrPair> | []>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)
 }
