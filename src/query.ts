@@ -1,40 +1,41 @@
-import { Component } from './entity/component'
-import { ComponentOrPair, Entity, InferValues } from './entity'
-import { UpToEight } from './util'
+import { Component } from './id/component'
+import { Id, RawId, InferValues } from './id'
+import { ZeroUpToEight } from './util'
 import { world } from './world'
-import { Entity as RawEntity, Query as RawQuery } from '@rbxts/jecs'
+import { Query as RawQuery } from '@rbxts/jecs'
+import { Pair } from './id/pair'
 
-export type QueryResult<Cs extends UpToEight<ComponentOrPair> | []> = [Entity, ...InferValues<Cs>]
+export type QueryResult<Cs extends ZeroUpToEight<Component | Pair> | []> = [Id, ...InferValues<Cs>]
 
 // We use the Flyweight pattern here to avoid creating a new Entity instance for
 // every entity in a query, almost doubling performance.
 //
 // This does come with the caveat of the user having to `collect` if they want
 // to retain references to entities outside of the scope of the query iteration.
-class ReusableEntity extends Entity {
-	constructor(public id: RawEntity = -1 as RawEntity) {
+class ReusableId extends Id {
+	constructor(public id: RawId = -1 as RawId) {
 		super(id)
 	}
 }
 
-const sharedEntity = new ReusableEntity()
+const sharedId = new ReusableId()
 
-export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
+export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 	private readonly isEmpty: boolean
-	private readonly rawQuery: RawQuery<RawEntity[]>
-	private readonly filters: ((entity: Entity, ...components: InferValues<Cs>) => boolean)[] = []
-	private readonly excludedIds: RawEntity[] = []
+	private readonly rawQuery: RawQuery<RawId[]>
+	private readonly filters: ((entity: Id, ...components: InferValues<Cs>) => boolean)[] = []
+	private readonly excludedIds: RawId[] = []
 
 	constructor(...components: Cs) {
 		this.isEmpty = components.size() === 0
-		this.rawQuery = world.query(...components.map((c) => (c as Component).id))
+		this.rawQuery = world.query(...components.map((c) => c['id']))
 	}
 
 	/**
 	 * Excludes _entities_ with the specified _components_ from the _query_ results.
 	 */
 	without(...components: Component[]): Query<Cs> {
-		components.forEach((c) => this.excludedIds.push(c.id))
+		components.forEach((c) => this.excludedIds.push(c['id']))
 		return this
 	}
 
@@ -42,7 +43,7 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	 * Adds a filter predicate to the _query_ that _entities_ must satisfy in order
 	 * to be included in the results.
 	 */
-	filter(predicate: (entity: Entity, ...components: InferValues<Cs>) => boolean): Query<Cs> {
+	filter(predicate: (entity: Id, ...components: InferValues<Cs>) => boolean): Query<Cs> {
 		this.filters.push(predicate)
 		return this
 	}
@@ -51,21 +52,21 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	 * Iterates over each _entity_ in the _query_, calling the provided `callback`
 	 * with the _entity_ and its corresponding _component_ values.
 	 */
-	forEach(callback: (entity: Entity, ...componentValues: InferValues<Cs>) => void): void {
-		const fn = callback as unknown as (e: Entity, ...args: unknown[]) => void
-		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
+	forEach(callback: (entity: Id, ...componentValues: InferValues<Cs>) => void): void {
+		const fn = callback as unknown as (e: Id, ...args: unknown[]) => void
+		const filters = this.filters as unknown as ((e: Id, ...args: unknown[]) => boolean)[]
 		const hasFilters = filters.size() > 0
 
 		// Empty queries are a special case where we want all entities.
 		if (this.isEmpty) {
 			world.entity_index.dense_array.forEach((e) => {
-				sharedEntity.id = e
+				sharedId.id = e
 
-				if (hasFilters && !this.useFilters(sharedEntity)) {
+				if (hasFilters && !this.useFilters(sharedId)) {
 					return
 				}
 
-				fn(sharedEntity)
+				fn(sharedId)
 			})
 
 			return
@@ -73,13 +74,13 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
 		for (const [e, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery.without(...this.excludedIds)) {
-			sharedEntity.id = e
+			sharedId.id = e
 
-			if (hasFilters && !this.useFilters(sharedEntity, v1, v2, v3, v4, v5, v6, v7, v8)) {
+			if (hasFilters && !this.useFilters(sharedId, v1, v2, v3, v4, v5, v6, v7, v8)) {
 				continue
 			}
 
-			fn(sharedEntity, v1, v2, v3, v4, v5, v6, v7, v8)
+			fn(sharedId, v1, v2, v3, v4, v5, v6, v7, v8)
 		}
 	}
 
@@ -92,7 +93,7 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	 * This method allocates memory for all _entities_ in the _query_ and should be
 	 * used sparingly in performance-critical code.
 	 */
-	map<R extends defined>(mapper: (entity: Entity, ...componentValues: InferValues<Cs>) => R): R[] {
+	map<R extends defined>(mapper: (entity: Id, ...componentValues: InferValues<Cs>) => R): R[] {
 		const results: R[] = []
 
 		this.forEach((e, ...components) => {
@@ -106,7 +107,7 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	 * Reduces the _entities_ in the _query_ to a single value using the provided
 	 * `reducer` function and `initialValue`.
 	 */
-	reduce<R>(reducer: (accumulator: R, entity: Entity, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
+	reduce<R>(reducer: (accumulator: R, entity: Id, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
 		let accumulator = initialValue
 
 		this.forEach((e, ...components) => {
@@ -122,21 +123,21 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	 * `predicate` function, returning the _entity_ and its corresponding
 	 * _component_ values, or `undefined` if no such _entity_ exists.
 	 */
-	find(predicate: (entity: Entity, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
-		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
-		const pred = predicate as unknown as (e: Entity, ...args: unknown[]) => boolean
+	find(predicate: (entity: Id, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
+		const filters = this.filters as unknown as ((e: Id, ...args: unknown[]) => boolean)[]
+		const pred = predicate as unknown as (e: Id, ...args: unknown[]) => boolean
 		const hasFilters = filters.size() > 0
 
 		if (this.isEmpty) {
 			for (const e of world.entity_index.dense_array) {
-				sharedEntity.id = e
+				sharedId.id = e
 
-				if (hasFilters && !this.useFilters(sharedEntity)) {
+				if (hasFilters && !this.useFilters(sharedId)) {
 					continue
 				}
 
-				if (pred(sharedEntity)) {
-					return [new Entity(sharedEntity.id)] as unknown as QueryResult<Cs>
+				if (pred(sharedId)) {
+					return [new Id(sharedId.id)] as unknown as QueryResult<Cs>
 				}
 			}
 
@@ -144,14 +145,14 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		}
 
 		for (const [e, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery.without(...this.excludedIds)) {
-			sharedEntity.id = e
+			sharedId.id = e
 
-			if (hasFilters && !this.useFilters(sharedEntity, v1, v2, v3, v4, v5, v6, v7, v8)) {
+			if (hasFilters && !this.useFilters(sharedId, v1, v2, v3, v4, v5, v6, v7, v8)) {
 				continue
 			}
 
-			if (pred(sharedEntity, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				return [new Entity(sharedEntity.id), v1, v2, v3, v4, v5, v6, v7, v8] as unknown as QueryResult<Cs>
+			if (pred(sharedId, v1, v2, v3, v4, v5, v6, v7, v8)) {
+				return [new Id(sharedId.id), v1, v2, v3, v4, v5, v6, v7, v8] as unknown as QueryResult<Cs>
 			}
 		}
 	}
@@ -166,17 +167,17 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 	 * used sparingly in performance-critical code.
 	 */
 	collect(): QueryResult<Cs>[] {
-		const results: [Entity, ...unknown[]][] = []
+		const results: [Id, ...unknown[]][] = []
 
 		this.forEach((e, ...components) => {
-			results.push([new Entity((e as ReusableEntity).id), ...components])
+			results.push([new Id(e['id']), ...components])
 		})
 
 		return results as QueryResult<Cs>[]
 	}
 
 	private useFilters(
-		e: Entity,
+		e: Id,
 		v1?: unknown,
 		v2?: unknown,
 		v3?: unknown,
@@ -186,7 +187,7 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
 		v7?: unknown,
 		v8?: unknown,
 	): boolean {
-		const filters = this.filters as unknown as ((e: Entity, ...args: unknown[]) => boolean)[]
+		const filters = this.filters as unknown as ((e: Id, ...args: unknown[]) => boolean)[]
 
 		let passed = true
 		for (const filter of filters) {
@@ -229,6 +230,6 @@ export class Query<Cs extends UpToEight<ComponentOrPair> | []> {
  * query(pair(Likes, Wildcard)).forEach((entity) => { ... })
  * ```
  */
-export function query<Cs extends UpToEight<ComponentOrPair> | []>(...components: Cs): Query<Cs> {
+export function query<Cs extends ZeroUpToEight<Component | Pair>>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)
 }

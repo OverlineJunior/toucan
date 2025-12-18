@@ -2,9 +2,10 @@ export type FlattenTuple<T extends unknown[]> = T extends [infer U] ? U : LuaTup
 
 export type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
 
-export type UpToFour<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T]
+export type OneUpToFour<T> = [T] | [T, T] | [T, T, T] | [T, T, T, T]
 
-export type UpToEight<T> =
+export type ZeroUpToEight<T> =
+	| []
 	| [T]
 	| [T, T]
 	| [T, T, T]

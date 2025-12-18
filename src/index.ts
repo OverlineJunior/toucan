@@ -1,12 +1,10 @@
 export { App } from './app'
 
-export { entity, Entity } from './entity'
-
-export { component, Component, Wildcard, ComponentTag } from './entity/component'
-
-export { resource, Resource } from './entity/resource'
-
-export { pair, Pair } from './entity/pair'
+export { Id } from './id'
+export { entity, Entity } from './id/entity'
+export { component, Component, Wildcard, ComponentTag } from './id/component'
+export { resource, Resource } from './id/resource'
+export { pair, Pair } from './id/pair'
 
 export { query, Query } from './query'
 
