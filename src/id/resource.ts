@@ -1,4 +1,4 @@
-import { Id, VALUE_SYMBOL } from '.'
+import { Id, RawId, VALUE_SYMBOL } from '.'
 import { world } from '../world'
 
 export class Resource<Value extends NonNullable<unknown>> extends Id {
@@ -13,7 +13,11 @@ export class Resource<Value extends NonNullable<unknown>> extends Id {
 		return this
 	}
 
-	// TODO! implement resource's own version of observable's changed.
+	changed(listener: (newValue: Value) => void): () => void {
+		return world.changed(this.id, (_a, _b, v) => {
+			listener(v as Value)
+		})
+	}
 }
 
 export function resource<Value extends NonNullable<unknown>>(value: Value): Resource<Value> {
