@@ -1,6 +1,5 @@
 <div align="center">
-  <img src="assets/toucan.png" width="350" />
-  <div>An opinionated Entity Component System framework for Roblox-TS</div>
+  <img src="assets/toucan.png" width="500" />
 </div>
 
 # Toucan
