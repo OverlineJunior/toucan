@@ -91,7 +91,12 @@ export class Id {
 	 */
 	set<V>(component: Component<V>, value: NoInfer<V>): this
 	set(componentOrPair: Id, value?: unknown) {
-		world.set(this.id, componentOrPair.id, value)
+		if (value === undefined) {
+			world.add(this.id, componentOrPair.id)
+		} else {
+			world.set(this.id, componentOrPair.id, value)
+		}
+
 		return this
 	}
 
