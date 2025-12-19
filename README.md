@@ -27,24 +27,37 @@ It was created as a way to remove the need of glueing together different ECS lib
 ## Example
 
 ```ts
+import { App, component, entity, pair, Plugin, query, STARTUP } from '@rbxts/toucan'
+
 const Name = component<string>()
 const Likes = component()
 
-const orange = entity().set(Name, 'Orange')
-const banana = entity().set(Name, 'Banana')
-const carrot = entity().set(Name, 'Carrot')
-
+const bob = entity().set(Name, 'Bob')
+const charlie = entity().set(Name, 'Charlie')
 const alice = entity()
     .set(Name, 'Alice')
-    .set(pair(Likes, orange))
-    .set(pair(Likes, banana))
-    .set(pair(Likes, carrot))
+    .set(pair(Likes, bob))
+    .set(pair(Likes, charlie))
 
-query(pair(Likes, Wildcard)).forEach((likesSomething) => {
-    const targets = likesSomething.targetsOf(Likes)
-    const targetNames = targets.map((t) => t.get(Name)!).join(', ')
-    print(`${likesSomething.get(Name)} likes ${targetNames}.`)
-})
+function greetInterests(_app: App, plugin?: GreetingPlugin) {
+    query(Name).forEach((e, name) => {
+        e.targetsOf(Likes).forEach((interest) => {
+            print(plugin!.greeting.format(name, interest.get(Name)!))
+        })
+    })
+}
+
+class GreetingPlugin implements Plugin {
+    constructor(public readonly greeting: string) {}
+
+    build(app: App) {
+        app.addSystems(STARTUP, greetInterests)
+    }
+}
+
+new App()
+	.addPlugins(new GreetingPlugin("Hey %s, nice to meet you! I'm %s."))
+	.run()
 ```
 
 # Testing Workflow
