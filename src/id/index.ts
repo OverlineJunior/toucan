@@ -1,7 +1,7 @@
 import { world } from '../world'
 import { Entity as JecsEntity } from '@rbxts/jecs'
-import { Component } from './component'
-import { Pair } from './pair'
+import { Component } from './observableId/component'
+import { Pair } from './observableId/pair'
 import { Flatten, Nullable, OneUpToFour } from '../util'
 import { Entity } from './entity'
 

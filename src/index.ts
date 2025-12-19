@@ -2,9 +2,9 @@ export { App } from './app'
 
 export { Id } from './id'
 export { entity, Entity } from './id/entity'
-export { component, Component, Wildcard, ComponentTag, ChildOf } from './id/component'
+export { component, Component, Wildcard, ComponentTag, ChildOf } from './id/observableId/component'
 export { resource, Resource } from './id/resource'
-export { pair, Pair } from './id/pair'
+export { pair, Pair } from './id/observableId/pair'
 
 export { query, Query } from './query'
 
@@ -32,20 +32,19 @@ export { useHookState } from './topoRuntime'
 
 // Global Jecs re-exports.
 // TODO! Items commented out need more thought before being re-exported.
-export {
-	// pair,
-	// pair_first,
-	// pair_second,
-	// Entity,
-	// InferComponent,
-	// InferComponents,
-	// Component,
-	// ChildOf,
-	// Wildcard,
-	// Rest,
-	// Exclusive,
-	// OnAdd,
-	// OnRemove,
-	// OnChange,
-	// Name,
-} from '@rbxts/jecs'
+export {} from // pair,
+// pair_first,
+// pair_second,
+// Entity,
+// InferComponent,
+// InferComponents,
+// Component,
+// ChildOf,
+// Wildcard,
+// Rest,
+// Exclusive,
+// OnAdd,
+// OnRemove,
+// OnChange,
+// Name,
+'@rbxts/jecs'

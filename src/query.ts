@@ -1,9 +1,9 @@
-import { Component } from './id/component'
+import { Component } from './id/observableId/component'
 import { Id, RawId, InferValues } from './id'
 import { ZeroUpToEight } from './util'
 import { world } from './world'
 import { Query as RawQuery } from '@rbxts/jecs'
-import { Pair } from './id/pair'
+import { Pair } from './id/observableId/pair'
 
 export type QueryResult<Cs extends ZeroUpToEight<Component | Pair> | []> = [Id, ...InferValues<Cs>]
 

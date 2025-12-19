@@ -1,5 +1,5 @@
-import { Id } from '.'
-import { world } from '../world'
+import { Id } from '..'
+import { world } from '../../world'
 import { Entity as RawId } from '@rbxts/jecs'
 
 export class ObservableId<Value> extends Id {

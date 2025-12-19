@@ -1,6 +1,6 @@
-import { VALUE_SYMBOL } from '.'
-import { world } from '../world'
-import { ObservableId } from './observableId'
+import { VALUE_SYMBOL } from '..'
+import { world } from '../../world'
+import { ObservableId } from '.'
 import { Component as JecsComponent, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
 
 export class Component<Value = unknown> extends ObservableId<Value> {

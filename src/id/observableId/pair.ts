@@ -1,7 +1,7 @@
 import { Component } from './component'
-import { Entity } from './entity'
-import { ObservableId } from './observableId'
-import { RawId, VALUE_SYMBOL } from '.'
+import { Entity } from '../entity'
+import { ObservableId } from '.'
+import { RawId, VALUE_SYMBOL } from '..'
 import { pair as jecsPair } from '@rbxts/jecs'
 
 export class Pair<Value = unknown> extends ObservableId<Value> {
