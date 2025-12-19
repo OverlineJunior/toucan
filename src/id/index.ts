@@ -170,14 +170,36 @@ export class Id {
 		return this
 	}
 
-	// TODO! Add documentation when we define parent/child relationships.
+	/**
+	 * Gets the parent (the target of a `ChildOf` relationship) for this _entity_, if such a relationship exists.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const alice = entity()
+	 * const charlie = entity().set(pair(ChildOf, alice))
+	 *
+	 * const parent = charlie.parent() // alice
+	 * ```
+	 */
 	parent(): Id | undefined {
 		const parentId = world.parent(this.id)
 		return parentId ? new Id(parentId) : undefined
 	}
 
-	// TODO! Add documentation when we define parent/child relationships.
-	// TODO! Consider performance implications.
+	/**
+	 * Gets all children (the sources of `ChildOf` relationships) for this _entity_.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const alice = entity()
+	 * const charlie = entity().set(pair(ChildOf, alice))
+	 * const bob = entity().set(pair(ChildOf,  alice))
+	 *
+	 * const children = alice.children() // [charlie, bob]
+	 * ```
+	 */
 	children(): Id[] {
 		const childIds = []
 		for (const id of world.children(this.id)) {
