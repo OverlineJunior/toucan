@@ -1,4 +1,4 @@
-import { useHookState } from "../topoRuntime"
+import { useHookState } from "../../topoRuntime"
 
 /**
  * Throttles execution based on a time interval in seconds.

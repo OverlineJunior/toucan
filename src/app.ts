@@ -2,7 +2,7 @@ import { Phase, Scheduler } from '@rbxts/planck'
 import { RunService } from '@rbxts/services'
 import { System, ResolvedSystem } from './system'
 import { Plugin, PluginRegistry, ResolvedPlugin } from './plugin'
-import { stdPlugins } from './stdPlugins'
+import { stdPlugins } from './std/plugins'
 import {
 	ABSOLUTE_FIRST,
 	ABSOLUTE_LAST,
@@ -14,7 +14,7 @@ import {
 	PRE_SIMULATION,
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
-} from './stdPhases'
+} from './std/phases'
 
 /**
  * The starting point of a Toucan application.

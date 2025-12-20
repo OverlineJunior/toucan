@@ -104,9 +104,9 @@ export const ABSOLUTE_FIRST = new Phase('ABSOLUTE_FIRST')
  */
 export const ABSOLUTE_LAST = new Phase('ABSOLUTE_LAST')
 
-export const STARTUP_PIPELINE = new Pipeline('STARTUPPipeline').insert(PRE_STARTUP).insert(STARTUP).insert(POST_STARTUP)
+export const STARTUP_PIPELINE = new Pipeline('STARTUP_PIPELINE').insert(PRE_STARTUP).insert(STARTUP).insert(POST_STARTUP)
 
-export const UPDATE_PIPELINE = new Pipeline('UPDATEPipeline')
+export const UPDATE_PIPELINE = new Pipeline('UPDATE_PIPELINE')
 	.insert(ABSOLUTE_FIRST)
 	.insert(FIRST)
 	.insert(PRE_UPDATE)

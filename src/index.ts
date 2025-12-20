@@ -2,7 +2,7 @@ export { App } from './app'
 
 export { Id } from './id'
 export { entity, Entity } from './id/entity'
-export { component, Component, Wildcard, ComponentTag, ChildOf } from './id/observableId/component'
+export { component, Component } from './id/observableId/component'
 export { resource, Resource } from './id/resource'
 export { pair, Pair } from './id/observableId/pair'
 
@@ -12,6 +12,12 @@ export { System } from './system'
 
 export { Plugin } from './plugin'
 
+export { Phase, Pipeline } from '@rbxts/planck'
+
+export { useHookState } from './topoRuntime'
+
+export { Wildcard, ComponentTag, ChildOf } from './std/ids'
+export { useDeltaTime, useThrottle, useThrottledMemo } from './std/hooks'
 export {
 	PRE_STARTUP,
 	STARTUP,
@@ -23,9 +29,4 @@ export {
 	LAST,
 	ABSOLUTE_FIRST,
 	ABSOLUTE_LAST,
-} from './stdPhases'
-
-export { Phase, Pipeline } from '@rbxts/planck'
-
-export { useDeltaTime, useThrottle, useThrottledMemo } from './stdHooks'
-export { useHookState } from './topoRuntime'
+} from './std/phases'

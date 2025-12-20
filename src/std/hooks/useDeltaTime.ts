@@ -1,4 +1,4 @@
-import { useHookState } from "../topoRuntime"
+import { useHookState } from "../../topoRuntime"
 
 /**
  * Returns the `os.clock()` time delta between the start of this and the last frame.

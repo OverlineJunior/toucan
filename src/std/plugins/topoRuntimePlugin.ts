@@ -1,7 +1,7 @@
-import { App } from '../app'
-import { Plugin } from '../plugin'
-import { ABSOLUTE_LAST } from '../stdPhases'
-import { cleanupHookState } from '../topoRuntime'
+import { App } from '../../app'
+import { Plugin } from '../../plugin'
+import { cleanupHookState } from '../../topoRuntime'
+import { ABSOLUTE_LAST } from '../phases'
 
 function topoRuntimeCleanup() {
 	cleanupHookState()
