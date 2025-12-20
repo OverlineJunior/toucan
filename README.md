@@ -39,10 +39,10 @@ const alice = entity()
     .set(pair(Likes, bob))
     .set(pair(Likes, charlie))
 
-function greetInterests(_app: App, plugin?: GreetingPlugin) {
+function greetInterests(greeting: string) {
     query(Name).forEach((e, name) => {
         e.targetsOf(Likes).forEach((interest) => {
-            print(plugin!.greeting.format(name, interest.get(Name)!))
+            print(greeting.format(interest.get(Name)!, name))
         })
     })
 }
@@ -51,7 +51,7 @@ class GreetingPlugin implements Plugin {
     constructor(public readonly greeting: string) {}
 
     build(app: App) {
-        app.addSystems(STARTUP, greetInterests)
+        app.addSystems(STARTUP, [greetInterests], this.greeting)
     }
 }
 

@@ -27,20 +27,20 @@ import { Plugin, ResolvedPlugin } from './plugin'
  *     constructor(public gravity = -9.81) { }
  *
  *     build(app: App) {
- *         app.addSystems(UPDATE, applyGravity)
+ *         app.addSystems(UPDATE, [applyGravity])
  *     }
  * }
  * ```
  */
-export type System<P extends Plugin> = (app: App, plugin?: P) => void | undefined
+export type System<Args extends unknown[]> = (...args: Args) => void | undefined
 
-export class ResolvedSystem<P extends Plugin = Plugin> {
-	readonly fn: System<P>
+export class ResolvedSystem<Args extends unknown[]> {
+	readonly fn: System<Args>
 	readonly phase: Phase
 	readonly name: string
 	readonly plugin?: ResolvedPlugin
 
-	constructor(system: System<P>, phase: Phase, plugin?: ResolvedPlugin) {
+	constructor(system: System<Args>, phase: Phase, plugin?: ResolvedPlugin) {
 		this.fn = system
 		this.phase = phase
 		this.name = debug.info(system, 'n')[0]!

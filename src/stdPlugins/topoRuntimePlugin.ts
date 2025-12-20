@@ -9,6 +9,6 @@ function topoRuntimeCleanup() {
 
 export class TopoRuntimePlugin implements Plugin {
 	build(app: App): void {
-		app.addSystems(ABSOLUTE_LAST, topoRuntimeCleanup)
+		app.addSystems(ABSOLUTE_LAST, [topoRuntimeCleanup])
 	}
 }

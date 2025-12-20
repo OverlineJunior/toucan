@@ -40,8 +40,8 @@ import {
  * }
  *
  * const app = new App()
- *     .addSystems(STARTUP, spawnPeople)
- *     .addSystems(UPDATE, greet)
+ *     .addSystems(STARTUP, [spawnPeople])
+ *     .addSystems(UPDATE, [greet])
  *     .run()
  * ```
  */
@@ -51,7 +51,7 @@ export class App {
 	 *
 	 * ⚠️ Only populated if debug mode is enabled with `app.setDebug(true)`.
 	 */
-	readonly systemDeltaTimes: Map<ResolvedSystem, number> = new Map()
+	readonly systemDeltaTimes: Map<ResolvedSystem<any[]>, number> = new Map()
 	private scheduler: Scheduler<[]> = new Scheduler()
 	private plugins: PluginRegistry = new PluginRegistry()
 	private running = false
@@ -73,22 +73,26 @@ export class App {
 	/**
 	 * Adds _systems_ to the app on a specified _phase_. They're ran automatically on `app.run()`.
 	 *
+	 * Additionally, any extra arguments passed to this method are forwarded to each _system_ when ran.
+	 *
 	 * # Example
 	 *
 	 * ```ts
-	 * function updateHealth() { }
-	 * function logPositions() { }
+	 * function fireGun(params: RaycastParams) { ... }
 	 *
-	 * app.addSystems(UPDATE, updateHealth, logPositions)
+	 * const params = new RaycastParams()
+	 * params.FilterType = Enum.RaycastFilterType.Exclude
+	 *
+	 * app.addSystems(UPDATE, [fireGun], params)
 	 * ```
 	 */
-	addSystems<P extends Plugin>(phase: Phase, ...systems: System<P>[]): this {
+	addSystems<Args extends unknown[]>(phase: Phase, systems: System<Args>[], ...args: Args): this {
 		const plugin = this.findPluginInCallStack()
 
 		systems.forEach((system) => {
-			const resolvedSystem = new ResolvedSystem(system, phase)
+			const resolvedSystem = new ResolvedSystem(system, phase, plugin)
 
-			let wrappedSystem = () => resolvedSystem.fn(this, plugin as unknown as P)
+			let wrappedSystem = () => resolvedSystem.fn(...args)
 
 			if (this.debugMode) {
 				const original = wrappedSystem
@@ -101,7 +105,7 @@ export class App {
 
 					const dt = os.clock() - t
 					debug.profileend()
-					this.systemDeltaTimes.set(resolvedSystem as ResolvedSystem<Plugin>, dt)
+					this.systemDeltaTimes.set(resolvedSystem, dt)
 				}
 			}
 
