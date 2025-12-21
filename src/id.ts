@@ -361,42 +361,42 @@ export abstract class Id {
 // ObservableId
 // -----------------------------------------------------------------------------
 
-// TODO! Reconsider the listeners' signature - the second parameter is useless, `removed`
-// ! lacks the value parameter, and `changed` could provide both old and new values.
 export abstract class ObservableId<Value> extends Id {
 	/**
 	 * Registers a listener that is called whenever this _component_ or _pair_
-	 * is added to any _entity_.
+	 * is added to any _id_.
 	 *
 	 * The returned function can be called to unregister the listener.
 	 */
-	added(listener: (e: Id, added: this, value: Value) => void): () => void {
-		return world.added(this.id, (rawE, rawComp, v) => {
-			listener(resolveId(rawE), resolveId(rawComp as RawId) as unknown as this, v as Value)
+	added(listener: (id: Id, value: Value) => void): () => void {
+		return world.added(this.id, (rawId, _, v) => {
+			listener(resolveId(rawId), v as Value)
 		})
 	}
 
 	/**
 	 * Registers a listener that is called whenever this _component_ or _pair_
-	 * is removed from any _entity_.
+	 * is removed from any _id_.
 	 *
 	 * The returned function can be called to unregister the listener.
 	 */
-	removed(listener: (e: Id, removed: this) => void): () => void {
-		return world.removed(this.id, (rawE, rawComp) => {
-			listener(resolveId(rawE), resolveId(rawComp as RawId) as unknown as this)
+	removed(listener: (id: Id, value: Value) => void): () => void {
+		return world.removed(this.id, (rawId) => {
+			const v = world.get(rawId, this.id)
+			listener(resolveId(rawId), v as Value)
 		})
 	}
 
+	// TODO! Should also provide the old value.
 	/**
 	 * Registers a listener that is called whenever the value of this _component_
-	 * or _pair_ changes on any _entity_.
+	 * or _pair_ changes on any _id_.
 	 *
 	 * The returned function can be called to unregister the listener.
 	 */
-	changed(listener: (e: Id, changed: this, value: Value) => void): () => void {
-		return world.changed(this.id, (rawE, rawComp, v) => {
-			listener(resolveId(rawE), resolveId(rawComp as RawId) as unknown as this, v as Value)
+	changed(listener: (e: Id, newValue: Value) => void): () => void {
+		return world.changed(this.id, (rawId, _, newV) => {
+			listener(resolveId(rawId), newV as Value)
 		})
 	}
 }
