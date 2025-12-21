@@ -167,7 +167,7 @@ export abstract class Id {
 			"❌ 'entity.get()' cannot be used with tag components/pairs. Use 'entity.has()' instead."
 		>
 	): Flatten<Nullable<InferValues<Args>>> {
-		return world.get(this.id, ...(componentsOrPairs.map((c) => c['id']) as OneUpToFour<RawId>)) as Flatten<
+		return world.get(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>)) as Flatten<
 			Nullable<InferValues<Args>>
 		>
 	}
@@ -195,14 +195,14 @@ export abstract class Id {
 	 * ```
 	 */
 	has(...componentsOrPairs: OneUpToFour<Component | Pair>): boolean {
-		return world.has(this.id, ...(componentsOrPairs.map((c) => c['id']) as OneUpToFour<RawId>))
+		return world.has(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>))
 	}
 
 	/**
 	 * Removes a _component_ or relationship _pair_ from this _entity_.
 	 */
 	remove(componentOrPair: Component | Pair): this {
-		world.remove(this.id, componentOrPair['id'])
+		world.remove(this.id, componentOrPair.id)
 		return this
 	}
 

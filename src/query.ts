@@ -18,14 +18,14 @@ export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 
 	constructor(...components: Cs) {
 		this.isEmpty = components.size() === 0
-		this.rawQuery = world.query(...components.map((c) => c['id']))
+		this.rawQuery = world.query(...components.map((c) => c.id))
 	}
 
 	/**
 	 * Excludes _entities_ with the specified _components_ from the _query_ results.
 	 */
 	without(...components: Component[]): Query<Cs> {
-		components.forEach((c) => this.excludedIds.push(c['id']))
+		components.forEach((c) => this.excludedIds.push(c.id))
 		return this
 	}
 
