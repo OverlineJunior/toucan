@@ -564,17 +564,33 @@ export function pair(relation: Entity | Component, target: Entity | Component) {
 // Standard Ids
 // -----------------------------------------------------------------------------
 
+/**
+ * Built-in _component_ used to distinguish _ids_ that are _entities_.
+ *
+ * Automatically assigned to all _entities_ created via the `entity` function.
+ */
 export const EntityTag = component()
 
 // Jecs already has a tag given to all components, so we reuse it.
 /**
- * Built-in _component_ used to distinguish _entities_ that are _components_.
+ * Built-in _component_ used to distinguish _ids_ that are _components_.
+ *
  * Automatically assigned to all _components_ created via the `component` function.
  */
 export const ComponentTag = new Component<undefined>(JecsComponentTag)
 
+/**
+ * Built-in _component_ used to distinguish _ids_ that are _resources_.
+ *
+ * Automatically assigned to all _resources_ created via the `resource` function.
+ */
 export const ResourceTag = component()
 
+/**
+ * Built-in _component_ used to distinguish _ids_ that are relationship _pairs_.
+ *
+ * Automatically assigned to all _pairs_ created via the `pair` function.
+ */
 export const PairTag = component()
 
 /**
