@@ -36,14 +36,13 @@ export type RejectTags<Ts extends Id[], Err extends string> = {
 }
 
 /**
- * Returns the appropriate handle for the given raw ID.
- *
- * Errors if the raw ID does not exist in the world or is invalid (does not
- * reference an entity, component, resource or pair).
+ * Returns the appropriate handle for `rawId`, or `undefined` if `rawId` does not
+ * exist in the world or is invalid (does not reference an _entity_, _component_,
+ * _resource_ or _pair_).
 */
-export function resolveId(rawId: RawId): Entity | Component | Resource | Pair {
+export function resolveId(rawId: RawId): Entity | Component | Resource | Pair | undefined {
 	if (!world.contains(rawId)) {
-		error(`Could not resolve raw ID #${rawId} - does not exist in the world.`)
+		return
 	}
 
 	if (world.has(rawId, EntityTag.id)) {
@@ -54,8 +53,6 @@ export function resolveId(rawId: RawId): Entity | Component | Resource | Pair {
 		return new Resource(rawId)
 	} else if (world.has(rawId, PairTag.id)) {
 		return new Pair(rawId)
-	} else {
-		error(`Could not resolve raw ID #${rawId} - is not one of Entity, Component, Resource or Pair.`)
 	}
 }
 
@@ -232,7 +229,7 @@ export abstract class Id {
 	 */
 	parent(): Id | undefined {
 		const parentId = world.parent(this.id)
-		return parentId ? resolveId(parentId) : undefined
+		return parentId ? resolveId(parentId)! : undefined
 	}
 
 	/**
@@ -251,7 +248,7 @@ export abstract class Id {
 	children(): Id[] {
 		const childIds = []
 		for (const id of world.children(this.id)) {
-			childIds.push(resolveId(id))
+			childIds.push(resolveId(id)!)
 		}
 		return childIds
 	}
@@ -287,7 +284,7 @@ export abstract class Id {
 	 */
 	targetOf(relation: Component, nth = 0): Id | undefined {
 		const t = world.target(this.id, relation.id, nth)
-		return t ? resolveId(t) : undefined
+		return t ? resolveId(t)! : undefined
 	}
 
 	/**
@@ -315,7 +312,7 @@ export abstract class Id {
 			if (!t) {
 				break
 			}
-			targets.push(resolveId(t))
+			targets.push(resolveId(t)!)
 			nth++
 		}
 
@@ -370,17 +367,17 @@ export abstract class ObservableId<Value> extends Id {
 	 */
 	added(listener: (id: Id, value: Value) => void): () => void {
 		return world.added(this.id, (rawId, _, v) => {
-			listener(resolveId(rawId), v as Value)
+			listener(resolveId(rawId)!, v as Value)
 		})
 	}
 
 	/**
 	 * Registers a listener that is called whenever this _component_ or _pair_
-	 * is removed from any _id_.
+	 * is removed from any _id_ (which might not exist anymore).
 	 *
 	 * The returned function can be called to unregister the listener.
 	 */
-	removed(listener: (id: Id, value: Value) => void): () => void {
+	removed(listener: (id: Id | undefined, value: Value) => void): () => void {
 		return world.removed(this.id, (rawId) => {
 			const v = world.get(rawId, this.id)
 			listener(resolveId(rawId), v as Value)
@@ -396,7 +393,7 @@ export abstract class ObservableId<Value> extends Id {
 	 */
 	changed(listener: (e: Id, newValue: Value) => void): () => void {
 		return world.changed(this.id, (rawId, _, newV) => {
-			listener(resolveId(rawId), newV as Value)
+			listener(resolveId(rawId)!, newV as Value)
 		})
 	}
 }

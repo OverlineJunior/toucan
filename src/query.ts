@@ -50,7 +50,7 @@ export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 		// Empty queries are a special case where we want all entities.
 		if (this.isEmpty) {
 			world.entity_index.dense_array.forEach((rawId) => {
-				const id = resolveId(rawId)
+				const id = resolveId(rawId)!
 
 				if (hasFilters && !this.useFilters(id)) {
 					return
@@ -64,7 +64,7 @@ export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
 		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery.without(...this.excludedIds)) {
-			const id = resolveId(rawId)
+			const id = resolveId(rawId)!
 
 			if (hasFilters && !this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) {
 				continue
@@ -120,7 +120,7 @@ export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 
 		if (this.isEmpty) {
 			for (const rawId of world.entity_index.dense_array) {
-				const id = resolveId(rawId)
+				const id = resolveId(rawId)!
 
 				if (hasFilters && !this.useFilters(id)) {
 					continue
@@ -135,7 +135,7 @@ export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 		}
 
 		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery.without(...this.excludedIds)) {
-			const id = resolveId(rawId)
+			const id = resolveId(rawId)!
 
 			if (hasFilters && !this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) {
 				continue
@@ -160,7 +160,7 @@ export class Query<Cs extends ZeroUpToEight<Component | Pair> | []> {
 		const results: [Id, ...unknown[]][] = []
 
 		this.forEach((e, ...components) => {
-			results.push([resolveId(e['id']), ...components])
+			results.push([resolveId(e.id)!, ...components])
 		})
 
 		return results as QueryResult<Cs>[]
