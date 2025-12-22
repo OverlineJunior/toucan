@@ -6,15 +6,14 @@ import { useHookState } from "../../topoRuntime"
  * # Example
  *
  * ```ts
- * function liftAll(world: World) {
- *     for (const [entity, position] of world.query(Position)) {
- *         world.set(
- * 		    entity,
+ * function liftAll() {
+ *     query(Position).forEach((id, position) => {
+ *         id.set(
  *             Position,
  * 			// We use delta time to make the movement frame-independent.
  *             position.add(Vector3.up).mul(useDeltaTime())
  *         )
- *     }
+ *     })
  * }
  * ```
  */

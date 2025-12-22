@@ -11,13 +11,13 @@ import { useHookState } from "../../topoRuntime"
  * # Example
  *
  * ```ts
- * function logNames(world: World) {
- *     for (const [_, name] of world.query(Name)) {
+ * function logNames() {
+ *     query(Name).forEach((_, name) => {
  *         // This log will only occur once per second per unique name.
  *         if (useThrottle(1, name)) {
- * 		    print(`Throttled log: ${name.value}`)
- * 	    }
- *     }
+ *             print(`Throttled log: ${name.value}`)
+ *         }
+ *     })
  * }
  * ```
  */
