@@ -36,6 +36,20 @@ export class Query<Cs extends (Component | Pair)[]> {
 		return this
 	}
 
+	/**
+	 * Queries for _ids_ that have had `component` added since the last frame,
+	 * with its value appended to the _query_'s results.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * function unitSelectionSound() {
+	 *     query(Unit).added(Selected).forEach((unitId) => {
+	 *         // Play sound effect.
+	 *     })
+	 * }
+	 * ```
+	 */
 	added<C extends Component>(component: C): Query<[...Cs, C]> {
 		const prevPair = jecsPair(Previous.id, component.id)
 		this.includedIds.push(component.id)
@@ -46,6 +60,20 @@ export class Query<Cs extends (Component | Pair)[]> {
 		return this as unknown as Query<[...Cs, C]>
 	}
 
+	/**
+	 * Queries for _ids_ that have had `component` removed since the last frame,
+	 * with its previous value appended to the _query_'s results.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * function handleItemUnequipped() {
+	 *     query(Item).removed(Equipped).forEach((itemId) => {
+	 *         // Handle item being unequipped.
+	 *     })
+	 * }
+	 * ```
+	 */
 	removed<C extends Component>(component: C): Query<[...Cs, C]> {
 		const prevPair = jecsPair(Previous.id, component.id)
 		this.includedIds.push(prevPair as unknown as RawId)
@@ -56,6 +84,20 @@ export class Query<Cs extends (Component | Pair)[]> {
 		return this as unknown as Query<[...Cs, C]>
 	}
 
+	/**
+	 * Queries for _ids_ that have had `component` changed since the last frame,
+	 * with both its new and previous values appended to the _query_'s results.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * function updateHealthBar() {
+	 *     query(Client).changed(Health).forEach((clientId, _, newHealth, oldHealth) => {
+	 *         // Update health bar UI.
+	 *     })
+	 * }
+	 * ```
+	 */
 	changed<C extends Component>(component: C): Query<[...Cs, C, C]> {
 		// Indices where these values will appear in the arguments list.
 		const newIndex = this.includedIds.size()
