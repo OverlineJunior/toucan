@@ -46,6 +46,8 @@ export class Pair<Value = unknown> {
  *     .set(pair(End, Position), new Vector3(10, 0, 0))
  * ```
  */
+export function pair<R>(relation: Component<R>, target: Component<undefined>): Pair<R>
+export function pair<T>(relation: Component<undefined>, target: Component<T>): Pair<T>
 export function pair<R, T>(relation: Component<R>, target: Component<T>): Pair<R>
 export function pair<R>(relation: Component<R>, target: Entity): Pair<R>
 export function pair<T>(relation: Entity, target: Component<T>): Pair<T>
