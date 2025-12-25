@@ -3,7 +3,6 @@ export { App } from './app'
 export {
 	RawId,
 	Id,
-	ObservableId,
 	entity,
 	Entity,
 	component,

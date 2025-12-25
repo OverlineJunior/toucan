@@ -343,50 +343,6 @@ export abstract class Id {
 }
 
 // -----------------------------------------------------------------------------
-// ObservableId
-// -----------------------------------------------------------------------------
-
-export abstract class ObservableId<Value> extends Id {
-	/**
-	 * Registers a listener that is called whenever this _component_ or _pair_
-	 * is added to any _id_.
-	 *
-	 * The returned function can be called to unregister the listener.
-	 */
-	added(listener: (id: Id, value: Value) => void): () => void {
-		return world.added(this.id, (rawId, _, v) => {
-			listener(resolveId(rawId)!, v as Value)
-		})
-	}
-
-	/**
-	 * Registers a listener that is called whenever this _component_ or _pair_
-	 * is removed from any _id_ (which might not exist anymore).
-	 *
-	 * The returned function can be called to unregister the listener.
-	 */
-	removed(listener: (id: Id | undefined, value: Value) => void): () => void {
-		return world.removed(this.id, (rawId) => {
-			const v = world.get(rawId, this.id)
-			listener(resolveId(rawId), v as Value)
-		})
-	}
-
-	// TODO! Should also provide the old value.
-	/**
-	 * Registers a listener that is called whenever the value of this _component_
-	 * or _pair_ changes on any _id_.
-	 *
-	 * The returned function can be called to unregister the listener.
-	 */
-	changed(listener: (e: Id, newValue: Value) => void): () => void {
-		return world.changed(this.id, (rawId, _, newV) => {
-			listener(resolveId(rawId)!, newV as Value)
-		})
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Entity
 // -----------------------------------------------------------------------------
 
@@ -476,7 +432,7 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 // Component
 // -----------------------------------------------------------------------------
 
-export class Component<Value = unknown> extends ObservableId<Value> {
+export class Component<Value = unknown> extends Id {
 	declare [VALUE_SYMBOL]: Value
 }
 
