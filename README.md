@@ -53,7 +53,9 @@ class GreetingPlugin implements Plugin {
 	}
 }
 
-new App().addPlugins(new GreetingPlugin("Hey %s, nice to meet you! I'm %s.")).run()
+new App()
+    .addPlugins(new GreetingPlugin("Hey %s, nice to meet you! I'm %s."))
+    .run()
 ```
 
 # Testing Workflow
