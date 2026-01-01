@@ -2,13 +2,13 @@ export { App } from './app'
 
 export {
 	RawId,
-	Id,
+	Handle,
 	entity,
-	Entity,
+	EntityHandle,
 	component,
-	Component,
+	ComponentHandle,
 	resource,
-	Resource,
+	ResourceHandle,
 	EntityTag,
 	ComponentTag,
 	ResourceTag,

@@ -1,4 +1,4 @@
-import { Component, Entity, RawId, VALUE_SYMBOL } from './id'
+import { ComponentHandle, EntityHandle, RawId, VALUE_SYMBOL } from './id'
 import { pair as jecsPair } from '@rbxts/jecs'
 
 export class Pair<Value = unknown> {
@@ -46,12 +46,12 @@ export class Pair<Value = unknown> {
  *     .set(pair(End, Position), new Vector3(10, 0, 0))
  * ```
  */
-export function pair<R>(relation: Component<R>, target: Component<undefined>): Pair<R>
-export function pair<T>(relation: Component<undefined>, target: Component<T>): Pair<T>
-export function pair<R, T>(relation: Component<R>, target: Component<T>): Pair<R>
-export function pair<R>(relation: Component<R>, target: Entity): Pair<R>
-export function pair<T>(relation: Entity, target: Component<T>): Pair<T>
-export function pair(relation: Entity, target: Entity): Pair<undefined>
-export function pair(relation: Entity | Component, target: Entity | Component) {
+export function pair<R>(relation: ComponentHandle<R>, target: ComponentHandle<undefined>): Pair<R>
+export function pair<T>(relation: ComponentHandle<undefined>, target: ComponentHandle<T>): Pair<T>
+export function pair<R, T>(relation: ComponentHandle<R>, target: ComponentHandle<T>): Pair<R>
+export function pair<R>(relation: ComponentHandle<R>, target: EntityHandle): Pair<R>
+export function pair<T>(relation: EntityHandle, target: ComponentHandle<T>): Pair<T>
+export function pair(relation: EntityHandle, target: EntityHandle): Pair<undefined>
+export function pair(relation: EntityHandle | ComponentHandle, target: EntityHandle | ComponentHandle) {
 	return new Pair(jecsPair(relation.id, target.id) as unknown as RawId)
 }

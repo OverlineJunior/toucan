@@ -1,12 +1,12 @@
 import { App } from '../../app'
-import { Component } from '../../id'
+import { ComponentHandle } from '../../id'
 import { pair } from '../../pair'
 import { Observed, Previous, query } from '../../query'
 import { ABSOLUTE_LAST } from '../phases'
 
 function syncObserved() {
 	query(Observed).forEach((_id) => {
-		const comp = _id as Component
+		const comp = _id as ComponentHandle
 		const prevPair = pair(Previous, comp)
 
 		// Added.

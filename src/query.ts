@@ -1,29 +1,28 @@
-import { Id, RawId, InferValues, resolveId, Component, component } from './id'
+import { Handle, RawId, InferValues, resolveId, ComponentHandle, component } from './id'
 import { Pair } from './pair'
 import { ZeroUpToEight } from './util'
 import { world } from './world'
 import { pair as jecsPair } from '@rbxts/jecs'
 
-export type QueryResult<Cs extends (Component | Pair)[]> = [Id, ...InferValues<Cs>]
+export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [Handle, ...InferValues<Cs>]
 
 export const Previous = component('Previous')
 export const Observed = component('Observed')
 
-export class Query<Cs extends (Component | Pair)[]> {
+export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
-	private readonly filters: ((entity: Id, ...components: InferValues<Cs>) => boolean)[] = []
-	private observerCallback?: (id: Id, ...values: unknown[]) => void = undefined
-
+	private readonly filters: ((entity: Handle, ...components: InferValues<Cs>) => boolean)[] = []
+	private observerCallback?: (id: Handle, ...values: unknown[]) => void = undefined
 	constructor(...components: Cs) {
-		this.includedIds = components.map((c) => (c as Component).id) as RawId[]
+		this.includedIds = components.map((c) => (c as ComponentHandle).id) as RawId[]
 	}
 
 	/**
 	 * Excludes _entities_ with the specified _components_ from the _query_ results.
 	 */
-	without(...components: (Component | Pair)[]): Query<Cs> {
-		components.forEach((c) => this.excludedIds.push((c as Component).id))
+	without(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+		components.forEach((c) => this.excludedIds.push((c as ComponentHandle).id))
 		return this
 	}
 
@@ -31,7 +30,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * Adds a filter predicate to the _query_ that _entities_ must satisfy in order
 	 * to be included in the results.
 	 */
-	filter(predicate: (id: Id, ...components: InferValues<Cs>) => boolean): Query<Cs> {
+	filter(predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean): Query<Cs> {
 		this.filters.push(predicate)
 		return this
 	}
@@ -50,7 +49,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * }
 	 * ```
 	 */
-	added<C extends Component>(component: C): Query<[...Cs, C]> {
+	added<C extends ComponentHandle>(component: C): Query<[...Cs, C]> {
 		const prevPair = jecsPair(Previous.id, component.id)
 		this.includedIds.push(component.id)
 		this.excludedIds.push(prevPair as unknown as RawId)
@@ -74,7 +73,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * }
 	 * ```
 	 */
-	removed<C extends Component>(component: C): Query<[...Cs, C]> {
+	removed<C extends ComponentHandle>(component: C): Query<[...Cs, C]> {
 		const prevPair = jecsPair(Previous.id, component.id)
 		this.includedIds.push(prevPair as unknown as RawId)
 		this.excludedIds.push(component.id)
@@ -98,7 +97,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * }
 	 * ```
 	 */
-	changed<C extends Component>(component: C): Query<[...Cs, C, C]> {
+	changed<C extends ComponentHandle>(component: C): Query<[...Cs, C, C]> {
 		// Indices where these values will appear in the arguments list.
 		const newIndex = this.includedIds.size()
 		const oldIndex = newIndex + 1
@@ -122,9 +121,9 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * Iterates over each _id_ in the _query_, calling the provided `callback`
 	 * with the _id_ and its corresponding _component_ values.
 	 */
-	forEach(callback: (id: Id, ...componentValues: InferValues<Cs>) => void): void {
-		const fn = callback as unknown as (e: Id, ...args: unknown[]) => void
-		const filters = this.filters as unknown as ((e: Id, ...args: unknown[]) => boolean)[]
+	forEach(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): void {
+		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
+		const filters = this.filters as unknown as ((e: Handle, ...args: unknown[]) => boolean)[]
 		const hasFilters = filters.size() > 0
 
 		// Empty queries are a special case where we want all entities.
@@ -172,7 +171,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * This method allocates memory for all _ids_ in the _query_ and should be
 	 * used sparingly in performance-critical code.
 	 */
-	map<R extends defined>(mapper: (id: Id, ...componentValues: InferValues<Cs>) => R): R[] {
+	map<R extends defined>(mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R): R[] {
 		const results: R[] = []
 
 		this.forEach((e, ...components) => {
@@ -186,7 +185,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * Reduces the _entities_ in the _query_ to a single value using the provided
 	 * `reducer` function and `initialValue`.
 	 */
-	reduce<R>(reducer: (accumulator: R, entity: Id, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
+	reduce<R>(reducer: (accumulator: R, entity: Handle, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
 		let accumulator = initialValue
 
 		this.forEach((e, ...components) => {
@@ -202,9 +201,9 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * `predicate` function, returning the _id_ and its corresponding
 	 * _component_ values, or `undefined` if no such _id_ exists.
 	 */
-	find(predicate: (id: Id, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
-		const filters = this.filters as unknown as ((e: Id, ...args: unknown[]) => boolean)[]
-		const pred = predicate as unknown as (e: Id, ...args: unknown[]) => boolean
+	find(predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
+		const filters = this.filters as unknown as ((e: Handle, ...args: unknown[]) => boolean)[]
+		const pred = predicate as unknown as (e: Handle, ...args: unknown[]) => boolean
 		const hasFilters = filters.size() > 0
 
 		if (this.includedIds.size() === 0) {
@@ -252,7 +251,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	 * used sparingly in performance-critical code.
 	 */
 	collect(): QueryResult<Cs>[] {
-		const results: [Id, ...unknown[]][] = []
+		const results: [Handle, ...unknown[]][] = []
 
 		this.forEach((e, ...components) => {
 			results.push([resolveId(e.id)!, ...components])
@@ -262,7 +261,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 	}
 
 	private useFilters(
-		e: Id,
+		e: Handle,
 		v1?: unknown,
 		v2?: unknown,
 		v3?: unknown,
@@ -272,7 +271,7 @@ export class Query<Cs extends (Component | Pair)[]> {
 		v7?: unknown,
 		v8?: unknown,
 	): boolean {
-		const filters = this.filters as unknown as ((e: Id, ...args: unknown[]) => boolean)[]
+		const filters = this.filters as unknown as ((e: Handle, ...args: unknown[]) => boolean)[]
 
 		let passed = true
 		for (const filter of filters) {
@@ -286,6 +285,6 @@ export class Query<Cs extends (Component | Pair)[]> {
 	}
 }
 
-export function query<Cs extends ZeroUpToEight<Component | Pair>>(...components: Cs): Query<Cs> {
+export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)
 }

@@ -23,17 +23,17 @@ export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
  * exist in the world or is invalid (does not reference an _entity_, _component_
  * or _resource_).
  */
-export function resolveId(rawId: RawId): Entity | Component | Resource | undefined {
+export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | undefined {
 	if (!world.contains(rawId)) {
 		return
 	}
 
 	if (world.has(rawId, EntityTag.id)) {
-		return new Entity(rawId)
+		return new EntityHandle(rawId)
 	} else if (world.has(rawId, ComponentTag.id)) {
-		return new Component(rawId)
+		return new ComponentHandle(rawId)
 	} else if (world.has(rawId, ResourceTag.id)) {
-		return new Resource(rawId)
+		return new ResourceHandle(rawId)
 	}
 
 	// Some standard Jecs entities might not have any of the tags above.
@@ -42,10 +42,10 @@ export function resolveId(rawId: RawId): Entity | Component | Resource | undefin
 }
 
 // -----------------------------------------------------------------------------
-// Id
+// Handle
 // -----------------------------------------------------------------------------
 
-export abstract class Id {
+export abstract class Handle {
 	constructor(
 		/**
 		 * The raw Jecs ID underlying this handle.
@@ -102,7 +102,7 @@ export abstract class Id {
 	 * myEntity.set(IsAlive)
 	 * ```
 	 */
-	set(tagComponent: Component<undefined>): this
+	set(tagComponent: ComponentHandle<undefined>): this
 	/**
 	 * Assigns a _component_ and its _value_ to this _id_.
 	 *
@@ -117,12 +117,12 @@ export abstract class Id {
 	 *     .set(Stamina, 50)
 	 * ```
 	 */
-	set<V>(component: Component<V>, value: NoInfer<V>): this
-	set(componentOrPair: Component | Pair, value?: unknown) {
+	set<V>(component: ComponentHandle<V>, value: NoInfer<V>): this
+	set(componentOrPair: ComponentHandle | Pair, value?: unknown) {
 		if (value === undefined) {
-			world.add(this.id, (componentOrPair as Component).id)
+			world.add(this.id, (componentOrPair as ComponentHandle).id)
 		} else {
-			world.set(this.id, (componentOrPair as Component).id, value)
+			world.set(this.id, (componentOrPair as ComponentHandle).id, value)
 		}
 
 		return this
@@ -146,10 +146,10 @@ export abstract class Id {
 	 * const carCount = myEntity.get(pair(Owns, car))
 	 * ```
 	 */
-	get<Args extends OneUpToFour<Component | Pair>>(...componentsOrPairs: Args): Flatten<Nullable<InferValues<Args>>> {
+	get<Args extends OneUpToFour<ComponentHandle | Pair>>(...componentsOrPairs: Args): Flatten<Nullable<InferValues<Args>>> {
 		return world.get(
 			this.id,
-			...(componentsOrPairs.map((c) => (c as Component).id) as OneUpToFour<RawId>),
+			...(componentsOrPairs.map((c) => (c as ComponentHandle).id) as OneUpToFour<RawId>),
 		) as Flatten<Nullable<InferValues<Args>>>
 	}
 
@@ -175,15 +175,15 @@ export abstract class Id {
 	 * }
 	 * ```
 	 */
-	has(...componentsOrPairs: OneUpToFour<Component | Pair>): boolean {
-		return world.has(this.id, ...(componentsOrPairs.map((c) => (c as Component).id) as OneUpToFour<RawId>))
+	has(...componentsOrPairs: OneUpToFour<ComponentHandle | Pair>): boolean {
+		return world.has(this.id, ...(componentsOrPairs.map((c) => (c as ComponentHandle).id) as OneUpToFour<RawId>))
 	}
 
 	/**
 	 * Removes a _component_ or relationship _pair_ from this _id_.
 	 */
-	remove(componentOrPair: Component | Pair): this {
-		world.remove(this.id, (componentOrPair as Component).id)
+	remove(componentOrPair: ComponentHandle | Pair): this {
+		world.remove(this.id, (componentOrPair as ComponentHandle).id)
 		return this
 	}
 
@@ -199,12 +199,12 @@ export abstract class Id {
 	/**
 	 * Returns all _components_ associated with this _id_.
 	 */
-	components(): Component[] {
-		const components: Component[] = []
+	components(): ComponentHandle[] {
+		const components: ComponentHandle[] = []
 		const record = world.entity_index.sparse_array[this.id - 1]
 
 		record.archetype.types.forEach((compId) => {
-			components.push(new Component(compId as RawId))
+			components.push(new ComponentHandle(compId as RawId))
 		})
 
 		return components
@@ -229,7 +229,7 @@ export abstract class Id {
 	 * const parent = charlie.parent() // alice
 	 * ```
 	 */
-	parent(): Id | undefined {
+	parent(): Handle | undefined {
 		const parentId = world.parent(this.id)
 		return parentId ? resolveId(parentId)! : undefined
 	}
@@ -247,7 +247,7 @@ export abstract class Id {
 	 * const children = alice.children() // [charlie, bob]
 	 * ```
 	 */
-	children(): Id[] {
+	children(): Handle[] {
 		const childIds = []
 		for (const id of world.children(this.id)) {
 			childIds.push(resolveId(id)!)
@@ -284,7 +284,7 @@ export abstract class Id {
 	 * const maybeCharlie = alice.targetOf(Likes, 1)
 	 * ```
 	 */
-	targetOf(relation: Component, nth = 0): Id | undefined {
+	targetOf(relation: ComponentHandle, nth = 0): Handle | undefined {
 		const t = world.target(this.id, relation.id, nth)
 		return t ? resolveId(t)! : undefined
 	}
@@ -306,8 +306,8 @@ export abstract class Id {
 	 * const likedEntities = alice.targetsOf(Likes)
 	 * ```
 	 */
-	targetsOf(relation: Component): Id[] {
-		const targets: Id[] = []
+	targetsOf(relation: ComponentHandle): Handle[] {
+		const targets: Handle[] = []
 		let nth = 0
 		while (true) {
 			const t = world.target(this.id, relation.id, nth)
@@ -360,7 +360,7 @@ export abstract class Id {
 // Entity
 // -----------------------------------------------------------------------------
 
-export class Entity extends Id {
+export class EntityHandle extends Handle {
 	declare protected readonly __brand: 'entity'
 }
 
@@ -369,16 +369,16 @@ export class Entity extends Id {
  *
  * Additionally, a `label` can be provided for easier identification during debugging.
  */
-export function entity(label?: string): Entity {
+export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
-	return new Entity(rawId).set(EntityTag).set(Label, label ?? `Entity #${rawId}`)
+	return new EntityHandle(rawId).set(EntityTag).set(Label, label ?? `Entity #${rawId}`)
 }
 
 // -----------------------------------------------------------------------------
 // Resource
 // -----------------------------------------------------------------------------
 
-export class Resource<Value = unknown> extends Id {
+export class ResourceHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
 
 	/**
@@ -435,18 +435,18 @@ export class Resource<Value = unknown> extends Id {
  * }
  * ```
  */
-export function resource<Value extends NonNullable<unknown>>(value: Value, label?: string): Resource<Value> {
+export function resource<Value extends NonNullable<unknown>>(value: Value, label?: string): ResourceHandle<Value> {
 	const rawId = world.component<Value>()
 	world.set(rawId, rawId, value)
 
-	return new Resource<Value>(rawId).set(ResourceTag).set(Label, label ?? `Resource #${rawId}`)
+	return new ResourceHandle<Value>(rawId).set(ResourceTag).set(Label, label ?? `Resource #${rawId}`)
 }
 
 // -----------------------------------------------------------------------------
 // Component
 // -----------------------------------------------------------------------------
 
-export class Component<Value = unknown> extends Id {
+export class ComponentHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
 }
 
@@ -465,9 +465,9 @@ export class Component<Value = unknown> extends Id {
  * const IsAlive = component()
  * ```
  */
-export function component<Value = undefined>(label?: string): Component<Value> {
+export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	return new Component<Value>(rawId).set(ComponentTag).set(Label, label ?? `Component #${rawId}`)
+	return new ComponentHandle<Value>(rawId).set(ComponentTag).set(Label, label ?? `Component #${rawId}`)
 }
 
 // -----------------------------------------------------------------------------
@@ -482,14 +482,14 @@ export function component<Value = undefined>(label?: string): Component<Value> {
  *
  * Automatically assigned to all _ids_ created by their respective functions.
  */
-export const Label = new Component<string>(world.component())
+export const Label = new ComponentHandle<string>(world.component())
 
 /**
  * Built-in _component_ used to distinguish _ids_ that are _components_.
  *
  * Automatically assigned to all _components_ created via the `component` function.
  */
-export const ComponentTag = new Component<undefined>(world.component())
+export const ComponentTag = new ComponentHandle<undefined>(world.component())
 
 // Sadly, we have to set these manually based on `world.component()`.
 
@@ -524,7 +524,7 @@ export const ResourceTag = component('ResourceTag')
  * query(pair(ChildOf, Wildcard)).forEach((child, parent) => { ... })
  * ```
  */
-export const Wildcard = new Component<unknown>(JecsWildcard)
+export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
 Wildcard.set(ComponentTag)
 Wildcard.set(Label, 'Wildcard')
 
@@ -541,6 +541,6 @@ Wildcard.set(Label, 'Wildcard')
  * const bob = entity().set(pair(ChildOf, alice))
  * ```
  */
-export const ChildOf = new Component<undefined>(JecsChildOf)
+export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
 ChildOf.set(ComponentTag)
 ChildOf.set(Label, 'ChildOf')
