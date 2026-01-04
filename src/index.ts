@@ -9,9 +9,14 @@ export {
 	ComponentHandle,
 	resource,
 	ResourceHandle,
+	system,
+	plugin,
 	EntityTag,
 	ComponentTag,
 	ResourceTag,
+	// Temporary.
+	System as SystemTag,
+	Plugin as PluginTag,
 	Wildcard,
 	ChildOf,
 } from './id'

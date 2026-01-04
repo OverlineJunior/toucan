@@ -2,6 +2,8 @@ import { world } from './world'
 import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
 import { Flatten, Nullable, OneUpToFour } from './util'
 import type { Pair } from './pair'
+import { Phase } from '@rbxts/planck'
+import { App } from './app'
 
 /**
  * The raw Jecs ID type.
@@ -23,7 +25,7 @@ export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
  * exist in the world or is invalid (does not reference an _entity_, _component_
  * or _resource_).
  */
-export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | undefined {
+export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | SystemHandle | undefined {
 	if (!world.contains(rawId)) {
 		return
 	}
@@ -34,6 +36,8 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 		return new ComponentHandle(rawId)
 	} else if (world.has(rawId, ResourceTag.id)) {
 		return new ResourceHandle(rawId)
+	} else if (world.has(rawId, System.id)) {
+		return new SystemHandle(rawId)
 	}
 
 	// Some standard Jecs entities might not have any of the tags above.
@@ -60,6 +64,33 @@ export abstract class Handle {
 		public readonly id: RawId,
 	) {}
 
+	/**
+	 * Assigns a _tag component_ to this _id_.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const IsAlive = component()
+	 *
+	 * myEntity.set(IsAlive)
+	 * ```
+	 */
+	set(tagComponent: ComponentHandle<undefined>): this
+	/**
+	 * Assigns a _component_ and its _value_ to this _id_.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * const Health = component<number>()
+	 * const Stamina = component<number>()
+	 *
+	 * entity()
+	 *     .set(Health, 100)
+	 *     .set(Stamina, 50)
+	 * ```
+	 */
+	set<V>(component: ComponentHandle<V>, value: NoInfer<V>): this
 	/**
 	 * Assigns a relationship _pair_ to this _id_.
 	 *
@@ -91,33 +122,6 @@ export abstract class Handle {
 	 * ```
 	 */
 	set<P extends Pair>(pair: P, value: InferValue<P>): this
-	/**
-	 * Assigns a _tag component_ to this _id_.
-	 *
-	 * # Example
-	 *
-	 * ```ts
-	 * const IsAlive = component()
-	 *
-	 * myEntity.set(IsAlive)
-	 * ```
-	 */
-	set(tagComponent: ComponentHandle<undefined>): this
-	/**
-	 * Assigns a _component_ and its _value_ to this _id_.
-	 *
-	 * # Example
-	 *
-	 * ```ts
-	 * const Health = component<number>()
-	 * const Stamina = component<number>()
-	 *
-	 * entity()
-	 *     .set(Health, 100)
-	 *     .set(Stamina, 50)
-	 * ```
-	 */
-	set<V>(component: ComponentHandle<V>, value: NoInfer<V>): this
 	set(componentOrPair: ComponentHandle | Pair, value?: unknown) {
 		if (value === undefined) {
 			world.add(this.id, (componentOrPair as ComponentHandle).id)
@@ -146,7 +150,9 @@ export abstract class Handle {
 	 * const carCount = myEntity.get(pair(Owns, car))
 	 * ```
 	 */
-	get<Args extends OneUpToFour<ComponentHandle | Pair>>(...componentsOrPairs: Args): Flatten<Nullable<InferValues<Args>>> {
+	get<Args extends OneUpToFour<ComponentHandle | Pair>>(
+		...componentsOrPairs: Args
+	): Flatten<Nullable<InferValues<Args>>> {
 		return world.get(
 			this.id,
 			...(componentsOrPairs.map((c) => (c as ComponentHandle).id) as OneUpToFour<RawId>),
@@ -471,6 +477,50 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 }
 
 // -----------------------------------------------------------------------------
+// System
+// -----------------------------------------------------------------------------
+
+export class SystemHandle extends Handle {
+	declare protected readonly __brand: 'system'
+}
+
+export function system<Args extends unknown[]>(
+	callback: (...args: Args) => void,
+	phase: Phase,
+	args?: Args,
+): SystemHandle {
+	const rawId = world.entity()
+	const inferredName = debug.info(callback, 'n')[0]!
+
+	return new SystemHandle(rawId)
+		.set(System, {
+			callback: callback as (...args: unknown[]) => void,
+			phase,
+			args: args ?? [],
+		})
+		.set(Label, inferredName === '' ? `System #${rawId}` : inferredName)
+}
+
+// -----------------------------------------------------------------------------
+// Plugin
+// -----------------------------------------------------------------------------
+
+export class PluginHandle extends Handle {
+	declare protected readonly __brand: 'plugin'
+}
+
+export function plugin(build: (app: App) => void): PluginHandle {
+	const rawId = world.entity()
+	const inferredName = debug.info(build, 'n')[0]!
+
+	return new PluginHandle(rawId)
+		.set(Plugin, {
+			build,
+		})
+		.set(Label, inferredName === '' ? `Plugin #${rawId}` : inferredName)
+}
+
+// -----------------------------------------------------------------------------
 // Standard Ids
 // -----------------------------------------------------------------------------
 
@@ -512,6 +562,16 @@ export const EntityTag = component('EntityTag')
  * Automatically assigned to all _resources_ created via the `resource` function.
  */
 export const ResourceTag = component('ResourceTag')
+
+export const System = component<{
+	callback: (...args: unknown[]) => void
+	phase: Phase
+	args: unknown[]
+}>('System')
+
+export const Plugin = component<{
+	build: (app: App) => void
+}>('Plugin')
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
