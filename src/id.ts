@@ -3,7 +3,6 @@ import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf 
 import { Flatten, Nullable, OneUpToFour } from './util'
 import type { Pair } from './pair'
 import { Phase } from '@rbxts/planck'
-import { App } from './app'
 
 /**
  * The raw Jecs ID type.
@@ -509,14 +508,12 @@ export class PluginHandle extends Handle {
 	declare protected readonly __brand: 'plugin'
 }
 
-export function plugin(build: (app: App) => void): PluginHandle {
+export function plugin(build: () => void): PluginHandle {
 	const rawId = world.entity()
 	const inferredName = debug.info(build, 'n')[0]!
 
 	return new PluginHandle(rawId)
-		.set(Plugin, {
-			build,
-		})
+		.set(Plugin, { build })
 		.set(Label, inferredName === '' ? `Plugin #${rawId}` : inferredName)
 }
 
@@ -570,7 +567,7 @@ export const System = component<{
 }>('System')
 
 export const Plugin = component<{
-	build: (app: App) => void
+	build: () => void
 }>('Plugin')
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.

@@ -1,4 +1,4 @@
-export { App } from './app'
+export { run } from './scheduler'
 
 export {
 	RawId,
@@ -23,11 +23,7 @@ export {
 
 export { query, Query } from './query'
 
-export { System } from './system'
-
 export { pair, Pair } from './pair'
-
-export { Plugin } from './plugin'
 
 export { Phase, Pipeline } from '@rbxts/planck'
 
