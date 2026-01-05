@@ -24,7 +24,7 @@ export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
  * exist in the world or is invalid (does not reference an _entity_, _component_
  * or _resource_).
  */
-export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | SystemHandle | undefined {
+export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | undefined {
 	if (!world.contains(rawId)) {
 		return
 	}
@@ -33,15 +33,24 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 		return new EntityHandle(rawId)
 	} else if (world.has(rawId, Component.id)) {
 		return new ComponentHandle(rawId)
-	} else if (world.has(rawId, ResourceTag.id)) {
+	} else if (world.has(rawId, Resource.id)) {
 		return new ResourceHandle(rawId)
-	} else if (world.has(rawId, System.id)) {
-		return new SystemHandle(rawId)
 	}
 
 	// Some standard Jecs entities might not have any of the tags above.
 	// Those are intentionally ignored in a way that the user doesn't even know
 	// about them.
+}
+
+function isInternal(): boolean {
+	const callerScriptPath = debug.info(2, 's')[0]
+	return callerScriptPath.match('node_modules.@rbxts.toucan')[0] !== undefined
+}
+
+function isThirdParty(): boolean {
+	const callerScriptPath = debug.info(2, 's')[0]
+	warn(callerScriptPath)
+	return callerScriptPath.match('node_modules')[0] !== undefined
 }
 
 // -----------------------------------------------------------------------------
@@ -376,7 +385,15 @@ export class EntityHandle extends Handle {
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
-	return new EntityHandle(rawId).set(Entity).set(Label, label ?? `Entity #${rawId}`)
+	const handle = new EntityHandle(rawId).set(Entity).set(Label, label ?? `Entity #${rawId}`)
+
+	if (isInternal()) {
+		handle.set(Internal)
+	} else if (isThirdParty()) {
+		handle.set(ThirdParty)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
@@ -444,7 +461,15 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 	const rawId = world.component<Value>()
 	world.set(rawId, rawId, value)
 
-	return new ResourceHandle<Value>(rawId).set(ResourceTag).set(Label, label ?? `Resource #${rawId}`)
+	const handle = new ResourceHandle<Value>(rawId).set(Resource).set(Label, label ?? `Resource #${rawId}`)
+
+	if (isInternal()) {
+		handle.set(Internal)
+	} else if (isThirdParty()) {
+		handle.set(ThirdParty)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
@@ -472,57 +497,72 @@ export class ComponentHandle<Value = unknown> extends Handle {
  */
 export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	return new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
+	const handle = new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
+
+	if (isInternal()) {
+		handle.set(Internal)
+	} else if (isThirdParty()) {
+		handle.set(ThirdParty)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
 // System
 // -----------------------------------------------------------------------------
 
-export class SystemHandle extends Handle {
-	declare protected readonly __brand: 'system'
-}
-
 export function system<Args extends unknown[]>(
 	callback: (...args: Args) => void,
 	phase: Phase,
 	args?: Args,
-): SystemHandle {
-	const rawId = world.entity()
+): EntityHandle {
+	const handle = entity()
 	const inferredName = debug.info(callback, 'n')[0]!
 
-	return new SystemHandle(rawId)
+	handle
 		.set(System, {
 			callback: callback as (...args: unknown[]) => void,
 			phase,
 			args: args ?? [],
 		})
-		.set(Label, inferredName === '' ? `System #${rawId}` : inferredName)
+		.set(Label, inferredName === '' ? `System #${handle.id}` : inferredName)
+
+	if (isInternal()) {
+		handle.set(Internal)
+	} else if (isThirdParty()) {
+		handle.set(ThirdParty)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
 // Plugin
 // -----------------------------------------------------------------------------
 
-export class PluginHandle extends Handle {
-	declare protected readonly __brand: 'plugin'
-}
-
-export function plugin(build: () => void): PluginHandle {
-	const rawId = world.entity()
+export function plugin(build: () => void): EntityHandle {
+	const handle = entity()
 	const inferredName = debug.info(build, 'n')[0]!
 
-	return new PluginHandle(rawId)
-		.set(Plugin, { build })
-		.set(Label, inferredName === '' ? `Plugin #${rawId}` : inferredName)
+	handle.set(Plugin, { build }).set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
+
+	if (isInternal()) {
+		handle.set(Internal)
+	} else if (isThirdParty()) {
+		handle.set(ThirdParty)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
-// Standard Ids
+// Bootstrapped Standards
 // -----------------------------------------------------------------------------
 
-// `Label` and `Component` must be defined first, because `world.component()` needs
-// them to properly create components.
+export const Internal = new ComponentHandle<undefined>(world.component())
+
+export const ThirdParty = new ComponentHandle<undefined>(world.component())
 
 /**
  * Built-in _component_ used to assign a label to an _id_.
@@ -538,38 +578,6 @@ export const Label = new ComponentHandle<string>(world.component())
  */
 export const Component = new ComponentHandle<undefined>(world.component())
 
-// Sadly, we have to set these manually based on `world.component()`.
-
-Label.set(Component)
-Label.set(Label, 'Label')
-
-Component.set(Component)
-Component.set(Label, 'Component')
-
-/**
- * Built-in _component_ used to distinguish _ids_ that are _entities_.
- *
- * Automatically assigned to all _entities_ created via the `entity` function.
- */
-export const Entity = component('Entity')
-
-/**
- * Built-in _component_ used to distinguish _ids_ that are _resources_.
- *
- * Automatically assigned to all _resources_ created via the `resource` function.
- */
-export const ResourceTag = component('ResourceTag')
-
-export const System = component<{
-	callback: (...args: unknown[]) => void
-	phase: Phase
-	args: unknown[]
-}>('System')
-
-export const Plugin = component<{
-	build: () => void
-}>('Plugin')
-
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
  * Built-in _component__ meant to be used as a wildcard in relationship queries.
@@ -582,8 +590,6 @@ export const Plugin = component<{
  * ```
  */
 export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
-Wildcard.set(Component)
-Wildcard.set(Label, 'Wildcard')
 
 // TODO! Consider making a standard system that removes previous ChildOf
 // ! relationships when setting a new one.
@@ -599,5 +605,55 @@ Wildcard.set(Label, 'Wildcard')
  * ```
  */
 export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
+
+Internal.set(Component)
+Internal.set(Label, 'Internal')
+Internal.set(Internal)
+
+ThirdParty.set(Component)
+ThirdParty.set(Label, 'ThirdParty')
+ThirdParty.set(Internal)
+
+Label.set(Component)
+Label.set(Label, 'Label')
+Label.set(Internal)
+
+Component.set(Component)
+Component.set(Label, 'Component')
+Component.set(Internal)
+
+Wildcard.set(Component)
+Wildcard.set(Label, 'Wildcard')
+Wildcard.set(Internal)
+
 ChildOf.set(Component)
 ChildOf.set(Label, 'ChildOf')
+ChildOf.set(Internal)
+
+// -----------------------------------------------------------------------------
+// Standards
+// -----------------------------------------------------------------------------
+
+/**
+ * Built-in _component_ used to distinguish _ids_ that are _entities_.
+ *
+ * Automatically assigned to all _entities_ created via the `entity` function.
+ */
+export const Entity = component('Entity')
+
+/**
+ * Built-in _component_ used to distinguish _ids_ that are _resources_.
+ *
+ * Automatically assigned to all _resources_ created via the `resource` function.
+ */
+export const Resource = component('Resource')
+
+export const System = component<{
+	callback: (...args: unknown[]) => void
+	phase: Phase
+	args: unknown[]
+}>('System')
+
+export const Plugin = component<{
+	build: () => void
+}>('Plugin')

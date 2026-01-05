@@ -13,7 +13,7 @@ export {
 	plugin,
 	Entity,
 	Component,
-	ResourceTag,
+	Resource,
 	System,
 	Plugin,
 	Wildcard,
