@@ -11,12 +11,11 @@ export {
 	ResourceHandle,
 	system,
 	plugin,
-	EntityTag,
-	ComponentTag,
+	Entity,
+	Component,
 	ResourceTag,
-	// Temporary.
-	System as SystemTag,
-	Plugin as PluginTag,
+	System,
+	Plugin,
 	Wildcard,
 	ChildOf,
 } from './id'

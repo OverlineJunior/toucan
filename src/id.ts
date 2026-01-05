@@ -29,9 +29,9 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 		return
 	}
 
-	if (world.has(rawId, EntityTag.id)) {
+	if (world.has(rawId, Entity.id)) {
 		return new EntityHandle(rawId)
-	} else if (world.has(rawId, ComponentTag.id)) {
+	} else if (world.has(rawId, Component.id)) {
 		return new ComponentHandle(rawId)
 	} else if (world.has(rawId, ResourceTag.id)) {
 		return new ResourceHandle(rawId)
@@ -376,7 +376,7 @@ export class EntityHandle extends Handle {
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
-	return new EntityHandle(rawId).set(EntityTag).set(Label, label ?? `Entity #${rawId}`)
+	return new EntityHandle(rawId).set(Entity).set(Label, label ?? `Entity #${rawId}`)
 }
 
 // -----------------------------------------------------------------------------
@@ -472,7 +472,7 @@ export class ComponentHandle<Value = unknown> extends Handle {
  */
 export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	return new ComponentHandle<Value>(rawId).set(ComponentTag).set(Label, label ?? `Component #${rawId}`)
+	return new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
 }
 
 // -----------------------------------------------------------------------------
@@ -521,7 +521,7 @@ export function plugin(build: () => void): PluginHandle {
 // Standard Ids
 // -----------------------------------------------------------------------------
 
-// `Label` and `ComponentTag` must be defined first, because `world.component()` needs
+// `Label` and `Component` must be defined first, because `world.component()` needs
 // them to properly create components.
 
 /**
@@ -536,22 +536,22 @@ export const Label = new ComponentHandle<string>(world.component())
  *
  * Automatically assigned to all _components_ created via the `component` function.
  */
-export const ComponentTag = new ComponentHandle<undefined>(world.component())
+export const Component = new ComponentHandle<undefined>(world.component())
 
 // Sadly, we have to set these manually based on `world.component()`.
 
-Label.set(ComponentTag)
+Label.set(Component)
 Label.set(Label, 'Label')
 
-ComponentTag.set(ComponentTag)
-ComponentTag.set(Label, 'ComponentTag')
+Component.set(Component)
+Component.set(Label, 'Component')
 
 /**
  * Built-in _component_ used to distinguish _ids_ that are _entities_.
  *
  * Automatically assigned to all _entities_ created via the `entity` function.
  */
-export const EntityTag = component('EntityTag')
+export const Entity = component('Entity')
 
 /**
  * Built-in _component_ used to distinguish _ids_ that are _resources_.
@@ -582,7 +582,7 @@ export const Plugin = component<{
  * ```
  */
 export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
-Wildcard.set(ComponentTag)
+Wildcard.set(Component)
 Wildcard.set(Label, 'Wildcard')
 
 // TODO! Consider making a standard system that removes previous ChildOf
@@ -599,5 +599,5 @@ Wildcard.set(Label, 'Wildcard')
  * ```
  */
 export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
-ChildOf.set(ComponentTag)
+ChildOf.set(Component)
 ChildOf.set(Label, 'ChildOf')
