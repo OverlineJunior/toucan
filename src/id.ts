@@ -526,6 +526,7 @@ export function system<Args extends unknown[]>(
 			phase,
 			args: args ?? [],
 			scheduled: false,
+			lastDeltaTime: 0,
 		})
 		.set(Label, inferredName === '' ? `System #${handle.id}` : inferredName)
 
@@ -654,6 +655,7 @@ export const System = component<{
 	phase: Phase
 	args: unknown[]
 	scheduled: boolean
+	lastDeltaTime: number
 }>('System')
 
 export const Plugin = component<{

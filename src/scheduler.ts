@@ -31,12 +31,21 @@ export function run() {
 			})
 	}
 
-	// TODO! Implement argument passing and delta time for debuggers.
 	function scheduleSystems() {
 		query(System)
 			.filter((_, system) => !system.scheduled)
-			.forEach((_, system) => {
-				scheduler.addSystem(system.callback, system.phase)
+			.forEach((e, system) => {
+				const wrappedCallback = () => {
+					debug.profilebegin(e.label())
+					const t = os.clock()
+
+					system.callback(...system.args)
+
+					debug.profileend()
+					system.lastDeltaTime = os.clock() - t
+				}
+
+				scheduler.addSystem(wrappedCallback, system.phase)
 				system.scheduled = true
 			})
 	}
