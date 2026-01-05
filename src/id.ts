@@ -545,7 +545,15 @@ export function plugin(build: () => void): EntityHandle {
 	const handle = entity()
 	const inferredName = debug.info(build, 'n')[0]!
 
-	handle.set(Plugin, { build }).set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
+	handle
+		.set(Plugin, {
+			build: () => {
+				build()
+				handle.set(Plugin, { build, built: true })
+			},
+			built: false
+		})
+		.set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -656,4 +664,5 @@ export const System = component<{
 
 export const Plugin = component<{
 	build: () => void
+	built: boolean
 }>('Plugin')
