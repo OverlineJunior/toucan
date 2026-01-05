@@ -525,6 +525,7 @@ export function system<Args extends unknown[]>(
 			callback: callback as (...args: unknown[]) => void,
 			phase,
 			args: args ?? [],
+			scheduled: false,
 		})
 		.set(Label, inferredName === '' ? `System #${handle.id}` : inferredName)
 
@@ -545,15 +546,7 @@ export function plugin(build: () => void): EntityHandle {
 	const handle = entity()
 	const inferredName = debug.info(build, 'n')[0]!
 
-	handle
-		.set(Plugin, {
-			build: () => {
-				build()
-				handle.set(Plugin, { build, built: true })
-			},
-			built: false
-		})
-		.set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
+	handle.set(Plugin, { build, built: false }).set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -660,6 +653,7 @@ export const System = component<{
 	callback: (...args: unknown[]) => void
 	phase: Phase
 	args: unknown[]
+	scheduled: boolean
 }>('System')
 
 export const Plugin = component<{

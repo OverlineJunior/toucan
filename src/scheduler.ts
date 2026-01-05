@@ -21,21 +21,32 @@ export function run() {
 		.insert(PRE_SIMULATION, RunService, 'PreSimulation')
 		.insert(POST_SIMULATION, RunService, 'PostSimulation')
 
-	query(Plugin).forEach((_, plugin) => {
-		plugin.build()
-	})
-
-	function schedulePlugins() {
+	// TODO! Implement safety checks regarding third-party plugins and user precedence.
+	function buildPlugins() {
 		query(Plugin)
 			.filter((_, plugin) => !plugin.built)
-			.forEach((_, plugin) => plugin.build())
+			.forEach((_, plugin) => {
+				plugin.build()
+				plugin.built = true
+			})
 	}
 
-	system(schedulePlugins, ABSOLUTE_FIRST)
+	// TODO! Implement argument passing and delta time for debuggers.
+	function scheduleSystems() {
+		query(System)
+			.filter((_, system) => !system.scheduled)
+			.forEach((_, system) => {
+				scheduler.addSystem(system.callback, system.phase)
+				system.scheduled = true
+			})
+	}
 
-	query(System).forEach((_, system) => {
-		scheduler.addSystem(system.callback, system.phase)
-	})
+	// TODO! Consider if we should guarantee plugin building before system scheduling.
+	system(buildPlugins, ABSOLUTE_FIRST)
+	system(scheduleSystems, ABSOLUTE_FIRST)
+
+	// Bootstrap the scheduler to run all systems.
+	scheduleSystems()
 
 	scheduler.runAll()
 }
