@@ -544,6 +544,13 @@ export function system<Args extends unknown[]>(
 // -----------------------------------------------------------------------------
 
 export function plugin(build: () => void): EntityHandle {
+	for (const [e, plugin] of world.query(Plugin.id)) {
+		if ((plugin as InferValue<typeof Plugin>).build === build) {
+			warn(`Plugin with the same build function registered twice. Returning existing plugin handle (ID: ${e}).`)
+			return new EntityHandle(e)
+		}
+	}
+
 	const handle = entity()
 	const inferredName = debug.info(build, 'n')[0]!
 

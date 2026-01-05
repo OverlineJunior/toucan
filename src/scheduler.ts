@@ -9,7 +9,7 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import { Plugin, system, System } from './id'
+import { Plugin, system, System, ThirdParty } from './id'
 import { query } from './query'
 
 export function run() {
@@ -24,10 +24,16 @@ export function run() {
 	// TODO! Implement safety checks regarding third-party plugins and user precedence.
 	function buildPlugins() {
 		query(Plugin)
-			.filter((_, plugin) => !plugin.built)
-			.forEach((_, plugin) => {
-				plugin.build()
-				plugin.built = true
+			.collect()
+			.filter(([, p]) => !p.built)
+			.sort(([p1], [p2]) => {
+				const a = p1.has(ThirdParty)
+				const b = p2.has(ThirdParty)
+				return a === b ? false : !a
+			})
+			.forEach(([, p]) => {
+				p.built = true
+				p.build()
 			})
 	}
 
@@ -45,8 +51,8 @@ export function run() {
 					system.lastDeltaTime = os.clock() - t
 				}
 
-				scheduler.addSystem(wrappedCallback, system.phase)
 				system.scheduled = true
+				scheduler.addSystem(wrappedCallback, system.phase)
 			})
 	}
 
