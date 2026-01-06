@@ -13,9 +13,9 @@ import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, Externa
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'
-import { STANDARD_PLUGINS } from './std/plugins';
+import { STANDARD_PLUGINS } from './std/plugins'
 
-export type System = () => void
+export type System<Args extends defined[]> = (...args: Args) => void
 export type Plugin<Args extends defined[]> = (scheduler: Scheduler, ...args: Args) => void
 
 function isInternal(): boolean {
@@ -92,11 +92,7 @@ function validatePluginConflict(
 	)
 }
 
-function spawnSystem<Args extends defined[]>(
-	callback: (...args: Args) => void,
-	phase: Planck.Phase,
-	args?: Args,
-): EntityHandle {
+function spawnSystem<Args extends defined[]>(callback: System<Args>, phase: Planck.Phase, args?: Args): EntityHandle {
 	const handle = entity()
 	const inferredName = debug.info(callback, 'n')[0]!
 
@@ -154,8 +150,8 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 }
 
 export class Scheduler {
-	useSystem(system: System, phase: Planck.Phase): this {
-		spawnSystem(system, phase)
+	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
+		spawnSystem(system, phase, args)
 		return this
 	}
 
