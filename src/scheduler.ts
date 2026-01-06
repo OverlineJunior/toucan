@@ -9,7 +9,7 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External } from './id'
+import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External } from './handle'
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'

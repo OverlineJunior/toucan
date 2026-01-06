@@ -1,4 +1,4 @@
-import { ComponentHandle } from '../../id'
+import { ComponentHandle } from '../../handle'
 import { pair } from '../../pair'
 import { Observed, Previous, query } from '../../query'
 import { ABSOLUTE_LAST } from '../phases'

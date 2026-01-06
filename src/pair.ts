@@ -1,4 +1,4 @@
-import { ComponentHandle, EntityHandle, RawId, VALUE_SYMBOL } from './id'
+import { ComponentHandle, EntityHandle, RawId, VALUE_SYMBOL } from './handle'
 import { pair as jecsPair } from '@rbxts/jecs'
 
 export class Pair<Value = unknown> {

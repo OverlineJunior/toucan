@@ -12,14 +12,14 @@ export {
 	Plugin,
 	Wildcard,
 	ChildOf,
-} from './id'
+} from './handle'
 export type {
 	RawId,
 	Handle,
 	EntityHandle,
 	ComponentHandle,
 	// ResourceHandle,
-} from './id'
+} from './handle'
 
 export { query } from './query'
 export type { Query } from './query'

@@ -1,4 +1,4 @@
-import { Handle, RawId, InferValues, resolveId, ComponentHandle, component } from './id'
+import { Handle, RawId, InferValues, resolveId, ComponentHandle, component } from './handle'
 import { Pair } from './pair'
 import { ZeroUpToEight } from './util'
 import { world } from './world'
