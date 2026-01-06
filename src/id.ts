@@ -49,8 +49,29 @@ function isInternal(): boolean {
 
 function isThirdParty(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
-	warn(callerScriptPath)
 	return callerScriptPath.match('node_modules')[0] !== undefined
+}
+
+function findPluginInCallStack(): JecsEntity | undefined {
+	function hasBuildInCallStack(build: Callback): boolean {
+		let depth = 2
+		while (true) {
+			const f = debug.info(depth, 'f')[0]
+			if (f === undefined) {
+				return false
+			} else if (f === build) {
+				return true
+			}
+			depth++
+		}
+	}
+
+	for (const [e, _p] of world.query(Plugin.id)) {
+		const p = _p as InferValue<typeof Plugin>
+		if (hasBuildInCallStack(p.build)) {
+			return e
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -512,28 +533,6 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 // -----------------------------------------------------------------------------
 // System
 // -----------------------------------------------------------------------------
-
-function findPluginInCallStack(): JecsEntity | undefined {
-	function hasBuildInCallStack(build: Callback): boolean {
-		let depth = 2
-		while (true) {
-			const f = debug.info(depth, 'f')[0]
-			if (f === undefined) {
-				return false
-			} else if (f === build) {
-				return true
-			}
-			depth++
-		}
-	}
-
-	for (const [e, _p] of world.query(Plugin.id)) {
-		const p = _p as InferValue<typeof Plugin>
-		if (hasBuildInCallStack(p.build)) {
-			return e
-		}
-	}
-}
 
 export function system<Args extends defined[]>(
 	callback: (...args: Args) => void,
