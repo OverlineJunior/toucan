@@ -9,7 +9,7 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, ThirdParty } from './id'
+import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External } from './id'
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'
@@ -22,7 +22,7 @@ function isInternal(): boolean {
 	return callerScriptPath.match('node_modules.@rbxts.toucan')[0] !== undefined
 }
 
-function isThirdParty(): boolean {
+function isExternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
 	return callerScriptPath.match('node_modules')[0] !== undefined
 }
@@ -56,11 +56,11 @@ function validatePluginConflict(
 	if (argCount === 1) return
 
 	const existingParent = existing.parent()
-	const isIncomingThirdParty = incomingParent !== undefined && incomingParent.has(ThirdParty)
-	const isExistingThirdParty = existingParent !== undefined && existingParent.has(ThirdParty)
+	const isIncomingExternal = incomingParent !== undefined && incomingParent.has(External)
+	const isExistingExternal = existingParent !== undefined && existingParent.has(External)
 
 	// We can safely ignore this case, as user-defined plugins take precedence.
-	if (!isExistingThirdParty && isIncomingThirdParty) {
+	if (!isExistingExternal && isIncomingExternal) {
 		return
 	}
 
@@ -70,15 +70,15 @@ function validatePluginConflict(
 		return
 	}
 
-	const existingSource = isExistingThirdParty
-		? `third-party plugin '${existingParent!.label() ?? 'Unknown'}'`
+	const existingSource = isExistingExternal
+		? `external plugin '${existingParent!.label() ?? 'Unknown'}'`
 		: 'user code'
 
-	const incomingSource = isIncomingThirdParty
-		? `third-party plugin '${incomingParent!.label() ?? 'Unknown'}'`
+	const incomingSource = isIncomingExternal
+		? `external plugin '${incomingParent!.label() ?? 'Unknown'}'`
 		: 'user code'
 
-	const fix = isExistingThirdParty
+	const fix = isExistingExternal
 		? `Initialize '${inferredName}' manually in your codebase to establish a single source of truth.`
 		: `Ensure '${inferredName}' is only initialized once in your codebase.`
 
@@ -111,8 +111,8 @@ export function spawnSystem<Args extends defined[]>(
 
 	if (isInternal()) {
 		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
+	} else if (isExternal()) {
+		handle.set(External)
 	}
 
 	const parentPlugin = findPluginInCallStack()
@@ -141,8 +141,8 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 
 	if (isInternal()) {
 		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
+	} else if (isExternal()) {
+		handle.set(External)
 	}
 
 	if (parentPlugin) {
@@ -177,8 +177,8 @@ export class Scheduler {
 				.collect()
 				.filter(([, p]) => !p.built)
 				.sort(([p1], [p2]) => {
-					const a = p1.has(ThirdParty)
-					const b = p2.has(ThirdParty)
+					const a = p1.has(External)
+					const b = p2.has(External)
 					return a === b ? false : !a
 				})
 				.forEach(([, p]) => {

@@ -48,7 +48,7 @@ function isInternal(): boolean {
 	return callerScriptPath.match('node_modules.@rbxts.toucan')[0] !== undefined
 }
 
-function isThirdParty(): boolean {
+function isExternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
 	return callerScriptPath.match('node_modules')[0] !== undefined
 }
@@ -412,8 +412,8 @@ export function entity(label?: string): EntityHandle {
 
 	if (isInternal()) {
 		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
+	} else if (isExternal()) {
+		handle.set(External)
 	}
 
 	return handle
@@ -488,8 +488,8 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 
 	if (isInternal()) {
 		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
+	} else if (isExternal()) {
+		handle.set(External)
 	}
 
 	return handle
@@ -524,8 +524,8 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 
 	if (isInternal()) {
 		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
+	} else if (isExternal()) {
+		handle.set(External)
 	}
 
 	return handle
@@ -537,7 +537,7 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 
 export const Internal = new ComponentHandle<undefined>(world.component())
 
-export const ThirdParty = new ComponentHandle<undefined>(world.component())
+export const External = new ComponentHandle<undefined>(world.component())
 
 /**
  * Built-in _component_ used to assign a label to an _id_.
@@ -585,9 +585,9 @@ Internal.set(Component)
 Internal.set(Label, 'Internal')
 Internal.set(Internal)
 
-ThirdParty.set(Component)
-ThirdParty.set(Label, 'ThirdParty')
-ThirdParty.set(Internal)
+External.set(Component)
+External.set(Label, 'External')
+External.set(Internal)
 
 Label.set(Component)
 Label.set(Label, 'Label')
