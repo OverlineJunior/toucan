@@ -1,6 +1,6 @@
 import { world } from './world'
-import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
-import { Flatten, Nullable, OneUpToFour } from './util'
+import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf, pair as jecsPair } from '@rbxts/jecs'
+import { deepEqual, Flatten, Nullable, OneUpToFour } from './util'
 import type { Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 
@@ -210,6 +210,7 @@ export abstract class Handle {
 		return this
 	}
 
+	// TODO! Fix not returning pairs.
 	/**
 	 * Returns all _components_ associated with this _id_.
 	 */
@@ -512,7 +513,29 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 // System
 // -----------------------------------------------------------------------------
 
-export function system<Args extends unknown[]>(
+function findPluginInCallStack(): JecsEntity | undefined {
+	function hasBuildInCallStack(build: Callback): boolean {
+		let depth = 2
+		while (true) {
+			const f = debug.info(depth, 'f')[0]
+			if (f === undefined) {
+				return false
+			} else if (f === build) {
+				return true
+			}
+			depth++
+		}
+	}
+
+	for (const [e, _p] of world.query(Plugin.id)) {
+		const p = _p as InferValue<typeof Plugin>
+		if (hasBuildInCallStack(p.build)) {
+			return e
+		}
+	}
+}
+
+export function system<Args extends defined[]>(
 	callback: (...args: Args) => void,
 	phase: Phase,
 	args?: Args,
@@ -522,7 +545,7 @@ export function system<Args extends unknown[]>(
 
 	handle
 		.set(System, {
-			callback: callback as (...args: unknown[]) => void,
+			callback: callback as (...args: defined[]) => void,
 			phase,
 			args: args ?? [],
 			scheduled: false,
@@ -536,6 +559,11 @@ export function system<Args extends unknown[]>(
 		handle.set(ThirdParty)
 	}
 
+	const parentPlugin = findPluginInCallStack()
+	if (parentPlugin) {
+		world.add(handle.id, jecsPair(ChildOf.id, parentPlugin))
+	}
+
 	return handle
 }
 
@@ -543,23 +571,83 @@ export function system<Args extends unknown[]>(
 // Plugin
 // -----------------------------------------------------------------------------
 
-export function plugin(build: () => void): EntityHandle {
+function validatePluginConflict(
+	existing: JecsEntity,
+	build: (...args: any[]) => void,
+	newArgs: defined[],
+	incomingParent: JecsEntity | undefined,
+	inferredName: string,
+) {
+	const argCount = debug.info(build, 'a')[0]!
+	if (argCount === 0) return
+
+	const existingParent = world.parent(existing)
+	const isIncomingThirdParty = incomingParent !== undefined && world.has(incomingParent, ThirdParty.id)
+	const isExistingThirdParty = existingParent !== undefined && world.has(existingParent, ThirdParty.id)
+
+	// We can safely ignore this case, as user-defined plugins take precedence.
+	if (!isExistingThirdParty && isIncomingThirdParty) {
+		return
+	}
+
+	// Both plugins being initialized with the same arguments is not a conflict.
+	const existingArgs = (world.get(existing, Plugin.id) as InferValue<typeof Plugin>).args
+	if (deepEqual(existingArgs, newArgs)) {
+		return
+	}
+
+	const existingSource = isExistingThirdParty
+		? `third-party plugin '${resolveId(existingParent!)?.label() ?? 'Unknown'}'`
+		: 'user code'
+
+	const incomingSource = isIncomingThirdParty
+		? `third-party plugin '${resolveId(incomingParent!)?.label() ?? 'Unknown'}'`
+		: 'user code'
+
+	const fix = isExistingThirdParty
+		? `Initialize '${inferredName}' manually in your codebase to establish a single source of truth.`
+		: `Ensure '${inferredName}' is only initialized once in your codebase.`
+
+	error(
+		`\nPlugin Conflict: '${inferredName}' was initialized multiple times with different parameters, ` +
+			`so Toucan cannot determine which configuration to use.\n` +
+			`    1. Already registered by ${existingSource} with [${existingArgs.join(', ')}]\n` +
+			`    2. Attempted register by ${incomingSource} with [${newArgs.join(', ')}]\n` +
+			`Fix: ${fix}`,
+	)
+}
+
+export function plugin<Args extends defined[]>(build: (...args: Args) => void, ...args: Args): EntityHandle {
+	const inferredName = debug.info(build, 'n')[0]!
+	const parentPlugin = findPluginInCallStack()
+
+	let existing: JecsEntity | undefined
 	for (const [e, plugin] of world.query(Plugin.id)) {
 		if ((plugin as InferValue<typeof Plugin>).build === build) {
-			warn(`Plugin with the same build function registered twice. Returning existing plugin handle (ID: ${e}).`)
-			return new EntityHandle(e)
+			existing = e
+			break
 		}
 	}
 
-	const handle = entity()
-	const inferredName = debug.info(build, 'n')[0]!
+	if (existing) {
+		validatePluginConflict(existing, build, args, parentPlugin, inferredName)
+		return new EntityHandle(existing)
+	}
 
-	handle.set(Plugin, { build, built: false }).set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
+	const handle = entity()
+
+	handle
+		.set(Plugin, { build, built: false, args })
+		.set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
 
 	if (isInternal()) {
 		handle.set(Internal)
 	} else if (isThirdParty()) {
 		handle.set(ThirdParty)
+	}
+
+	if (parentPlugin) {
+		world.add(handle.id, jecsPair(ChildOf.id, parentPlugin))
 	}
 
 	return handle
@@ -658,9 +746,9 @@ export const Entity = component('Entity')
 export const Resource = component('Resource')
 
 export const System = component<{
-	callback: (...args: unknown[]) => void
+	callback: (...args: defined[]) => void
 	phase: Phase
-	args: unknown[]
+	args: defined[]
 	scheduled: boolean
 	lastDeltaTime: number
 }>('System')
@@ -668,4 +756,5 @@ export const System = component<{
 export const Plugin = component<{
 	build: () => void
 	built: boolean
+	args: defined[]
 }>('Plugin')

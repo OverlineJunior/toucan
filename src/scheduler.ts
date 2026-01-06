@@ -21,7 +21,6 @@ export function run() {
 		.insert(PRE_SIMULATION, RunService, 'PreSimulation')
 		.insert(POST_SIMULATION, RunService, 'PostSimulation')
 
-	// TODO! Implement safety checks regarding third-party plugins and user precedence.
 	function buildPlugins() {
 		query(Plugin)
 			.collect()
