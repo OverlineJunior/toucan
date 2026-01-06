@@ -92,7 +92,7 @@ function validatePluginConflict(
 	)
 }
 
-export function spawnSystem<Args extends defined[]>(
+function spawnSystem<Args extends defined[]>(
 	callback: (...args: Args) => void,
 	phase: Planck.Phase,
 	args?: Args,
