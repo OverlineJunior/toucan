@@ -1,14 +1,12 @@
-// import { App } from '../../scheduler'
-// import { Plugin } from '../../plugin'
-// import { cleanupHookState } from '../../topoRuntime'
-// import { ABSOLUTE_LAST } from '../phases'
+import { cleanupHookState } from '../../topoRuntime'
+import { ABSOLUTE_LAST } from '../phases'
+import { Scheduler } from '../../scheduler'
 
-// function topoRuntimeCleanup() {
-// 	cleanupHookState()
-// }
+function topoRuntimeCleanup() {
+	print('Cleaning up topo runtime hook state...')
+	cleanupHookState()
+}
 
-// export class TopoRuntimePlugin implements Plugin {
-// 	build(app: App): void {
-// 		app.addSystems(ABSOLUTE_LAST, [topoRuntimeCleanup])
-// 	}
-// }
+export function topoRuntimePlugin(scheduler: Scheduler) {
+	scheduler.useSystem(topoRuntimeCleanup, ABSOLUTE_LAST)
+}

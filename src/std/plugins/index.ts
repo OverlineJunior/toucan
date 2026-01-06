@@ -1,4 +1,4 @@
-// import { ObserverPlugin } from './observerPlugin'
-// import { TopoRuntimePlugin } from './topoRuntimePlugin'
+import { observerPlugin } from './observerPlugin'
+import { topoRuntimePlugin } from './topoRuntimePlugin'
 
-// export const stdPlugins = [new TopoRuntimePlugin(), new ObserverPlugin()]
+export const STANDARD_PLUGINS = [topoRuntimePlugin, observerPlugin]

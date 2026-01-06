@@ -13,6 +13,7 @@ import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, Externa
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'
+import { STANDARD_PLUGINS } from './std/plugins';
 
 export type System = () => void
 export type Plugin<Args extends defined[]> = (scheduler: Scheduler, ...args: Args) => void
@@ -209,6 +210,8 @@ export class Scheduler {
 		// TODO! Consider if we should guarantee plugin building before system scheduling.
 		this.useSystem(buildPlugins, ABSOLUTE_FIRST)
 		this.useSystem(scheduleSystems, ABSOLUTE_FIRST)
+
+		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
 
 		// Bootstrap the scheduler to run all systems.
 		scheduleSystems()
