@@ -3,7 +3,6 @@ import { ABSOLUTE_LAST } from '../phases'
 import { Scheduler } from '../../scheduler'
 
 function topoRuntimeCleanup() {
-	print('Cleaning up topo runtime hook state...')
 	cleanupHookState()
 }
 
