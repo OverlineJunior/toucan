@@ -209,6 +209,9 @@ export class Scheduler {
 	/**
 	 * Builds all plugins (user-defined first) and then begins running all systems
 	 * on their respective phases.
+	 *
+	 * Systems and plugins scheduled after the scheduler is already running will
+	 * be picked up automatically on the next frame.
 	 */
 	run(): this {
 		const scheduler = new Planck.Scheduler()

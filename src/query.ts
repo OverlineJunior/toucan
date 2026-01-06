@@ -285,6 +285,21 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 }
 
+/**
+ * Creates a new query for the specified components and/or pairs.
+ *
+ * # Example
+ *
+ * ```ts
+ * const Position = component<Vector3>()
+ * const Velocity = component<Vector3>()
+ *
+ * function updatePositions() {
+ *     query(Position, Velocity).forEach((entity, position, velocity) => {
+ *         entity.set(Position, position.add(velocity))
+ *     })
+ * }
+ */
 export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)
 }

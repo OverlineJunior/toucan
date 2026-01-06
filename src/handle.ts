@@ -53,32 +53,11 @@ function isExternal(): boolean {
 	return callerScriptPath.match('node_modules')[0] !== undefined
 }
 
-function findPluginInCallStack(): JecsEntity | undefined {
-	function hasBuildInCallStack(build: Callback): boolean {
-		let depth = 2
-		while (true) {
-			const f = debug.info(depth, 'f')[0]
-			if (f === undefined) {
-				return false
-			} else if (f === build) {
-				return true
-			}
-			depth++
-		}
-	}
-
-	for (const [e, _p] of world.query(Plugin.id)) {
-		const p = _p as InferValue<typeof Plugin>
-		if (hasBuildInCallStack(p.build)) {
-			return e
-		}
-	}
-}
-
 // -----------------------------------------------------------------------------
 // Handle
 // -----------------------------------------------------------------------------
 
+// TODO! Handles should have an equality metamethod that compares their IDs.
 export abstract class Handle {
 	constructor(
 		/**
@@ -535,33 +514,39 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 // Bootstrapped Standards
 // -----------------------------------------------------------------------------
 
+/**
+ * Built-in component used to distinguish entities created internally by Toucan.
+ */
 export const Internal = new ComponentHandle<undefined>(world.component())
 
+/**
+ * Built-in component used to distinguish entities created externally by packages.
+ */
 export const External = new ComponentHandle<undefined>(world.component())
 
 /**
- * Built-in _component_ used to assign a label to an _id_.
+ * Built-in component used to assign human-readable labels to entities.
  *
- * Automatically assigned to all _ids_ created by their respective functions.
+ * Assigned to all entities, even if a custom label is not provided.
  */
 export const Label = new ComponentHandle<string>(world.component())
 
 /**
- * Built-in _component_ used to distinguish _ids_ that are _components_.
- *
- * Automatically assigned to all _components_ created via the `component` function.
+ * Built-in component used to distinguish entities that are also components.
  */
 export const Component = new ComponentHandle<undefined>(world.component())
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
- * Built-in _component__ meant to be used as a wildcard in relationship queries.
+ * Built-in component that acts as a wildcard in pairs.
  *
  * # Example
  *
  * ```ts
  * // Query all entities that are children of any other entity.
- * query(pair(ChildOf, Wildcard)).forEach((child, parent) => { ... })
+ * query(pair(ChildOf, Wildcard)).forEach((child) => {
+ *     const parent = child.targetOf(ChildOf)
+ * })
  * ```
  */
 export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
@@ -570,13 +555,14 @@ export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
 // ! relationships when setting a new one.
 // See `Wildcard`.
 /**
- * Built-in _component_ used to define parent-child relationships between _entities_.
+ * Built-in component used to represent parent-child relationships between entities.
  *
  * # Example
  *
  * ```ts
  * const alice = entity()
  * const bob = entity().set(pair(ChildOf, alice))
+ * assert(bob.parent() === alice)
  * ```
  */
 export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
@@ -610,21 +596,21 @@ ChildOf.set(Internal)
 // -----------------------------------------------------------------------------
 
 /**
- * Built-in _component_ used to distinguish _ids_ that are _entities_.
- *
- * Automatically assigned to all _entities_ created via the `entity` function.
+ * Built-in component used to distinguish pure entities (not variations, such as
+ * components or resources).
  */
 export const Entity = component('Entity')
 
 /**
- * Built-in _component_ used to distinguish _ids_ that are _resources_.
- *
- * Automatically assigned to all _resources_ created via the `resource` function.
+ * Built-in component used to distinguish entities that are also resources.
  */
 export const Resource = component('Resource')
 
 // TODO! Consider removing anything `args` related, as resources will
 // ! suffice when they're implemented like Bevy's resources.
+/**
+ * Built-in component used to represent systems.
+ */
 export const System = component<{
 	callback: (...args: defined[]) => void
 	phase: Phase
@@ -633,6 +619,9 @@ export const System = component<{
 	lastDeltaTime: number
 }>('System')
 
+/**
+ * Built-in component used to represent plugins.
+ */
 export const Plugin = component<{
 	build: PluginBuildFn<defined[]>
 	built: boolean
