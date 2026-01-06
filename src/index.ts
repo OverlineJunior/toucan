@@ -1,16 +1,10 @@
-export { run } from './scheduler'
+export { scheduler } from './scheduler'
+export type { Scheduler } from './scheduler'
 
 export {
-	RawId,
-	Handle,
 	entity,
-	EntityHandle,
 	component,
-	ComponentHandle,
 	resource,
-	ResourceHandle,
-	system,
-	plugin,
 	Entity,
 	Component,
 	Resource,
@@ -19,12 +13,21 @@ export {
 	Wildcard,
 	ChildOf,
 } from './id'
+export type {
+	RawId,
+	Handle,
+	EntityHandle,
+	ComponentHandle,
+	ResourceHandle,
+} from './id'
 
-export { query, Query } from './query'
+export { query } from './query'
+export type { Query } from './query'
 
-export { pair, Pair } from './pair'
+export { pair } from './pair'
+export type { Pair } from './pair'
 
-export { Phase, Pipeline } from '@rbxts/planck'
+export type { Phase, Pipeline } from '@rbxts/planck'
 
 export { useHookState } from './topoRuntime'
 

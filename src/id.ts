@@ -1,8 +1,9 @@
 import { world } from './world'
-import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf, pair as jecsPair } from '@rbxts/jecs'
-import { deepEqual, Flatten, Nullable, OneUpToFour } from './util'
+import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
+import { Flatten, Nullable, OneUpToFour } from './util'
 import type { Pair } from './pair'
 import { Phase } from '@rbxts/planck'
+import type { Plugin as PluginBuildFn } from './scheduler'
 
 /**
  * The raw Jecs ID type.
@@ -531,128 +532,6 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 }
 
 // -----------------------------------------------------------------------------
-// System
-// -----------------------------------------------------------------------------
-
-export function system<Args extends defined[]>(
-	callback: (...args: Args) => void,
-	phase: Phase,
-	args?: Args,
-): EntityHandle {
-	const handle = entity()
-	const inferredName = debug.info(callback, 'n')[0]!
-
-	handle
-		.set(System, {
-			callback: callback as (...args: defined[]) => void,
-			phase,
-			args: args ?? [],
-			scheduled: false,
-			lastDeltaTime: 0,
-		})
-		.set(Label, inferredName === '' ? `System #${handle.id}` : inferredName)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
-	}
-
-	const parentPlugin = findPluginInCallStack()
-	if (parentPlugin) {
-		world.add(handle.id, jecsPair(ChildOf.id, parentPlugin))
-	}
-
-	return handle
-}
-
-// -----------------------------------------------------------------------------
-// Plugin
-// -----------------------------------------------------------------------------
-
-function validatePluginConflict(
-	existing: JecsEntity,
-	build: (...args: any[]) => void,
-	newArgs: defined[],
-	incomingParent: JecsEntity | undefined,
-	inferredName: string,
-) {
-	const argCount = debug.info(build, 'a')[0]!
-	if (argCount === 0) return
-
-	const existingParent = world.parent(existing)
-	const isIncomingThirdParty = incomingParent !== undefined && world.has(incomingParent, ThirdParty.id)
-	const isExistingThirdParty = existingParent !== undefined && world.has(existingParent, ThirdParty.id)
-
-	// We can safely ignore this case, as user-defined plugins take precedence.
-	if (!isExistingThirdParty && isIncomingThirdParty) {
-		return
-	}
-
-	// Both plugins being initialized with the same arguments is not a conflict.
-	const existingArgs = (world.get(existing, Plugin.id) as InferValue<typeof Plugin>).args
-	if (deepEqual(existingArgs, newArgs)) {
-		return
-	}
-
-	const existingSource = isExistingThirdParty
-		? `third-party plugin '${resolveId(existingParent!)?.label() ?? 'Unknown'}'`
-		: 'user code'
-
-	const incomingSource = isIncomingThirdParty
-		? `third-party plugin '${resolveId(incomingParent!)?.label() ?? 'Unknown'}'`
-		: 'user code'
-
-	const fix = isExistingThirdParty
-		? `Initialize '${inferredName}' manually in your codebase to establish a single source of truth.`
-		: `Ensure '${inferredName}' is only initialized once in your codebase.`
-
-	error(
-		`\nPlugin Conflict: '${inferredName}' was initialized multiple times with different parameters, ` +
-			`so Toucan cannot determine which configuration to use.\n` +
-			`    1. Already registered by ${existingSource} with [${existingArgs.join(', ')}]\n` +
-			`    2. Attempted register by ${incomingSource} with [${newArgs.join(', ')}]\n` +
-			`Fix: ${fix}`,
-	)
-}
-
-export function plugin<Args extends defined[]>(build: (...args: Args) => void, ...args: Args): EntityHandle {
-	const inferredName = debug.info(build, 'n')[0]!
-	const parentPlugin = findPluginInCallStack()
-
-	let existing: JecsEntity | undefined
-	for (const [e, plugin] of world.query(Plugin.id)) {
-		if ((plugin as InferValue<typeof Plugin>).build === build) {
-			existing = e
-			break
-		}
-	}
-
-	if (existing) {
-		validatePluginConflict(existing, build, args, parentPlugin, inferredName)
-		return new EntityHandle(existing)
-	}
-
-	const handle = entity()
-
-	handle
-		.set(Plugin, { build, built: false, args })
-		.set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isThirdParty()) {
-		handle.set(ThirdParty)
-	}
-
-	if (parentPlugin) {
-		world.add(handle.id, jecsPair(ChildOf.id, parentPlugin))
-	}
-
-	return handle
-}
-
-// -----------------------------------------------------------------------------
 // Bootstrapped Standards
 // -----------------------------------------------------------------------------
 
@@ -744,6 +623,8 @@ export const Entity = component('Entity')
  */
 export const Resource = component('Resource')
 
+// TODO! Consider removing anything `args` related, as resources will
+// ! suffice when they're implemented like Bevy's resources.
 export const System = component<{
 	callback: (...args: defined[]) => void
 	phase: Phase
@@ -753,7 +634,7 @@ export const System = component<{
 }>('System')
 
 export const Plugin = component<{
-	build: () => void
+	build: PluginBuildFn<defined[]>
 	built: boolean
 	args: defined[]
 }>('Plugin')
