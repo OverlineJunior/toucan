@@ -150,16 +150,66 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 }
 
 export class Scheduler {
+	/**
+	 * Schedules a system to run in the specified phase with the provided arguments.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * function fireGun(params: RaycastParams) { ... }
+	 *
+	 * scheduler()
+	 *     .addSystems(UPDATE, [fireGun], new RaycastParams())
+	 *     .run()
+	 * ```
+	 *
+	 * # Reflection
+	 *
+	 * Systems are entities with the standard `System` component, thus, they can be
+	 * queried and manipulated like any other entity in Toucan.
+	 *
+	 * Systems scheduled within plugins are automatically parented to the plugin.
+	 */
 	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
 		spawnSystem(system, phase, args)
 		return this
 	}
 
+	/**
+	 * Schedules a plugin to be built, passing it the scheduler itself and the
+	 * provided arguments.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * function updatePhysics(gravity: number) { ... }
+	 *
+	 * function physicsPlugin(scheduler: Scheduler, gravity: number) {
+	 *     scheduler.useSystem(updatePhysics, UPDATE, gravity)
+	 * }
+	 *
+	 * scheduler()
+	 *    .usePlugin(physicsPlugin, 196.2)
+	 *    .run()
+	 * ```
+	 *
+	 * # Reflection
+	 *
+	 * Plugins are entities with the standard `Plugin` component, thus, they can be
+	 * queried and manipulated like any other entity in Toucan.
+	 *
+	 * Plugins scheduled within other plugins are automatically parented to the
+	 * parent plugin.
+	 */
 	usePlugin<Args extends defined[]>(plugin: Plugin<Args>, ...args: Args): this {
 		spawnPlugin(plugin, ...args)
 		return this
 	}
 
+	/**
+	 * Builds all plugins (user-defined first) and then begins running all systems
+	 * on their respective phases.
+	 */
 	run(): this {
 		const scheduler = new Planck.Scheduler()
 			.insert(STARTUP_PIPELINE)
@@ -218,6 +268,34 @@ export class Scheduler {
 	}
 }
 
+/**
+ * The starting point of a game made with Toucan.
+ *
+ * Responsible for running systems, building plugins and organizing phases.
+ *
+ * # Example
+ *
+ * ```ts
+ * const Person = component()
+ * const Name = component<string>()
+ *
+ * function spawnPeople() {
+ *     entity().set(Person).set(Name, 'Alice')
+ *     entity().set(Person).set(Name, 'Bob')
+ * }
+ *
+ * function greet() {
+ *     query(Name).forEach((_, name) => {
+ *         print(`Hello, ${name}!`)
+ *     })
+ * }
+ *
+ * scheduler()
+ *     .useSystem(spawnPeople, STARTUP)
+ *     .useSystem(greet, UPDATE)
+ *     .run()
+ * ```
+ */
 export function scheduler() {
 	return new Scheduler()
 }
