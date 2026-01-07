@@ -33,7 +33,9 @@ const Likes = component()
 
 const bob = entity('Bob')
 const charlie = entity('Charlie')
-const alice = entity('Alice').set(pair(Likes, bob)).set(pair(Likes, charlie))
+const alice = entity('Alice')
+	.set(pair(Likes, bob))
+	.set(pair(Likes, charlie))
 
 function greetInterests(greeting: string) {
 	query(pair(Likes, Wildcard)).forEach((subject) => {
