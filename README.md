@@ -18,7 +18,7 @@ It was created as a way to remove the need of glueing together different ECS lib
 
 - **Phases:** inherited from Planck, systems are assigned to predefined phases[^2] in order to resolve dependencies between them;
 
-- **Everything is an entity:** inherited from Jecs, components, resources and relationships are also entities, allowing you to assign them metadata and inspect them.
+- **Everything is an entity:** components, resources, systems and plugins are also entities, allowing you to assign them metadata and inspect them.
 
 [^1]: This does come with the cost of a relatively lower performance (~20-40% less than Jecs; actual benchmarks will be done and documented when things get more stable).
 
@@ -27,15 +27,13 @@ It was created as a way to remove the need of glueing together different ECS lib
 ## Example
 
 ```ts
-import { App, component, entity, pair, Plugin, query, STARTUP, Wildcard } from '@rbxts/toucan'
+import { component, entity, pair, query, scheduler, Scheduler, UPDATE, Wildcard } from '@rbxts/toucan'
 
 const Likes = component()
 
 const bob = entity('Bob')
 const charlie = entity('Charlie')
-const alice = entity('Alice')
-    .set(pair(Likes, bob))
-    .set(pair(Likes, charlie))
+const alice = entity('Alice').set(pair(Likes, bob)).set(pair(Likes, charlie))
 
 function greetInterests(greeting: string) {
 	query(pair(Likes, Wildcard)).forEach((subject) => {
@@ -45,17 +43,13 @@ function greetInterests(greeting: string) {
 	})
 }
 
-class GreetingPlugin implements Plugin {
-	constructor(public readonly greeting: string) {}
-
-	build(app: App) {
-		app.addSystems(STARTUP, [greetInterests], this.greeting)
-	}
+function greetingPlugin(scheduler: Scheduler, greeting: string) {
+	scheduler.useSystem(greetInterests, UPDATE, greeting)
 }
 
-new App()
-    .addPlugins(new GreetingPlugin("Hey %s, nice to meet you! I'm %s."))
-    .run()
+scheduler()
+	.usePlugin(greetingPlugin, "Hey %s, nice to meet you! I'm %s.")
+	.run()
 ```
 
 # Testing Workflow

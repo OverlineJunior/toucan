@@ -206,6 +206,12 @@ export class Scheduler {
 		return this
 	}
 
+	// TODO! The startup phases do not work anymore for systems added after `run()`.
+	// ! This happens with systems added by plugins too, since the scheduler is
+	// ! already running when the plugin builds.
+	// ! Although we could add a special case to systems built by plugins, systems
+	// ! that were intentionally added after `run()` would still not work.
+	// ! This might call for our own implementation of a scheduler.
 	/**
 	 * Builds all plugins (user-defined first) and then begins running all systems
 	 * on their respective phases.
