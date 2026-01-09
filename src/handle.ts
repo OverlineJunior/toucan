@@ -399,6 +399,42 @@ export function entity(label?: string): EntityHandle {
 }
 
 // -----------------------------------------------------------------------------
+// Component
+// -----------------------------------------------------------------------------
+
+export class ComponentHandle<Value = unknown> extends Handle {
+	declare [VALUE_SYMBOL]: Value
+}
+
+/**
+ * Creates a new _component_.
+ *
+ * Additionally, a `label` can be provided for easier identification during debugging.
+ *
+ * # Example
+ *
+ * ```ts
+ * // A component with a value.
+ * const Health = component<number>()
+ *
+ * // A tag component.
+ * const IsAlive = component()
+ * ```
+ */
+export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
+	const rawId = world.component<Value>()
+	const handle = new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
+
+	if (isInternal()) {
+		handle.set(Internal)
+	} else if (isExternal()) {
+		handle.set(External)
+	}
+
+	return handle
+}
+
+// -----------------------------------------------------------------------------
 // Resource
 // -----------------------------------------------------------------------------
 
@@ -464,42 +500,6 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 	world.set(rawId, rawId, value)
 
 	const handle = new ResourceHandle<Value>(rawId).set(Resource).set(Label, label ?? `Resource #${rawId}`)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
-}
-
-// -----------------------------------------------------------------------------
-// Component
-// -----------------------------------------------------------------------------
-
-export class ComponentHandle<Value = unknown> extends Handle {
-	declare [VALUE_SYMBOL]: Value
-}
-
-/**
- * Creates a new _component_.
- *
- * Additionally, a `label` can be provided for easier identification during debugging.
- *
- * # Example
- *
- * ```ts
- * // A component with a value.
- * const Health = component<number>()
- *
- * // A tag component.
- * const IsAlive = component()
- * ```
- */
-export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
-	const rawId = world.component<Value>()
-	const handle = new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
 
 	if (isInternal()) {
 		handle.set(Internal)
