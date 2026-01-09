@@ -4,10 +4,10 @@ export type { Scheduler } from './scheduler'
 export {
 	entity,
 	component,
-	// resource,
+	resource,
 	Entity,
 	Component,
-	// Resource,
+	Resource,
 	System,
 	Plugin,
 	Wildcard,
@@ -18,7 +18,7 @@ export type {
 	Handle,
 	EntityHandle,
 	ComponentHandle,
-	// ResourceHandle,
+	ResourceHandle,
 } from './handle'
 
 export { query } from './query'
