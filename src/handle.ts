@@ -448,7 +448,7 @@ export class ResourceHandle<Value = unknown> extends Handle {
 	 * _components_ attached to _resources_, just like with _entities_.
 	 */
 	read(): Value {
-		return world.get(this.id, this.id) as Value
+		return this.get(this) as Value
 	}
 
 	/**
@@ -458,7 +458,7 @@ export class ResourceHandle<Value = unknown> extends Handle {
 	 * _components_ attached to _resources_, just like with _entities_.
 	 */
 	write(value: Value): this {
-		world.set(this.id, this.id, value)
+		this.set(this, value)
 		return this
 	}
 
