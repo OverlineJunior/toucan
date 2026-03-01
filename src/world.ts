@@ -1,8 +1,9 @@
-import { world as newWorld, World, Entity as RawEntity } from '@rbxts/jecs'
+//import { world as newWorld, World, Entity as RawEntity } from '@rbxts/jecs'
+import * as jecs from '@rbxts/jecs'
 
-type UnsafeWorld = World & {
+type UnsafeWorld = jecs.World & {
 	entity_index: {
-		dense_array: RawEntity[]
+		dense_array: jecs.Entity[]
 		sparse_array: {
 			archetype: {
 				types: number[]
@@ -11,4 +12,4 @@ type UnsafeWorld = World & {
 	}
 }
 
-export const world = newWorld() as UnsafeWorld
+export const world = jecs.world() as UnsafeWorld
