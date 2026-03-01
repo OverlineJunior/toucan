@@ -1,5 +1,6 @@
 import { Handle, RawId, InferValues, resolveId, ComponentHandle, component } from './handle'
 import { Pair } from './pair'
+import { System } from './scheduler';
 import { ZeroUpToEight } from './util'
 import { world } from './world'
 import { pair as jecsPair } from '@rbxts/jecs'
@@ -13,7 +14,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
 	private readonly filters: ((entity: Handle, ...components: InferValues<Cs>) => boolean)[] = []
-	private observerCallback?: (id: Handle, ...values: unknown[]) => void = undefined
+	private cached = false
+
 	constructor(...components: Cs) {
 		this.includedIds = components.map((c) => (c as ComponentHandle).id) as RawId[]
 	}
@@ -146,10 +148,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			return
 		}
 
-		const rawQuery = world.query(...this.includedIds)
+		const _rawQuery = world.query(...this.includedIds).without(...this.excludedIds)
+		const rawQuery = this.cached ? _rawQuery.cached() : _rawQuery
 
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
-		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery.without(...this.excludedIds)) {
+		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
 			const id = resolveId(rawId)!
 
 			if (hasFilters && !this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) {
@@ -157,8 +160,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			}
 
 			fn(id, v1, v2, v3, v4, v5, v6, v7, v8)
-
-			this.observerCallback?.(id, v1, v2, v3, v4, v5, v6, v7, v8)
 		}
 	}
 
@@ -258,6 +259,14 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		})
 
 		return results as QueryResult<Cs>[]
+	}
+
+	system(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): System<[]> {
+		this.cached = true
+
+		return () => {
+			this.forEach(callback)
+		}
 	}
 
 	private useFilters(
