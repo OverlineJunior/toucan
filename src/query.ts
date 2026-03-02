@@ -156,7 +156,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const filters = this.filters as unknown as ((e: Handle, ...args: unknown[]) => boolean)[]
 		const hasFilters = filters.size() > 0
 
-		// Empty queries are a special case where we want all entities.
+		// Wildcard queries are a special case where we want all entities.
 		if (this.includedIds.includes(Wildcard.id)) {
 			world.entity_index.dense_array.forEach((rawId) => {
 				const id = resolveId(rawId)
@@ -233,7 +233,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	find(predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
 		const pred = predicate as unknown as (e: Handle, ...args: unknown[]) => boolean
 
-		if (this.includedIds.size() === 0) {
+		if (this.includedIds.includes(Wildcard.id)) {
 			for (const rawId of world.entity_index.dense_array) {
 				const id = resolveId(rawId)
 				if (!id) continue
