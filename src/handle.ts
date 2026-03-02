@@ -4,6 +4,7 @@ import { Flatten, Nullable, OneUpToFour } from './util'
 import type { Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
+import * as Planck from '@rbxts/planck'
 
 /**
  * The raw Jecs ID type.
@@ -30,17 +31,16 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 		return
 	}
 
-	if (world.has(rawId, Entity.id)) {
-		return new EntityHandle(rawId)
-	} else if (world.has(rawId, Component.id)) {
+	if (world.has(rawId, Component.id)) {
 		return new ComponentHandle(rawId)
 	} else if (world.has(rawId, Resource.id)) {
 		return new ResourceHandle(rawId)
+	} else if (world.has(rawId, Label.id)) {
+		// Every entity created through Toucan has a Label, the ones that
+		// don't are Jecs internals that we intentionally ignore.
+		// Because we ignore them, the user doesn't even know they exist.
+		return new EntityHandle(rawId)
 	}
-
-	// Some standard Jecs entities might not have any of the tags above.
-	// Those are intentionally ignored in a way that the user doesn't even know
-	// about them.
 }
 
 function isInternal(): boolean {
@@ -387,7 +387,7 @@ export class EntityHandle extends Handle {
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
-	const handle = new EntityHandle(rawId).set(Entity).set(Label, label ?? `Entity #${rawId}`)
+	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -594,12 +594,6 @@ ChildOf.set(Internal)
 // -----------------------------------------------------------------------------
 // Standards
 // -----------------------------------------------------------------------------
-
-/**
- * Built-in component used to distinguish pure entities (not variations, such as
- * components or resources).
- */
-export const Entity = component('Entity')
 
 /**
  * Built-in component used to distinguish entities that are also resources.

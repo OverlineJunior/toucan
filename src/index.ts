@@ -5,7 +5,6 @@ export {
 	entity,
 	component,
 	resource,
-	Entity,
 	Component,
 	Resource,
 	System,
