@@ -231,6 +231,9 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		return results as QueryResult<Cs>[]
 	}
 
+	// TODO! This is wrong because it calls query.cached() per frame instead of once.
+	// ! But even if we fix it, we found the performance difference to be negligible, slightly favoring not caching.
+	// ! Find out why this happens. Maybe start by testing on pure Jecs.
 	/**
 	 * Converts the query into a system callback that can be scheduled.
 	 *
