@@ -289,6 +289,19 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		return results as QueryResult<Cs>[]
 	}
 
+	/**
+	 * Converts the query into a system callback that can be scheduled.
+	 *
+	 * # Pros
+	 *
+	 * - It's cached, so it's more performant when called multiple times,
+	 *   such as in a system scheduled to run every frame;
+	 * - Removes the need of an extra layer of indentation in systems.
+	 *
+	 * # Cons
+	 *
+	 * - Cannot be named, which can make debugging more difficult.
+	 */
 	system(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): System<[]> {
 		this.cached = true
 
