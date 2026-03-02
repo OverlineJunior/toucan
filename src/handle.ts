@@ -133,9 +133,9 @@ export abstract class Handle {
 	set<P extends Pair>(pair: P, value: InferValue<P>): this
 	set(componentOrPair: ComponentHandle | Pair, value?: unknown) {
 		if (value === undefined) {
-			world.add(this.id, (componentOrPair as ComponentHandle).id)
+			world.add(this.id, componentOrPair.id)
 		} else {
-			world.set(this.id, (componentOrPair as ComponentHandle).id, value)
+			world.set(this.id, componentOrPair.id, value)
 		}
 
 		return this
@@ -164,7 +164,7 @@ export abstract class Handle {
 	): Flatten<Nullable<InferValues<Args>>> {
 		return world.get(
 			this.id,
-			...(componentsOrPairs.map((c) => (c as ComponentHandle).id) as OneUpToFour<RawId>),
+			...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>),
 		) as Flatten<Nullable<InferValues<Args>>>
 	}
 
@@ -191,14 +191,14 @@ export abstract class Handle {
 	 * ```
 	 */
 	has(...componentsOrPairs: OneUpToFour<ComponentHandle | Pair>): boolean {
-		return world.has(this.id, ...(componentsOrPairs.map((c) => (c as ComponentHandle).id) as OneUpToFour<RawId>))
+		return world.has(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>))
 	}
 
 	/**
 	 * Removes a _component_ or relationship _pair_ from this _id_.
 	 */
 	remove(componentOrPair: ComponentHandle | Pair): this {
-		world.remove(this.id, (componentOrPair as ComponentHandle).id)
+		world.remove(this.id, componentOrPair.id)
 		return this
 	}
 

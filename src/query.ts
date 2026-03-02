@@ -17,7 +17,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private cached = false
 
 	constructor(...components: Cs) {
-		this.includedIds = components.map((c) => (c as ComponentHandle).id) as RawId[]
+		this.includedIds = components.map((c) => c.id)
 	}
 
 	/**
@@ -26,7 +26,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Does not append the values of these components to the results.
 	 */
 	with(...components: (ComponentHandle | Pair)[]): Query<Cs> {
-		components.forEach((c) => this.includedIds.push((c as ComponentHandle).id))
+		components.forEach((c) => this.includedIds.push(c.id))
 		return this
 	}
 
@@ -44,7 +44,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Excludes entities with _all_ of the specified components from the query's results.
 	 */
 	without(...components: (ComponentHandle | Pair)[]): Query<Cs> {
-		components.forEach((c) => this.excludedIds.push((c as ComponentHandle).id))
+		components.forEach((c) => this.excludedIds.push(c.id))
 		return this
 	}
 

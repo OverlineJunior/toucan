@@ -4,7 +4,12 @@ import { pair as jecsPair } from '@rbxts/jecs'
 export class Pair<Value = unknown> {
 	declare [VALUE_SYMBOL]: Value
 
-	constructor(private readonly id: RawId) {}
+	/** @internal */
+	public readonly id: RawId
+
+	constructor(id: RawId) {
+		this.id = id
+	}
 }
 
 /**
