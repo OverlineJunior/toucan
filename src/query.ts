@@ -1,7 +1,7 @@
-import { Handle, RawId, InferValues, resolveId, ComponentHandle, component } from './handle'
+import { Handle, RawId, InferValues, resolveId, ComponentHandle, component,Wildcard } from './handle'
 import { Pair } from './pair'
 import { System } from './scheduler';
-import { ZeroUpToEight } from './util'
+import { OneUpToEight } from './util'
 import { world } from './world'
 import { pair as jecsPair } from '@rbxts/jecs'
 
@@ -129,7 +129,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const hasFilters = filters.size() > 0
 
 		// Empty queries are a special case where we want all entities.
-		if (this.includedIds.size() === 0) {
+		if (this.includedIds.includes(Wildcard.id)) {
 			world.entity_index.dense_array.forEach((rawId) => {
 				const id = resolveId(rawId)
 				// Since we're iterating over all entities, and Jecs has some
@@ -309,6 +309,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
  *     })
  * }
  */
-export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
+export function query<Cs extends OneUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)
 }
