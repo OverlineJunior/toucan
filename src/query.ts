@@ -21,10 +21,38 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Excludes _entities_ with the specified _components_ from the _query_ results.
+	 * Includes only entities with _all_ of the specified components in the query's results.
+	 *
+	 * Does not append the values of these components to the results.
+	 */
+	with(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+		components.forEach((c) => this.includedIds.push((c as ComponentHandle).id))
+		return this
+	}
+
+	/**
+	 * Includes entities with _any_ of the specified components in the query's results.
+	 *
+	 * Does not append the values of these components to the results.
+	 */
+	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+		this.filters.push((e, ..._args) => components.some((c) => e.has(c)))
+		return this
+	}
+
+	/**
+	 * Excludes entities with _all_ of the specified components from the query's results.
 	 */
 	without(...components: (ComponentHandle | Pair)[]): Query<Cs> {
 		components.forEach((c) => this.excludedIds.push((c as ComponentHandle).id))
+		return this
+	}
+
+	/**
+	 * Excludes entities with _any_ of the specified components from the query's results.
+	 */
+	withoutAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+		this.filters.push((e, ..._args) => components.every((c) => !e.has(c)))
 		return this
 	}
 
