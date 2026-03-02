@@ -1,6 +1,6 @@
-import { Handle, RawId, InferValues, resolveId, ComponentHandle, component,Wildcard } from './handle'
+import { Handle, RawId, InferValues, resolveId, ComponentHandle, component, Wildcard } from './handle'
 import { Pair } from './pair'
-import { System } from './scheduler';
+import { System } from './scheduler'
 import { OneUpToEight } from './util'
 import { world } from './world'
 import { pair as jecsPair } from '@rbxts/jecs'
@@ -153,42 +153,30 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	forEach(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): void {
 		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
-		const filters = this.filters as unknown as ((e: Handle, ...args: unknown[]) => boolean)[]
-		const hasFilters = filters.size() > 0
 
-		// Wildcard queries are a special case where we want all entities.
-		if (this.includedIds.includes(Wildcard.id)) {
-			world.entity_index.dense_array.forEach((rawId) => {
-				const id = resolveId(rawId)
-				// Since we're iterating over all entities, and Jecs has some
-				// standard entities Toucan doesn't support, we need to skip those.
-				if (!id) {
-					return
-				}
+		this.iterate((e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+			fn(e, v1, v2, v3, v4, v5, v6, v7, v8)
+		})
+	}
 
-				if (hasFilters && !this.useFilters(id)) {
-					return
-				}
+	// We duplicate a lot of code from `forEach` here so can early exit, resulting in great performance improvements.
+	/**
+	 * Finds the first _id_ in the _query_ that satisfies the provided
+	 * `predicate` function, returning the _id_ and its corresponding
+	 * _component_ values, or `undefined` if no such _id_ exists.
+	 */
+	find(predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
+		const pred = predicate as unknown as (e: Handle, ...args: unknown[]) => boolean
+		let result: QueryResult<Cs> | undefined = undefined
 
-				fn(id)
-			})
-
-			return
-		}
-
-		const _rawQuery = world.query(...this.includedIds).without(...this.excludedIds)
-		const rawQuery = this.cached ? _rawQuery.cached() : _rawQuery
-
-		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
-		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
-			const id = resolveId(rawId)!
-
-			if (hasFilters && !this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				continue
+		this.iterate((e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+			if (pred(e, v1, v2, v3, v4, v5, v6, v7, v8)) {
+				result = [e, v1, v2, v3, v4, v5, v6, v7, v8] as unknown as QueryResult<Cs>
+				return true
 			}
+		})
 
-			fn(id, v1, v2, v3, v4, v5, v6, v7, v8)
-		}
+		return result
 	}
 
 	/**
@@ -222,44 +210,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		})
 
 		return accumulator
-	}
-
-	// We duplicate a lot of code from `forEach` here so can early exit, resulting in great performance improvements.
-	/**
-	 * Finds the first _id_ in the _query_ that satisfies the provided
-	 * `predicate` function, returning the _id_ and its corresponding
-	 * _component_ values, or `undefined` if no such _id_ exists.
-	 */
-	find(predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
-		const pred = predicate as unknown as (e: Handle, ...args: unknown[]) => boolean
-
-		if (this.includedIds.includes(Wildcard.id)) {
-			for (const rawId of world.entity_index.dense_array) {
-				const id = resolveId(rawId)
-				if (!id) continue
-				if (!this.useFilters(id)) continue
-
-				if (pred(id)) {
-					return [id] as unknown as QueryResult<Cs>
-				}
-			}
-
-			return undefined
-		}
-
-		const rawQuery = world.query(...this.includedIds)
-
-		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery.without(...this.excludedIds)) {
-			const id = resolveId(rawId)!
-
-			if (!this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				continue
-			}
-
-			if (pred(id, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				return [id, v1, v2, v3, v4, v5, v6, v7, v8] as unknown as QueryResult<Cs>
-			}
-		}
 	}
 
 	/**
@@ -299,6 +249,48 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 
 		return () => {
 			this.forEach(callback)
+		}
+	}
+
+	/**
+	 * Iterates over each id in the query, calling the provided `callback`
+	 * with the id and its corresponding component values. Returns early
+	 * if `callback` returns `true`.
+	 */
+	private iterate(
+		callback: (
+			id: Handle,
+			v1?: unknown,
+			v2?: unknown,
+			v3?: unknown,
+			v4?: unknown,
+			v5?: unknown,
+			v6?: unknown,
+			v7?: unknown,
+			v8?: unknown,
+		) => boolean | void,
+	): void {
+		// Wildcard queries are a special case where we want all entities.
+		if (this.includedIds.includes(Wildcard.id)) {
+			for (const rawId of world.entity_index.dense_array) {
+				const id = resolveId(rawId)
+				if (!id || !this.useFilters(id)) continue
+
+				if (callback(id)) return
+			}
+
+			return
+		}
+
+		const _rawQuery = world.query(...this.includedIds).without(...this.excludedIds)
+		const rawQuery = this.cached ? _rawQuery.cached() : _rawQuery
+
+		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
+		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
+			const id = resolveId(rawId)!
+			if (!this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
+
+			if (callback(id, v1, v2, v3, v4, v5, v6, v7, v8)) return
 		}
 	}
 
