@@ -1,10 +1,9 @@
 import { world } from './world'
 import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
 import { Flatten, Nullable, OneUpToFour } from './util'
-import type { Pair } from './pair'
+import { getPairRelation, getPairTarget, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
-import * as Planck from '@rbxts/planck'
 
 /**
  * The raw Jecs ID type.
@@ -210,19 +209,48 @@ export abstract class Handle {
 		return this
 	}
 
-	// TODO! Fix not returning pairs.
 	/**
-	 * Returns all _components_ associated with this _id_.
+	 * Returns all components associated with this entity.
 	 */
 	components(): ComponentHandle[] {
-		const components: ComponentHandle[] = []
+		const comps: ComponentHandle[] = []
 		const record = world.entity_index.sparse_array[this.id - 1]
+		if (!record) return comps
 
-		record.archetype.types.forEach((compId) => {
-			components.push(new ComponentHandle(compId as RawId))
+		record.archetype.types.forEach((compId_) => {
+			const compId = compId_ as RawId
+			if (isPair(compId)) return
+
+			const handle = resolveId(compId as RawId)
+			if (handle) {
+				comps.push(handle as ComponentHandle)
+			}
 		})
 
-		return components
+		return comps
+	}
+
+	/**
+	 * Returns all relationship pairs associated with this entity.
+	 */
+	relationships(): Pair[] {
+		const rels: Pair[] = []
+		const record = world.entity_index.sparse_array[this.id - 1]
+		if (!record) return rels
+
+		record.archetype.types.forEach((compId_) => {
+			const compId = compId_ as RawId
+			if (!isPair(compId)) return
+
+			const relationHandle = resolveId(getPairRelation(compId))
+			const targetHandle = resolveId(getPairTarget(compId))
+
+			if (relationHandle && targetHandle) {
+				rels.push(pair(relationHandle as EntityHandle, targetHandle as EntityHandle))
+			}
+		})
+
+		return rels
 	}
 
 	/**
