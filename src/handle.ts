@@ -143,8 +143,6 @@ export abstract class Handle {
 		return this
 	}
 
-	// TODO! I'm pretty sure I found a use case for using `Id.get` with tags.
-	// ! Reconsider forbidding it after you find that use case again.
 	/**
 	 * Retrieves the _values_ of up to 4 _components_ or relationship _pairs_ on
 	 * this _id_.
