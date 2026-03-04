@@ -71,13 +71,9 @@ function validatePluginConflict(
 		return
 	}
 
-	const existingSource = isExistingExternal
-		? `external plugin '${existingParent}'`
-		: 'user code'
+	const existingSource = isExistingExternal ? `external plugin '${existingParent}'` : 'user code'
 
-	const incomingSource = isIncomingExternal
-		? `external plugin '${incomingParent}'`
-		: 'user code'
+	const incomingSource = isIncomingExternal ? `external plugin '${incomingParent}'` : 'user code'
 
 	const fix = isExistingExternal
 		? `Initialize '${inferredName}' manually in your codebase to establish a single source of truth.`
@@ -92,9 +88,16 @@ function validatePluginConflict(
 	)
 }
 
-function spawnSystem<Args extends defined[]>(callback: System<Args>, phase: Planck.Phase, args?: Args): EntityHandle {
+function spawnSystem<Args extends defined[]>(
+	callback: System<Args>,
+	phase: Planck.Phase,
+	args: Args,
+	label?: string,
+): EntityHandle {
 	const handle = entity()
-	const inferredName = debug.info(callback, 'n')[0]!
+
+	const _inferredLabel = debug.info(callback, 'n')[0]!
+	const generatedLabel = _inferredLabel === '' ? `System #${handle.id}` : _inferredLabel
 
 	handle
 		.set(System, {
@@ -104,7 +107,7 @@ function spawnSystem<Args extends defined[]>(callback: System<Args>, phase: Plan
 			scheduled: false,
 			lastDeltaTime: 0,
 		})
-		.set(Label, inferredName === '' ? `System #${handle.id}` : inferredName)
+		.set(Label, label ?? generatedLabel)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -170,8 +173,13 @@ export class Scheduler {
 	 *
 	 * Systems scheduled within plugins are automatically parented to the plugin.
 	 */
-	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
-		spawnSystem(system, phase, args)
+	useSystem<Args extends defined[]>(
+		system: System<Args>,
+		phase: Planck.Phase,
+		args?: Args,
+		label?: string,
+	): this {
+		spawnSystem(system, phase, args ?? ([] as unknown as Args), label)
 		return this
 	}
 
@@ -263,7 +271,7 @@ export class Scheduler {
 		}
 
 		// TODO! Consider if we should guarantee plugin building before system scheduling.
-		this.useSystem(buildPlugins, ABSOLUTE_FIRST, this)
+		this.useSystem(buildPlugins, ABSOLUTE_FIRST, [this])
 		this.useSystem(scheduleSystems, ABSOLUTE_FIRST)
 
 		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
