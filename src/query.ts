@@ -87,6 +87,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const prevPair = jecs.pair(Previous.id, component.id)
 		this.includedIds.push(component.id)
 		this.excludedIds.push(prevPair as unknown as RawId)
+		this.rawQuery = this.rawQuery.with(component.id).without(prevPair)
 
 		component.set(Observed)
 
@@ -111,6 +112,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const prevPair = jecs.pair(Previous.id, component.id)
 		this.includedIds.push(prevPair as unknown as RawId)
 		this.excludedIds.push(component.id)
+		this.rawQuery = this.rawQuery.with(prevPair).without(component.id)
 
 		component.set(Observed)
 
@@ -139,6 +141,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const prevPair = jecs.pair(Previous.id, component.id)
 		this.includedIds.push(component.id)
 		this.includedIds.push(prevPair as unknown as RawId)
+		this.rawQuery = this.rawQuery.with(component.id, prevPair)
 
 		component.set(Observed)
 
