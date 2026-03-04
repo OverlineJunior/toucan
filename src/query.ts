@@ -3,7 +3,7 @@ import { Pair } from './pair'
 import { System } from './scheduler'
 import { OneUpToEight } from './util'
 import { world } from './world'
-import { pair as jecsPair } from '@rbxts/jecs'
+import * as jecs from '@rbxts/jecs'
 
 export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [Handle, ...InferValues<Cs>]
 
@@ -11,13 +11,15 @@ export const Previous = component('Previous')
 export const Observed = component('Observed')
 
 export class Query<Cs extends (ComponentHandle | Pair)[]> {
+	private rawQuery: jecs.Query<RawId[]>
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
 	private readonly filters: ((entity: Handle, ...components: InferValues<Cs>) => boolean)[] = []
-	private cached = false
 
 	constructor(...components: Cs) {
-		this.includedIds = components.map((c) => c.id)
+		const ids = components.map((c) => c.id)
+		this.rawQuery = world.query(...ids)
+		this.includedIds = ids
 	}
 
 	/**
@@ -27,6 +29,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	with(...components: (ComponentHandle | Pair)[]): Query<Cs> {
 		components.forEach((c) => this.includedIds.push(c.id))
+		this.rawQuery = this.rawQuery.with(...components.map((c) => c.id))
 		return this
 	}
 
@@ -45,6 +48,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	without(...components: (ComponentHandle | Pair)[]): Query<Cs> {
 		components.forEach((c) => this.excludedIds.push(c.id))
+		this.rawQuery = this.rawQuery.without(...components.map((c) => c.id))
 		return this
 	}
 
@@ -80,7 +84,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * ```
 	 */
 	added<C extends ComponentHandle>(component: C): Query<[...Cs, C]> {
-		const prevPair = jecsPair(Previous.id, component.id)
+		const prevPair = jecs.pair(Previous.id, component.id)
 		this.includedIds.push(component.id)
 		this.excludedIds.push(prevPair as unknown as RawId)
 
@@ -104,7 +108,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * ```
 	 */
 	removed<C extends ComponentHandle>(component: C): Query<[...Cs, C]> {
-		const prevPair = jecsPair(Previous.id, component.id)
+		const prevPair = jecs.pair(Previous.id, component.id)
 		this.includedIds.push(prevPair as unknown as RawId)
 		this.excludedIds.push(component.id)
 
@@ -132,7 +136,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const newIndex = this.includedIds.size()
 		const oldIndex = newIndex + 1
 
-		const prevPair = jecsPair(Previous.id, component.id)
+		const prevPair = jecs.pair(Previous.id, component.id)
 		this.includedIds.push(component.id)
 		this.includedIds.push(prevPair as unknown as RawId)
 
@@ -231,9 +235,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		return results as QueryResult<Cs>[]
 	}
 
-	// TODO! This is wrong because it calls query.cached() per frame instead of once.
-	// ! But even if we fix it, we found the performance difference to be negligible, slightly favoring not caching.
-	// ! Find out why this happens. Maybe start by testing on pure Jecs.
 	/**
 	 * Converts the query into a system callback that can be scheduled.
 	 *
@@ -248,7 +249,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * - Cannot be named, which can make debugging more difficult.
 	 */
 	system(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): System<[]> {
-		this.cached = true
+		this.rawQuery = this.rawQuery.cached() as unknown as jecs.Query<RawId[]>
 
 		return () => {
 			this.forEach(callback)
@@ -285,11 +286,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			return
 		}
 
-		const _rawQuery = world.query(...this.includedIds).without(...this.excludedIds)
-		const rawQuery = this.cached ? _rawQuery.cached() : _rawQuery
-
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
-		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
+		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of this.rawQuery) {
 			const id = resolveId(rawId)!
 			if (!this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
 
