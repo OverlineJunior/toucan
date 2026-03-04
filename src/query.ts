@@ -88,6 +88,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		return this as unknown as Query<[...Cs, C]>
 	}
 
+	// TODO! Not firing when the entity with `component` is despawned.
 	/**
 	 * Queries for _ids_ that have had `component` removed since the last frame,
 	 * with its previous value appended to the _query_'s results.
