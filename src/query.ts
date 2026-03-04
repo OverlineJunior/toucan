@@ -65,6 +65,25 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		return this
 	}
 
+	/*
+	TODO! The way observers are currently implemented, the example below won't trigger them:
+	```ts
+	function cleanupModel() {
+		query().removed(Model).forEach((e, model) => {
+			model.Destroy()
+		})
+	}
+
+	entity.set(Model, makeModel())
+	entity.remove(Model)
+
+	scheduler().useSystem(cleanupModel, UPDATE).run()
+	```
+	! To fix this, we could try...
+	! 1. Mixing our observerPlugin with Jecs's world observers;
+	! 2. Scrapping our observerPlugin, but still using Previous in the set methods & related, and then using Jecs's
+	!    observers normally, but checking for Previous.
+	*/
 	/**
 	 * Queries for _ids_ that have had `component` added since the last frame,
 	 * with its value appended to the _query_'s results.
