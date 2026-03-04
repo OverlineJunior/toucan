@@ -124,20 +124,27 @@ function spawnSystem<Args extends defined[]>(
 }
 
 function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args): EntityHandle {
-	const inferredName = debug.info(build, 'n')[0]!
+	const label = debug.info(build, 'n')[0]!
+	if (label === '') {
+		const argsTip = args.isEmpty() ? '' : `Plugin arguments: [${args.join(', ')}]\n`
+		error(
+			`Failed to use plugin because its function has no name.\n` +
+				argsTip +
+				`Fix: replace the plugin's anonymous function with a named function`,
+		)
+	}
+
 	const parentPlugin = findPluginInCallStack()
 
 	const existing = query(Plugin).find((_, p) => p.build === build)?.[0] as EntityHandle | undefined
 	if (existing) {
-		validatePluginConflict(existing, build, args, parentPlugin, inferredName)
+		validatePluginConflict(existing, build, args, parentPlugin, label)
 		return new EntityHandle(existing.id)
 	}
 
 	const handle = entity()
 
-	handle
-		.set(Plugin, { build: build as Plugin<defined[]>, built: false, args })
-		.set(Label, inferredName === '' ? `Plugin #${handle.id}` : inferredName)
+	handle.set(Plugin, { build: build as Plugin<defined[]>, built: false, args }).set(Label, label)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -173,12 +180,7 @@ export class Scheduler {
 	 *
 	 * Systems scheduled within plugins are automatically parented to the plugin.
 	 */
-	useSystem<Args extends defined[]>(
-		system: System<Args>,
-		phase: Planck.Phase,
-		args?: Args,
-		label?: string,
-	): this {
+	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, args?: Args, label?: string): this {
 		spawnSystem(system, phase, args ?? ([] as unknown as Args), label)
 		return this
 	}
