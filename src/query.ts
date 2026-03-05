@@ -56,8 +56,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Adds a filter predicate to the _query_ that _entities_ must satisfy in order
-	 * to be included in the results.
+	 * Adds a filter predicate to the query that entities must satisfy in order to be queried.
 	 */
 	filter(predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean): Query<Cs> {
 		this.filters.push(predicate)
@@ -65,8 +64,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Iterates over each _id_ in the _query_, calling the provided `callback`
-	 * with the _id_ and its corresponding _component_ values.
+	 * Iterates over each entity that matches the query, calling the provided `callback`
+	 * with the entity itself and its corresponding component values.
 	 */
 	forEach(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): void {
 		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
@@ -76,11 +75,10 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		})
 	}
 
-	// We duplicate a lot of code from `forEach` here so can early exit, resulting in great performance improvements.
 	/**
-	 * Finds the first _id_ in the _query_ that satisfies the provided
-	 * `predicate` function, returning the _id_ and its corresponding
-	 * _component_ values, or `undefined` if no such _id_ exists.
+	 * Finds the first entity that matches the query _and_ satisfies the provided
+	 * `predicate` function, returning the entity itself and its corresponding
+	 * component values, or `undefined` if no such entity exists.
 	 */
 	find(predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
 		const pred = predicate as unknown as (e: Handle, ...args: unknown[]) => boolean
@@ -97,12 +95,12 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Maps each _id_ in the _query_ to a new value using the provided
+	 * Maps each entity that matches the query to a new value using the provided
 	 * `mapper` function, returning an array of the resulting values.
 	 *
-	 * # Warning
+	 * # ⚠️ Warning
 	 *
-	 * This method allocates memory for all _ids_ in the _query_ and should be
+	 * This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
 	map<R extends defined>(mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R): R[] {
@@ -116,7 +114,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Reduces the _entities_ in the _query_ to a single value using the provided
+	 * Reduces the entities that match the query to a single value using the provided
 	 * `reducer` function and `initialValue`.
 	 */
 	reduce<R>(reducer: (accumulator: R, entity: Handle, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
@@ -130,12 +128,12 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Collects all _entities_ in the _query_, returning an array of the _entities_
-	 * and their corresponding _component_ values.
+	 * Collects all entities that match the query, returning an array of the entities
+	 * themselves and their corresponding component values.
 	 *
 	 * # Warning
 	 *
-	 * This method allocates memory for all _entities_ in the _query_ and should be
+	 * This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
 	collect(): QueryResult<Cs>[] {
@@ -195,6 +193,21 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		}
 	}
 
+	/**
+	 * Registers a callback that fires whenever the specified component is added to an
+	 * entity that matches this query.
+	 *
+	 * The callback receives the entity, the values of the queried components, and the
+	 * newly added component's value.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * query(Player).onAdded(Health, (entity, player, health) => {
+	 *     print(`${health}hp was added to ${player}!`)
+	 * })
+	 * ```
+	 */
 	onAdded<C extends ComponentHandle>(
 		component: C,
 		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C]>) => void,
@@ -211,6 +224,21 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		})
 	}
 
+	/**
+	 * Registers a callback that fires whenever the specified component's value changes
+	 * on an entity that matches this query.
+	 *
+	 * The callback receives the entity, the values of the queried components, the
+	 * new value of the changed component, and its previous value.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * query(Player).onChanged(Health, (entity, player, newHealth, oldHealth) => {
+	 *     print(`${player}'s health changed from ${oldHealth} to ${newHealth}!`)
+	 * })
+	 * ```
+	 */
 	onChanged<C extends ComponentHandle>(
 		component: C,
 		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C, C]>) => void,
@@ -229,6 +257,26 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		})
 	}
 
+	/**
+	 * Registers a callback that fires whenever the specified component is removed from
+	 * an entity that matches this query, or when the entity itself is despawned.
+	 *
+	 * The callback receives the entity, the values of the queried components, the
+	 * component's last known value before removal, and a boolean indicating if the
+	 * removal was caused by the entity despawning.
+	 *
+	 * # Example
+	 *
+	 * ```ts
+	 * query(Player).onRemoved(Health, (entity, player, oldHealth, despawned) => {
+	 *     if (despawned) {
+	 *         print(`${player} had ${oldHealth}hp before their entity was completely annihilated.`)
+	 *     } else {
+	 *         print(`${player} had ${oldHealth}hp before their Health component was removed.`)
+	 *     }
+	 * })
+	 * ```
+	 */
 	onRemoved<C extends ComponentHandle>(
 		component: C,
 		callback: (entity: Handle, ...componentValues: [...InferValues<Cs>, InferValue<C>, boolean]) => void,
