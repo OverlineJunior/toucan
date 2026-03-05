@@ -219,18 +219,13 @@ export class Scheduler {
 		return this
 	}
 
-	// TODO! The startup phases do not work anymore for systems added after `run()`.
-	// ! This happens with systems added by plugins too, since the scheduler is
-	// ! already running when the plugin builds.
-	// ! Although we could add a special case to systems built by plugins, systems
-	// ! that were intentionally added after `run()` would still not work.
-	// ! This might call for our own implementation of a scheduler.
 	/**
-	 * Builds all plugins (user-defined first) and then begins running all systems
-	 * on their respective phases.
+	 * Synchronously builds all initially registered plugins (user-defined first),
+	 * and then bootstraps the engine to run all systems on their respective phases.
 	 *
-	 * Systems and plugins scheduled after the scheduler is already running will
-	 * be picked up automatically on the next frame.
+	 * Systems and plugins scheduled dynamically after the scheduler is already running will
+	 * be picked up automatically on the next frame (with the exception of the `STARTUP` phase,
+	 * which only fires once during this method call).
 	 */
 	run(): this {
 		const scheduler = new Planck.Scheduler()
@@ -242,18 +237,24 @@ export class Scheduler {
 			.insert(POST_SIMULATION, RunService, 'PostSimulation')
 
 		function buildPlugins(scheduler: Scheduler) {
-			query(Plugin)
-				.collect()
-				.filter(([, p]) => !p.built)
-				.sort(([p1], [p2]) => {
-					const a = p1.has(External)
-					const b = p2.has(External)
-					return a === b ? false : !a
-				})
-				.forEach(([, p]) => {
-					p.built = true
-					p.build(scheduler, ...p.args)
-				})
+			let pendingPlugins = query(Plugin).collect().filter(([, p]) => !p.built)
+
+			// We use a while loop to ensure that if a plugin registers another plugin,
+			// the child plugin is also fully built during this exact step.
+			while (!pendingPlugins.isEmpty()) {
+				pendingPlugins
+					.sort(([p1], [p2]) => {
+						const a = p1.has(External)
+						const b = p2.has(External)
+						return a === b ? false : !a
+					})
+					.forEach(([, p]) => {
+						p.built = true
+						p.build(scheduler, ...p.args)
+					})
+
+				pendingPlugins = query(Plugin).collect().filter(([, p]) => !p.built)
+			}
 		}
 
 		function scheduleSystems() {
@@ -275,13 +276,14 @@ export class Scheduler {
 				})
 		}
 
-		// TODO! Consider if we should guarantee plugin building before system scheduling.
+		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
+
+		// All plugins must be built before we start scheduling systems.
+		buildPlugins(this)
+
 		this.useSystem(buildPlugins, ABSOLUTE_FIRST, [this])
 		this.useSystem(scheduleSystems, ABSOLUTE_FIRST)
 
-		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
-
-		// Bootstrap the scheduler to run all systems.
 		scheduleSystems()
 
 		scheduler.runAll()
