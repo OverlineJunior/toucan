@@ -1,5 +1,9 @@
 import { world } from './world'
-import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
+import {
+	Entity as JecsEntity,
+	Wildcard as JecsWildcard,
+	ChildOf as JecsChildOf,
+} from '@rbxts/jecs'
 import { Flatten, Nullable, OneUpToFour } from './util'
 import { getPairRelation, getPairTarget, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
@@ -10,15 +14,48 @@ import type { Plugin as PluginBuildFn } from './scheduler'
  */
 export type RawId = JecsEntity
 
+export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
+
+export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
+
 // We use this as a key to a "phantom property" on Id subclasses to represent
 // their value type. With this, we:
 // 1. Allow Typescript to infer the value type of Id subclasses with `InferValue`;
 // 2. Hide the property from the user.
 export declare const VALUE_SYMBOL: unique symbol
 
-export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
+// Used to store the previous component values for a specific entity when they are updated.
+class EntityHistory {
+	// Reads as `EntityId -> ComponentId -> PreviousValue`.
+	private readonly history = new Map<RawId, Map<RawId, unknown>>()
 
-export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
+	get(entityId: RawId, componentId: RawId): unknown | undefined {
+		return this.history.get(entityId)?.get(componentId)
+	}
+
+	set(entityId: RawId, componentId: RawId, value: unknown): void {
+		let hist = this.history.get(entityId)
+		if (!hist) {
+			hist = new Map<RawId, unknown>()
+			this.history.set(entityId, hist)
+		}
+		hist.set(componentId, value)
+	}
+
+	deleteComponent(entityId: RawId, componentId: RawId): void {
+		this.history.get(entityId)?.delete(componentId)
+	}
+
+	clearComponents(entityId: RawId): void {
+		this.history.get(entityId)?.clear()
+	}
+
+	deleteEntity(entityId: RawId): void {
+		this.history.delete(entityId)
+	}
+}
+
+export const entityHistory = new EntityHistory()
 
 /**
  * Returns the appropriate handle for `rawId`, or `undefined` if it does not exist in the world.
@@ -130,12 +167,14 @@ export abstract class Handle {
 	 * ```
 	 */
 	set<P extends Pair>(pair: P, value: InferValue<P>): this
-	set(componentOrPair: ComponentHandle | Pair, value?: unknown) {
+	set(term: ComponentHandle | Pair, value?: unknown) {
 		if (value === undefined) {
-			world.add(this.id, componentOrPair.id)
+			world.add(this.id, term.id)
 		} else {
-			world.set(this.id, componentOrPair.id, value)
+			world.set(this.id, term.id, value)
 		}
+
+		entityHistory.set(this.id, term.id, value)
 
 		return this
 	}
@@ -195,6 +234,7 @@ export abstract class Handle {
 	 */
 	remove(componentOrPair: ComponentHandle | Pair): this {
 		world.remove(this.id, componentOrPair.id)
+		entityHistory.deleteComponent(this.id, componentOrPair.id)
 		return this
 	}
 
@@ -204,6 +244,7 @@ export abstract class Handle {
 	 */
 	clear(): this {
 		world.clear(this.id)
+		entityHistory.clearComponents(this.id)
 		return this
 	}
 
@@ -394,6 +435,7 @@ export abstract class Handle {
 	 */
 	despawn(): void {
 		world.delete(this.id)
+		entityHistory.deleteEntity(this.id)
 	}
 }
 

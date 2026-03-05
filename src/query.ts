@@ -1,4 +1,4 @@
-import { Handle, RawId, InferValues, resolveId, ComponentHandle, component, Wildcard } from './handle'
+import { Handle, RawId, InferValues, resolveId, ComponentHandle, Wildcard, entityHistory, InferValue } from './handle'
 import { Pair } from './pair'
 import { System } from './scheduler'
 import { ZeroUpToEight } from './util'
@@ -7,8 +7,7 @@ import * as jecs from '@rbxts/jecs'
 
 export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [Handle, ...InferValues<Cs>]
 
-export const Previous = component('Previous')
-export const Observed = component('Observed')
+type Disconnect = () => void
 
 export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly requiredIds: RawId[]
@@ -63,108 +62,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	filter(predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean): Query<Cs> {
 		this.filters.push(predicate)
 		return this
-	}
-
-	/*
-	TODO! The way observers are currently implemented, the example below won't trigger them:
-	```ts
-	function cleanupModel() {
-		query().removed(Model).forEach((e, model) => {
-			model.Destroy()
-		})
-	}
-
-	entity.set(Model, makeModel())
-	entity.remove(Model)
-
-	scheduler().useSystem(cleanupModel, UPDATE).run()
-	```
-	! To fix this, we could try...
-	! 1. Mixing our observerPlugin with Jecs's world observers;
-	! 2. Scrapping our observerPlugin, but still using Previous in the set methods & related, and then using Jecs's
-	!    observers normally, but checking for Previous.
-	*/
-	/**
-	 * Queries for _ids_ that have had `component` added since the last frame,
-	 * with its value appended to the _query_'s results.
-	 *
-	 * # Example
-	 *
-	 * ```ts
-	 * function unitSelectionSound() {
-	 *     query(Unit).added(Selected).forEach((unitId) => {
-	 *         // Play sound effect.
-	 *     })
-	 * }
-	 * ```
-	 */
-	added<C extends ComponentHandle>(component: C): Query<[...Cs, C]> {
-		const prevPair = jecs.pair(Previous.id, component.id)
-		this.requiredIds.push(component.id)
-		this.excludedIds.push(prevPair as unknown as RawId)
-
-		component.set(Observed)
-
-		return this as unknown as Query<[...Cs, C]>
-	}
-
-	// TODO! Not firing when the entity with `component` is despawned.
-	/**
-	 * Queries for _ids_ that have had `component` removed since the last frame,
-	 * with its previous value appended to the _query_'s results.
-	 *
-	 * # Example
-	 *
-	 * ```ts
-	 * function handleItemUnequipped() {
-	 *     query(Item).removed(Equipped).forEach((itemId) => {
-	 *         // Handle item being unequipped.
-	 *     })
-	 * }
-	 * ```
-	 */
-	removed<C extends ComponentHandle>(component: C): Query<[...Cs, C]> {
-		const prevPair = jecs.pair(Previous.id, component.id)
-		this.requiredIds.push(prevPair as unknown as RawId)
-		this.excludedIds.push(component.id)
-
-		component.set(Observed)
-
-		return this as unknown as Query<[...Cs, C]>
-	}
-
-	/**
-	 * Queries for _ids_ that have had `component` changed since the last frame,
-	 * with both its new and previous values appended to the _query_'s results.
-	 *
-	 * # Example
-	 *
-	 * ```ts
-	 * function updateHealthBar() {
-	 *     query(Client).changed(Health).forEach((clientId, _, newHealth, oldHealth) => {
-	 *         // Update health bar UI.
-	 *     })
-	 * }
-	 * ```
-	 */
-	changed<C extends ComponentHandle>(component: C): Query<[...Cs, C, C]> {
-		// Indices where these values will appear in the arguments list.
-		const newIndex = this.requiredIds.size()
-		const oldIndex = newIndex + 1
-
-		const prevPair = jecs.pair(Previous.id, component.id)
-		this.requiredIds.push(component.id)
-		this.requiredIds.push(prevPair as unknown as RawId)
-
-		component.set(Observed)
-
-		this.filters.push((_, ...args) => {
-			const newVal = args[newIndex]
-			const oldVal = args[oldIndex]
-			return newVal !== oldVal
-		})
-
-		return this as unknown as Query<[...Cs, C, C]>
 	}
 
 	/**
@@ -298,6 +195,58 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		}
 	}
 
+	onAdded<C extends ComponentHandle>(
+		component: C,
+		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C]>) => void,
+	): Disconnect {
+		return world.added(component.id, (id, _, value) => {
+			const e = resolveId(id)
+			if (!e) return
+
+			const requiredValues = this.match(e)
+			if (!requiredValues) return
+
+			// Roblox-TS doesn't allow spreading function arguments unless they're last, and we wanna preserve order.
+			callback(e, ...[...requiredValues, value as InferValue<C>])
+		})
+	}
+
+	onChanged<C extends ComponentHandle>(
+		component: C,
+		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C, C]>) => void,
+	): Disconnect {
+		return world.changed(component.id, (id, _, value) => {
+			const e = resolveId(id)
+			if (!e) return
+
+			const requiredValues = this.match(e)
+			if (!requiredValues) return
+
+			callback(
+				e,
+				...[...requiredValues, value as InferValue<C>, entityHistory.get(id, component.id)! as InferValue<C>],
+			)
+		})
+	}
+
+	onRemoved<C extends ComponentHandle>(
+		component: C,
+		callback: (entity: Handle, ...componentValues: [...InferValues<Cs>, InferValue<C>, boolean]) => void,
+	): Disconnect {
+		return world.removed(component.id, (id, _, despawned) => {
+			const e = resolveId(id)
+			if (!e) return
+
+			const requiredValues = this.match(e)
+			if (!requiredValues) return
+
+			callback(
+				e,
+				...[...requiredValues, entityHistory.get(id, component.id)! as InferValue<C>, despawned ?? false],
+			)
+		})
+	}
+
 	/**
 	 * Iterates over each id in the query, calling the provided `callback`
 	 * with the id and its corresponding component values. Returns early
@@ -368,6 +317,29 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		}
 
 		return passed
+	}
+
+	private match(e: Handle): InferValues<Cs> | undefined {
+		const requiredValues: defined[] = []
+
+		for (const compId of this.requiredIds) {
+			const v = world.get(e.id, compId)
+			if (v === undefined) return undefined
+
+			requiredValues.push(v as defined)
+		}
+
+		for (const compId of this.includedIds) {
+			if (!world.has(e.id, compId)) return undefined
+		}
+
+		for (const compId of this.excludedIds) {
+			if (world.has(e.id, compId)) return undefined
+		}
+
+		if (!this.useFilters(e, ...requiredValues)) return undefined
+
+		return requiredValues as unknown as InferValues<Cs>
 	}
 }
 
