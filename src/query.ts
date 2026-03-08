@@ -406,6 +406,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
  *         entity.set(Position, position.add(velocity))
  *     })
  * }
+ * ```
  */
 export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)
