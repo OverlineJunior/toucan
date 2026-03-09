@@ -1,8 +1,6 @@
-<div align="left" style="margin-bottom: 0;">
-  <img src="assets/toucan.png" width="100" style="margin-bottom: 0;" />
-</div>
-
-<h1 style="margin-top: 0;">Toucan</h1>
+<h1>
+  <img src="assets/toucan.png" width="100" style="vertical-align: bottom; margin-right: 10px; margin-bottom: -12px" />Toucan
+</h1>
 
 ![Version](https://img.shields.io/badge/status-alpha-orange) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
