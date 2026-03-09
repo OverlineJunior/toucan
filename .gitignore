@@ -3,3 +3,4 @@
 /include
 *.tsbuildinfo
 *.tgz
+docs/node_modules

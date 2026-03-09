@@ -1,0 +1,180 @@
+/*
+HOME GRAIN
+*/
+
+[data-has-hero]::before {
+	content: "";
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	/* Keeps it behind your actual content */
+	pointer-events: none;
+	/* Allows clicks to pass through */
+	opacity: 0.03;
+	/* Adjust for subtlety (0.05 - 0.1 is usually best) */
+
+	/* This creates the noise */
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+body {
+	background-color: var(--sl-color-black);
+	/* mix-blend-mode helps the grain integrate with the colors */
+	mix-blend-mode: normal;
+}
+
+/*
+HOME GRADIENTS
+*/
+
+:root {
+	--purple-hsl: 48, 100%, 100%;
+	--overlay-blurple: hsla(var(--purple-hsl), 0.1);
+}
+
+:root[data-theme='light'] {
+	--purple-hsl: 48, 100%, 35%;
+	--overlay-blurple: hsla(var(--purple-hsl), 0.35);
+}
+
+[data-has-hero] .page {
+	background:
+		linear-gradient(215deg, var(--overlay-blurple), transparent 40%),
+		radial-gradient(var(--overlay-blurple), transparent 40%) no-repeat -60vw -40vh / 105vw 200vh,
+		radial-gradient(var(--overlay-blurple), transparent 65%) no-repeat 50% calc(100% + 20rem) / 60rem 30rem;
+}
+
+[data-has-hero] header {
+	border-bottom: 1px solid transparent;
+	background-color: transparent;
+	-webkit-backdrop-filter: blur(16px);
+	backdrop-filter: blur(16px);
+}
+
+[data-has-hero] .hero>img {
+	filter: drop-shadow(0 0 3rem var(--overlay-blurple));
+}
+
+:root[data-theme='light'] .hero>img {
+	filter: invert(1) !important;
+}
+
+/*
+THEME
+*/
+
+:root,
+::backdrop {
+    /* --- NEW: Fine-tuned Grayscale Palette (50% darker than previous) --- */
+    --sl-gray-1: hsl(220, 5%, 100%); /* Was 90% */
+    --sl-gray-2: hsl(220, 5%, 90%); /* Was 75% */
+    --sl-gray-3: hsl(220, 5%, 90%); /* Was 55% */
+    --sl-gray-4: hsl(220, 5%, 100%); /* Was 35% */
+    --sl-gray-5: hsl(220, 10%, 8%); /* Was 20% */
+    --sl-gray-6: hsl(220, 15%, 2.5%);  /* Was 12% - Sidebar/Nav background */
+    --sl-gray-7: hsl(0, 0%, 8%);    /* Near-black for borders */
+
+	--sl-color-white: hsl(0, 0%, 100%);
+	--sl-color-black: hsl(0, 0%, 0%);
+
+	/* Mapping Starlight variables to our new scale */
+	--sl-color-gray-1: var(--sl-gray-1);
+	--sl-color-gray-2: var(--sl-gray-2);
+	--sl-color-gray-3: var(--sl-gray-3);
+	--sl-color-gray-4: var(--sl-gray-4);
+	--sl-color-gray-5: var(--sl-gray-5);
+	--sl-color-gray-6: var(--sl-gray-6);
+
+	/* Semantic Hues remain the same, but low-lightness variants deepened */
+	--sl-hue-orange: 28; --sl-hue-green: 140; --sl-hue-blue: 195; --sl-hue-purple: 285; --sl-hue-red: 350;
+
+	--sl-color-orange-low: hsl(var(--sl-hue-orange), 40%, 8%);
+	--sl-color-orange: hsl(var(--sl-hue-orange), 85%, 60%);
+	--sl-color-orange-high: hsl(var(--sl-hue-orange), 85%, 80%);
+
+	--sl-color-green-low: hsl(var(--sl-hue-green), 40%, 8%);
+	--sl-color-green: hsl(var(--sl-hue-green), 70%, 55%);
+	--sl-color-green-high: hsl(var(--sl-hue-green), 70%, 80%);
+
+	--sl-color-blue-low: hsl(var(--sl-hue-blue), 40%, 8%);
+	--sl-color-blue: hsl(var(--sl-hue-blue), 80%, 60%);
+	--sl-color-blue-high: hsl(var(--sl-hue-blue), 80%, 80%);
+
+    /* ... (Purple/Red low variants also set to 8% lightness) ... */
+
+	/* ACCENT */
+	--sl-color-accent-low: hsl(48, 100%, 8%);
+	--sl-color-accent: hsl(48, 100%, 55%);
+	--sl-color-accent-high: hsl(48, 100%, 90%);
+
+	--sl-color-text: var(--sl-color-gray-2);
+	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-text-invert: var(--sl-color-black);
+
+	--sl-color-bg: var(--sl-color-black);
+	--sl-color-bg-nav: var(--sl-gray-6);
+	--sl-color-bg-sidebar: var(--sl-gray-6);
+	--sl-color-bg-inline-code: var(--sl-gray-5);
+	--sl-color-bg-accent: var(--sl-color-accent-high);
+
+	/* Borders are now much darker */
+	--sl-color-hairline-light: var(--sl-gray-5);
+	--sl-color-hairline: var(--sl-gray-7);
+	--sl-color-hairline-shade: var(--sl-color-black);
+
+	--sl-color-backdrop-overlay: hsla(0, 0%, 0%, 0.85);
+}
+
+:root[data-theme='light'],[data-theme='light'] ::backdrop {
+	/* Colours (light mode) - Tropical Day */
+	--sl-color-white: hsl(45, 20%, 10%); /* Deep warm black for text */
+	--sl-color-gray-1: hsl(45, 15%, 16%);
+	--sl-color-gray-2: hsl(45, 12%, 25%);
+	--sl-color-gray-3: hsl(45, 8%, 40%);
+	--sl-color-gray-4: hsl(45, 8%, 56%);
+	--sl-color-gray-5: hsl(45, 10%, 77%);
+	--sl-color-gray-6: hsl(45, 20%, 93%);
+	--sl-color-gray-7: hsl(45, 30%, 97%); /* Very subtle warm off-white bg */
+	--sl-color-black: hsl(0, 0%, 100%);
+
+	/* Semantic tweaks for Light Mode (Deepened for contrast) */
+	--sl-color-orange-high: hsl(var(--sl-hue-orange), 90%, 25%);
+	--sl-color-orange: hsl(var(--sl-hue-orange), 95%, 45%);
+	--sl-color-orange-low: hsl(var(--sl-hue-orange), 80%, 90%);
+
+	--sl-color-green-high: hsl(var(--sl-hue-green), 80%, 22%);
+	--sl-color-green: hsl(var(--sl-hue-green), 85%, 35%);
+	--sl-color-green-low: hsl(var(--sl-hue-green), 70%, 90%);
+
+	--sl-color-blue-high: hsl(var(--sl-hue-blue), 80%, 25%);
+	--sl-color-blue: hsl(var(--sl-hue-blue), 90%, 40%);
+	--sl-color-blue-low: hsl(var(--sl-hue-blue), 80%, 90%);
+
+	--sl-color-purple-high: hsl(var(--sl-hue-purple), 85%, 25%);
+	--sl-color-purple: hsl(var(--sl-hue-purple), 85%, 45%);
+	--sl-color-purple-low: hsl(var(--sl-hue-purple), 70%, 90%);
+
+	--sl-color-red-high: hsl(var(--sl-hue-red), 80%, 25%);
+	--sl-color-red: hsl(var(--sl-hue-red), 85%, 45%);
+	--sl-color-red-low: hsl(var(--sl-hue-red), 70%, 90%);
+
+	/* ACCENT: Rich Gold/Amber for legibility on light mode */
+	--sl-color-accent-high: hsl(45, 100%, 20%); /* Dark brown-gold */
+	--sl-color-accent: hsl(45, 95%, 38%);       /* Rich gold/amber for links/buttons */
+	--sl-color-accent-low: hsl(48, 100%, 88%);  /* Pale sunny yellow for backgrounds */
+
+	--sl-color-text-accent: var(--sl-color-accent);
+	--sl-color-text-invert: var(--sl-color-black); /* White text inside Accent elements */
+
+	--sl-color-bg-nav: var(--sl-color-gray-7);
+	--sl-color-bg-sidebar: var(--sl-color-bg);
+	--sl-color-bg-inline-code: var(--sl-color-gray-6);
+	--sl-color-bg-accent: var(--sl-color-accent);
+	--sl-color-hairline-light: var(--sl-color-gray-6);
+	--sl-color-hairline-shade: var(--sl-color-gray-6);
+
+	--sl-color-backdrop-overlay: hsla(45, 10%, 36%, 0.66);
+}
