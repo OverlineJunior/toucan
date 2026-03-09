@@ -1,20 +1,8 @@
-<table style="border: none; border-collapse: collapse;">
-  <tr style="border: none;">
-    <td style="border: none; padding: 0 20px 0 0;" valign="middle">
-      <img src="assets/toucan.png" width="80" />
-    </td>
-    <!-- Add your specific pixel value to the padding-top below -->
-    <td style="border: none; padding-top: 33px;" valign="middle">
-      <h1 style="margin: 0; border: none;">Toucan</h1>
-    </td>
-  </tr>
+<div align="left">
+  <img src="assets/toucan.png" width="100" />
+</div>
 
-  <tr style="border: none;">
-    <td colspan="2" style="border: none; padding-top: 0px;">
-      <hr style="border: 1; border-top: 2px solid var(--sl-color-hairline); margin: 0;" />
-    </td>
-  </tr>
-</table>
+# Toucan
 
 ![Version](https://img.shields.io/badge/status-alpha-orange) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
