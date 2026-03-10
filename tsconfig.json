@@ -24,5 +24,7 @@
 		"tsBuildInfoFile": "out/tsconfig.tsbuildinfo",
 		"declaration": true,
 		"stripInternal": true,
-	}
+	},
+	"include": ["src/**/*"],
+  	"exclude": ["node_modules", "out", "docs"],
 }
