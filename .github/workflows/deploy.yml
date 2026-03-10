@@ -20,10 +20,11 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm install
-      - run: npm run build
+      - name: Build Docs
+        run: cd docs && npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: 'dist'
+          path: 'docs/dist'
 
   deploy:
     needs: build
