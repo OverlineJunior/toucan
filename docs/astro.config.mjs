@@ -25,6 +25,7 @@ export default defineConfig({
             name: 'Toucan API',
             excludeExternals: true,
             exclude: ['**/node_modules/**'],
+            skipErrorChecking: true,
           },
         }),
       ],
