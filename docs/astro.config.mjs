@@ -9,7 +9,8 @@ export default defineConfig({
     starlight({
       title: 'Toucan',
       logo: {
-        src: '../assets/toucan.png',
+        dark: './public/toucan.png',
+        light: './public/toucan_light.png',
       },
       favicon: './public/toucan.png',
       customCss: [
