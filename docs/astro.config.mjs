@@ -3,6 +3,8 @@ import starlight from '@astrojs/starlight';
 import starlightTypeDoc from 'starlight-typedoc';
 
 export default defineConfig({
+  site: 'https://OverlineJunior.github.io',
+  base: '/toucan',
   integrations:[
     starlight({
       title: 'Toucan',
@@ -13,8 +15,6 @@ export default defineConfig({
       customCss: [
         './src/styles.css',
       ],
-      site: 'https://OverlineJunior.github.io',
-      base: 'toucan',
       plugins: [
         starlightTypeDoc({
           entryPoints:['../src/index.ts'],

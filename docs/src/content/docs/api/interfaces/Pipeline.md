@@ -25,7 +25,7 @@ Adds a Phase to the Pipeline, ordering it implicitly.
 
 ##### phase
 
-[`Phase`](/api/interfaces/phase/)
+[`Phase`](/toucan/api/interfaces/phase/)
 
 #### Returns
 
@@ -45,11 +45,11 @@ Adds a Phase to the Pipeline after another Phase, ordering it explicitly.
 
 ##### phase
 
-[`Phase`](/api/interfaces/phase/)
+[`Phase`](/toucan/api/interfaces/phase/)
 
 ##### after
 
-[`Phase`](/api/interfaces/phase/)
+[`Phase`](/toucan/api/interfaces/phase/)
 
 #### Returns
 
@@ -69,11 +69,11 @@ Adds a Phase to the Pipeline before another Phase, ordering it explicitly.
 
 ##### phase
 
-[`Phase`](/api/interfaces/phase/)
+[`Phase`](/toucan/api/interfaces/phase/)
 
 ##### before
 
-[`Phase`](/api/interfaces/phase/)
+[`Phase`](/toucan/api/interfaces/phase/)
 
 #### Returns
 

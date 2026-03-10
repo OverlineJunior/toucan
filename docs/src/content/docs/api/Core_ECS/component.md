@@ -5,9 +5,9 @@ prev: false
 title: "component"
 ---
 
-> **component**\<`Value`\>(`label?`): [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`Value`\>
+> **component**\<`Value`\>(`label?`): [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`Value`\>
 
-Defined in: [src/handle.ts:521](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L521)
+Defined in: [src/handle.ts:521](https://github.com/OverlineJunior/toucan/blob/5e77424d22b6c9bab6a75574fb64d27ef5785ee2/src/handle.ts#L521)
 
 Creates a new component.
 
@@ -27,7 +27,7 @@ Additionally, a `label` can be provided for easier identification during debuggi
 
 ## Returns
 
-[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`Value`\>
+[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`Value`\>
 
 ## Example
 
