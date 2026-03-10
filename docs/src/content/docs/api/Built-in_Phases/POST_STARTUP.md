@@ -5,9 +5,9 @@ prev: false
 title: "POST_STARTUP"
 ---
 
-> `const` **POST\_STARTUP**: [`Phase`](/api/interfaces/phase/)
+> `const` **POST\_STARTUP**: `Phase`
 
-Defined in: [src/std/phases.ts:40](https://github.com/OverlineJunior/toucan/blob/709434bcef3b0130ed797e45cdf39d37c0b15ce9/src/std/phases.ts#L40)
+Defined in: [std/phases.ts:40](https://github.com/OverlineJunior/toucan/blob/d7a6e6d9807f9afe6ad990c7456c15691aa2daa2/src/std/phases.ts#L40)
 
 The last phase in the startup pipeline, running once after all other **startup** phases, even custom ones.
 
