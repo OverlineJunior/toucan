@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Clean previous build artifacts
+        run: |
+          rm -rf docs/.astro
+          rm -rf docs/dist
+          rm -rf docs/src/content/docs/api
+
       - name: Install, build, and upload your site
         uses: withastro/action@v5
         with:
