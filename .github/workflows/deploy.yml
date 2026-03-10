@@ -1,8 +1,9 @@
-name: Deploy Documentation to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [master]
+    # TODO! Update back to master once we're done.
+    branches: [ deployment ]
   workflow_dispatch:
 
 permissions:
@@ -14,16 +15,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Clean previous build artifacts
+        run: |
+          rm -rf docs/.astro
+          rm -rf docs/dist
+          rm -rf docs/src/content/docs/api
+
+      - name: Install, build, and upload
+        uses: withastro/action@v5
         with:
-          node-version: 20
-          cache: 'npm'
-      - run: npm install
-      - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: 'dist'
+          path: ./docs
+          build-cmd: npm run build
 
   deploy:
     needs: build
@@ -32,5 +40,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - id: deployment
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
