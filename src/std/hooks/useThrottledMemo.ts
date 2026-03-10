@@ -18,6 +18,8 @@ import { useThrottle } from './useThrottle'
  *     label.Text = `Value: ${value}`
  * }
  * ```
+ *
+ * @group Hooks
  */
 export function useThrottledMemo<T>(
 	seconds: number,

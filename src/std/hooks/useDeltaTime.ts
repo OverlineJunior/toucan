@@ -15,6 +15,8 @@ import { useHookState } from "../../topoRuntime"
  *     })
  * }
  * ```
+ *
+ * @group Hooks
  */
 export function useDeltaTime(): number {
 	const state = useHookState(

@@ -71,6 +71,8 @@ const frameCallCounts = new Map<string, number>()
  * @param identifier - A unique value to additionally key by (optional).
  * @param cleanup - A function to run when the storage for this hook is cleaned up (optional).
  * @returns The persistent hook storage object.
+ *
+ * @group Hooks
  */
 export function useHookState<S extends object>(initial: S, identifier?: any, cleanup?: CleanupFn<S>): S {
 	const [file, line] = debug.info(3, 'sl')

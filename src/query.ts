@@ -9,6 +9,30 @@ export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [Handle, ...Inf
 
 type DisconnectFn = () => void
 
+/**
+ * Created with {@link query}, it represents a set of criteria used to filter and iterate over entities based on their components.
+ *
+ * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
+ * excluding specific components) and offer various ways to consume the matching entities. You can
+ * iterate over them (`forEach`, `map`), listen to their lifecycle events (`onAdded`, `onChanged`),
+ * or bind them directly into optimized system callbacks (`bind`).
+ *
+ * @example
+ * ```ts
+ * // 1. Define the query.
+ * const healthyMovers = query(Health, Position)
+ *     .with(Velocity)
+ *     .without(Stunned)
+ *     .filter((_entity, health, _position) => health > 0)
+ *
+ * // 2. Consume the query.
+ * healthyMovers.forEach((entity, health, position) => {
+ *     print(`Entity ${entity.id} is moving with ${health}hp at ${position}!`)
+ * })
+ * ```
+ *
+ * @group Core ECS
+ */
 export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
@@ -398,6 +422,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
  *     })
  * }
  * ```
+ *
+ * @group Core ECS
  */
 export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
 	return new Query<Cs>(...components)

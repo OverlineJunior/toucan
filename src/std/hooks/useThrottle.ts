@@ -19,6 +19,8 @@ import { useHookState } from "../../topoRuntime"
  *     })
  * }
  * ```
+ *
+ * @group Hooks
  */
 export function useThrottle(seconds: number, identifier?: unknown): boolean {
 	const state = useHookState(

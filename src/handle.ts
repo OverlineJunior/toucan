@@ -11,6 +11,8 @@ import type { Plugin as PluginBuildFn } from './scheduler'
 
 /**
  * The raw Jecs ID type.
+ *
+ * @group Core ECS
  */
 export type RawId = JecsEntity
 
@@ -59,6 +61,8 @@ export const entityHistory = new EntityHistory()
 
 /**
  * Returns the appropriate handle for `rawId`, or `undefined` if it does not exist in the world.
+ *
+ * @group Core ECS
  */
 export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | undefined {
 	if (!world.contains(rawId)) {
@@ -108,6 +112,8 @@ function isExternal(): boolean {
  *     const entity = handle as EntityHandle
  * })
  * ```
+ *
+ * @group Core ECS
  */
 export abstract class Handle {
 	constructor(
@@ -450,6 +456,13 @@ export abstract class Handle {
 // Entity
 // -----------------------------------------------------------------------------
 
+/**
+ * A handle for entities spawned with `entity()`.
+ *
+ * Currently, it has no unique methods, so it only serves as a marker.
+ *
+ * @group Core ECS
+ */
 export class EntityHandle extends Handle {
 	declare protected readonly __brand: 'entity'
 }
@@ -458,6 +471,8 @@ export class EntityHandle extends Handle {
  * Spawns a new, empty entity and returns it.
  *
  * Additionally, a `label` can be provided for easier identification during debugging.
+ *
+ * @group Core ECS
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
@@ -476,6 +491,13 @@ export function entity(label?: string): EntityHandle {
 // Component
 // -----------------------------------------------------------------------------
 
+/**
+ * A handle for components spawned with `component()`.
+ *
+ * Currently, it has no unique methods, so it only serves as a marker.
+ *
+ * @group Core ECS
+ */
 export class ComponentHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
 }
@@ -493,6 +515,8 @@ export class ComponentHandle<Value = unknown> extends Handle {
  * // A tag component.
  * const IsAlive = component()
  * ```
+ *
+ * @group Core ECS
  */
 export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
@@ -511,6 +535,11 @@ export function component<Value = undefined>(label?: string): ComponentHandle<Va
 // Resource
 // -----------------------------------------------------------------------------
 
+/**
+ * A handle for resources spawned with `resource()`.
+ *
+ * @group Core ECS
+ */
 export class ResourceHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
 
@@ -566,6 +595,8 @@ export class ResourceHandle<Value = unknown> extends Handle {
  *     GameState.write('in-game')
  * }
  * ```
+ *
+ * @group Core ECS
  */
 export function resource<Value extends NonNullable<unknown>>(value: Value, label?: string): ResourceHandle<Value> {
 	const rawId = world.component<Value>()
@@ -588,23 +619,29 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 
 /**
  * Built-in component used to distinguish entities created internally by Toucan.
+ *
+ * @group Built-in Entities
  */
 export const Internal = new ComponentHandle<undefined>(world.component())
 
 /**
  * Built-in component used to distinguish entities created externally by packages.
+ *
+ * @group Built-in Entities
  */
 export const External = new ComponentHandle<undefined>(world.component())
 
 /**
  * Built-in component used to assign human-readable labels to entities.
  *
- * Assigned to all entities, even if a custom label is not provided.
+ * @group Built-in Entities
  */
 export const Label = new ComponentHandle<string>(world.component())
 
 /**
  * Built-in component used to distinguish entities that represent components.
+ *
+ * @group Built-in Entities
  */
 export const Component = new ComponentHandle<undefined>(world.component())
 
@@ -626,6 +663,8 @@ export const Component = new ComponentHandle<undefined>(world.component())
  *     const parent = child.targetOf(ChildOf)
  * })
  * ```
+ *
+ * @group Built-in Entities
  */
 export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
 
@@ -640,6 +679,8 @@ export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
  * const bob = entity().set(pair(ChildOf, alice))
  * assert(bob.parent() === alice)
  * ```
+ *
+ * @group Built-in Entities
  */
 export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
 
@@ -673,11 +714,15 @@ ChildOf.set(Internal)
 
 /**
  * Built-in component used to distinguish entities that represent resources.
+ *
+ * @group Built-in Entities
  */
 export const Resource = component('Resource')
 
 /**
  * Built-in component used to distinguish entities that represent systems.
+ *
+ * @group Built-in Entities
  */
 export const System = component<{
 	callback: (...args: defined[]) => void
@@ -689,6 +734,8 @@ export const System = component<{
 
 /**
  * Built-in component used to distinguish entities that represent plugins.
+ *
+ * @group Built-in Entities
  */
 export const Plugin = component<{
 	build: PluginBuildFn<defined[]>

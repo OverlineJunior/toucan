@@ -10,6 +10,8 @@ import { Phase, Pipeline } from '@rbxts/planck'
  * ---
  *
  * The startup pipeline runs before the update pipeline.
+ *
+ * @group Built-in Phases
  */
 export const PRE_STARTUP = new Phase('PRE_STARTUP')
 /**
@@ -20,6 +22,8 @@ export const PRE_STARTUP = new Phase('PRE_STARTUP')
  * ---
  *
  * The startup pipeline runs before the update pipeline.
+ *
+ * @group Built-in Phases
  */
 export const STARTUP = new Phase('STARTUP')
 /**
@@ -30,6 +34,8 @@ export const STARTUP = new Phase('STARTUP')
  * ---
  *
  * The startup pipeline runs before the update pipeline.
+ *
+ * @group Built-in Phases
  */
 export const POST_STARTUP = new Phase('POST_STARTUP')
 
@@ -39,30 +45,40 @@ export const POST_STARTUP = new Phase('POST_STARTUP')
  * The first phase in the update pipeline, running on `RunService.Heartbeat` before all other **update** phases, even custom ones.
  *
  * **FIRST** -> PRE_UPDATE -> UPDATE -> POST_UPDATE -> LAST.
+ *
+ * @group Built-in Phases
  */
 export const FIRST = new Phase('FIRST')
 /**
  * Runs on `RunService.Heartbeat` in the following order (assuming no custom phases are added):
  *
  * FIRST -> **PRE_UPDATE** -> UPDATE -> POST_UPDATE -> LAST.
+ *
+ * @group Built-in Phases
  */
 export const PRE_UPDATE = new Phase('PRE_UPDATE')
 /**
  * Runs on `RunService.Heartbeat` in the following order (assuming no custom phases are added):
  *
  * FIRST -> PRE_UPDATE -> **UPDATE** -> POST_UPDATE -> LAST.
+ *
+ * @group Built-in Phases
  */
 export const UPDATE = new Phase('UPDATE')
 /**
  * Runs on `RunService.Heartbeat` in the following order (assuming no custom phases are added):
  *
  * FIRST -> PRE_UPDATE -> UPDATE -> **POST_UPDATE** -> LAST.
+ *
+ * @group Built-in Phases
  */
 export const POST_UPDATE = new Phase('POST_UPDATE')
 /**
  * The last phase in the update pipeline, running on `RunService.Heartbeat` after all others, even custom ones.
  *
  * FIRST -> PRE_UPDATE -> UPDATE -> POST_UPDATE -> **LAST**.
+ *
+ * @group Built-in Phases
  */
 export const LAST = new Phase('LAST')
 
@@ -70,18 +86,26 @@ export const LAST = new Phase('LAST')
 
 /**
  * Runs on `RunService.PreStartup`.
+ *
+ * @group Built-in Phases
  */
 export const PRE_RENDER = new Phase('PRE_RENDER')
 /**
  * Runs on `RunService.PreAnimation`.
+ *
+ * @group Built-in Phases
  */
 export const PRE_ANIMATION = new Phase('PRE_ANIMATION')
 /**
  * Runs on `RunService.PreSimulation`.
+ *
+ * @group Built-in Phases
  */
 export const PRE_SIMULATION = new Phase('PRE_SIMULATION')
 /**
  * Runs on `RunService.PostSimulation`.
+ *
+ * @group Built-in Phases
  */
 export const POST_SIMULATION = new Phase('POST_SIMULATION')
 
@@ -91,6 +115,8 @@ export const POST_SIMULATION = new Phase('POST_SIMULATION')
  * @remarks
  * ⚠️ This is an internal phase. It should only be used by the framework itself and third-party
  * plugins that need to run systems absolutely first or last in the update pipeline.
+ *
+ * @group Built-in Phases
  */
 export const ABSOLUTE_FIRST = new Phase('ABSOLUTE_FIRST')
 /**
@@ -99,11 +125,19 @@ export const ABSOLUTE_FIRST = new Phase('ABSOLUTE_FIRST')
  * @remarks
  * ⚠️ This is an internal phase. It should only be used by the framework itself and third-party
  * plugins that need to run systems absolutely first or last in the update pipeline.
+ *
+ * @group Built-in Phases
  */
 export const ABSOLUTE_LAST = new Phase('ABSOLUTE_LAST')
 
+/**
+ * @group Built-in Phases
+ */
 export const STARTUP_PIPELINE = new Pipeline('STARTUP_PIPELINE').insert(PRE_STARTUP).insert(STARTUP).insert(POST_STARTUP)
 
+/**
+ * @group Built-in Phases
+ */
 export const UPDATE_PIPELINE = new Pipeline('UPDATE_PIPELINE')
 	.insert(ABSOLUTE_FIRST)
 	.insert(FIRST)

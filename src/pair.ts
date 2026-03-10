@@ -16,6 +16,11 @@ export function getPairTarget(id: RawId): RawId {
 	return ((id - ECS_PAIR_OFFSET) % ECS_ENTITY_MASK) as RawId
 }
 
+/**
+ * A special handle for relationship pairs created with `pair()`.
+ *
+ * @group Core ECS
+ */
 export class Pair<Value = unknown> {
 	declare [VALUE_SYMBOL]: Value
 
@@ -70,6 +75,8 @@ export class Pair<Value = unknown> {
  *     .set(pair(Begin, Position), new Vector3(0, 0, 0))
  *     .set(pair(End, Position), new Vector3(10, 0, 0))
  * ```
+ *
+ * @group Core ECS
  */
 export function pair<R>(relation: ComponentHandle<R>, target: ComponentHandle<undefined>): Pair<R>
 export function pair<T>(relation: ComponentHandle<undefined>, target: ComponentHandle<T>): Pair<T>

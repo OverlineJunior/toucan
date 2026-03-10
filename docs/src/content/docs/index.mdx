@@ -11,30 +11,26 @@ hero:
       link: /guide/example/
       icon: right-arrow
     - text: API
-      link: /api/interfaces/componenthandle
+      link: /api/core_ecs/component/
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Features
 
-<CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+<CardGrid>
+	<Card title="Fluent API" icon="pencil">
+		Entity handles provide chainable methods that abstract away the process of imperatively manipulating entities.
 	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
+	<Card title="Advanced Queries" icon="magnifier">
+		Query entities whose component just changed, filter it, map it to something useful, you name it.
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="Plugins" icon="puzzle">
+		Organize your components and systems by grouping them together in a plugin, which in turn also allows for third-party plugins that are easy to integrate.
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="Everything is an Entity" icon="seti:config">
+		Components, resources, systems and plugins are also entities, allowing you to assign them metadata and inspect them.
 	</Card>
 </CardGrid>

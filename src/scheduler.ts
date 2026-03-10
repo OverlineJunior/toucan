@@ -161,6 +161,8 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 
 /**
  * The starting point of a game made with Toucan.
+ *
+ * @group Core ECS
  */
 export class Scheduler {
 	/**
@@ -314,6 +316,8 @@ export class Scheduler {
  *     .useSystem(greetPeople, UPDATE)
  *     .run()
  * ```
+ *
+ * @group Core ECS
  */
 export function scheduler() {
 	return new Scheduler()
