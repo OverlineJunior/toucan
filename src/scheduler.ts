@@ -166,8 +166,14 @@ export class Scheduler {
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
 	 *
-	 * # Example
+	 * #### Reflection
 	 *
+	 * Systems are entities with the standard `System` component, thus, they can be
+	 * queried and manipulated like any other entity in Toucan.
+	 *
+	 * Systems scheduled within plugins are automatically parented to the plugin.
+	 *
+	 * @example
 	 * ```ts
 	 * function fireGun(params: RaycastParams) { ... }
 	 *
@@ -175,13 +181,6 @@ export class Scheduler {
 	 *     .addSystems(UPDATE, [fireGun], new RaycastParams())
 	 *     .run()
 	 * ```
-	 *
-	 * # Reflection
-	 *
-	 * Systems are entities with the standard `System` component, thus, they can be
-	 * queried and manipulated like any other entity in Toucan.
-	 *
-	 * Systems scheduled within plugins are automatically parented to the plugin.
 	 */
 	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, args?: Args, label?: string): this {
 		spawnSystem(system, phase, args ?? ([] as unknown as Args), label)
@@ -192,8 +191,15 @@ export class Scheduler {
 	 * Schedules a plugin to be built, passing it the scheduler itself and the
 	 * provided arguments.
 	 *
-	 * # Example
+	 * #### Reflection
 	 *
+	 * Plugins are entities with the standard `Plugin` component, thus, they can be
+	 * queried and manipulated like any other entity in Toucan.
+	 *
+	 * Plugins scheduled within other plugins are automatically parented to the
+	 * parent plugin.
+	 *
+	 * @example
 	 * ```ts
 	 * function updatePhysics(gravity: number) { ... }
 	 *
@@ -205,14 +211,6 @@ export class Scheduler {
 	 *    .usePlugin(physicsPlugin, 196.2)
 	 *    .run()
 	 * ```
-	 *
-	 * # Reflection
-	 *
-	 * Plugins are entities with the standard `Plugin` component, thus, they can be
-	 * queried and manipulated like any other entity in Toucan.
-	 *
-	 * Plugins scheduled within other plugins are automatically parented to the
-	 * parent plugin.
 	 */
 	usePlugin<Args extends defined[]>(plugin: Plugin<Args>, ...args: Args): this {
 		spawnPlugin(plugin, ...args)
@@ -296,9 +294,8 @@ export class Scheduler {
  * Returns a new `Scheduler`, the starting point of a game made with Toucan.
  *
  * Responsible for running systems, building plugins and organizing phases.
- *
- * # Example
- *
+
+  @example*
  * ```ts
  * const Person = component()
  * const Age = component<number>()

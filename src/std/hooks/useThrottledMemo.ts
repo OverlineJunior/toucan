@@ -8,8 +8,7 @@ import { useThrottle } from './useThrottle'
  *
  * An optional `identifier` can be provided to create separate throttle states for different usages.
  *
- * # Example
- *
+ * @example
  * ```ts
  * function drawRandomValue() {
  *     // Updates a random value every 0.5 seconds.

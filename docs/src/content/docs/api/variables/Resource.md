@@ -7,6 +7,6 @@ title: "Resource"
 
 > `const` **Resource**: [`ComponentHandle`](/api/interfaces/componenthandle/)\<`undefined`\>
 
-Defined in: [src/handle.ts:691](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/handle.ts#L691)
+Defined in: [src/handle.ts:677](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/handle.ts#L677)
 
 Built-in component used to distinguish entities that represent resources.

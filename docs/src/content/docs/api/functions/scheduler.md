@@ -7,14 +7,13 @@ title: "scheduler"
 
 > **scheduler**(): [`Scheduler`](/api/interfaces/scheduler/)
 
-Defined in: [src/scheduler.ts:321](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/scheduler.ts#L321)
+Defined in: [src/scheduler.ts:318](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/scheduler.ts#L318)
 
 Returns a new `Scheduler`, the starting point of a game made with Toucan.
 
 Responsible for running systems, building plugins and organizing phases.
 
-# Example
-
+ @example*
 ```ts
 const Person = component()
 const Age = component<number>()

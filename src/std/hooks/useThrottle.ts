@@ -8,8 +8,7 @@ import { useHookState } from "../../topoRuntime"
  *
  * An optional `identifier` can be provided to create separate throttle states for different usages.
  *
- * # Example
- *
+ * @example
  * ```ts
  * function logNames() {
  *     query(Name).forEach((_, name) => {

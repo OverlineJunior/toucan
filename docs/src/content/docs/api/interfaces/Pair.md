@@ -5,7 +5,7 @@ prev: false
 title: "Pair"
 ---
 
-Defined in: [src/pair.ts:19](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/pair.ts#L19)
+Defined in: [src/pair.ts:19](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/pair.ts#L19)
 
 ## Type Parameters
 
@@ -19,7 +19,7 @@ Defined in: [src/pair.ts:19](https://github.com/OverlineJunior/toucan/blob/1c94e
 
 > **\[VALUE\_SYMBOL\]**: `Value`
 
-Defined in: [src/pair.ts:20](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/pair.ts#L20)
+Defined in: [src/pair.ts:20](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/pair.ts#L20)
 
 ## Methods
 
@@ -27,7 +27,7 @@ Defined in: [src/pair.ts:20](https://github.com/OverlineJunior/toucan/blob/1c94e
 
 > **toString**(): `string`
 
-Defined in: [src/pair.ts:32](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/pair.ts#L32)
+Defined in: [src/pair.ts:32](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/pair.ts#L32)
 
 #### Returns
 

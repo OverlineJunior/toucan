@@ -86,21 +86,19 @@ export const PRE_SIMULATION = new Phase('PRE_SIMULATION')
 export const POST_SIMULATION = new Phase('POST_SIMULATION')
 
 /**
- * # ⚠️ Internal phase.
- *
- * Should only be used by the framework itself and third-party plugins that need
- * to run systems absolutely first or last in the update pipeline.
- *
  * **ABSOLUTE_FIRST** -> FIRST -> PRE_UPDATE -> UPDATE -> POST_UPDATE -> LAST -> ABSOLUTE_LAST.
+ *
+ * @remarks
+ * ⚠️ This is an internal phase. It should only be used by the framework itself and third-party
+ * plugins that need to run systems absolutely first or last in the update pipeline.
  */
 export const ABSOLUTE_FIRST = new Phase('ABSOLUTE_FIRST')
 /**
- * # ⚠️ Internal Phase
- *
- * Should only be used by the framework itself and third-party plugins that need
- * to run systems absolutely first or last in the update pipeline.
- *
  * ABSOLUTE_FIRST -> FIRST -> PRE_UPDATE -> UPDATE -> POST_UPDATE -> LAST -> **ABSOLUTE_LAST**.
+ *
+ * @remarks
+ * ⚠️ This is an internal phase. It should only be used by the framework itself and third-party
+ * plugins that need to run systems absolutely first or last in the update pipeline.
  */
 export const ABSOLUTE_LAST = new Phase('ABSOLUTE_LAST')
 

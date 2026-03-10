@@ -3,8 +3,7 @@ import { useHookState } from "../../topoRuntime"
 /**
  * Returns the `os.clock()` time delta between the start of this and the last frame.
  *
- * # Example
- *
+ * @example
  * ```ts
  * function liftAll() {
  *     query(Position).forEach((id, position) => {

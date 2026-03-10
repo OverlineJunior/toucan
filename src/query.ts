@@ -98,9 +98,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Maps each entity that matches the query to a new value using the provided
 	 * `mapper` function, returning an array of the resulting values.
 	 *
-	 * # ⚠️ Warning
-	 *
-	 * This method allocates memory for all entities that match the query, so it should be
+	 * @remarks
+	 * ⚠️ This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
 	map<R extends defined>(mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R): R[] {
@@ -131,9 +130,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Collects all entities that match the query, returning an array of the entities
 	 * themselves and their corresponding component values.
 	 *
-	 * # Warning
-	 *
-	 * This method allocates memory for all entities that match the query, so it should be
+	 * @remarks
+	 * ⚠️ This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
 	collect(): QueryResult<Cs>[] {
@@ -149,19 +147,16 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	/**
 	 * Converts the query into a callback that can be scheduled just like a regular system function.
 	 *
-	 * # Pros
-	 *
+	 * #### Pros:
 	 * - It's cached, so it's more performant when called multiple times,
 	 *   such as in a system scheduled to run every frame;
 	 * - Removes the need of an extra layer of indentation in systems.
 	 *
-	 * # Cons
-	 *
+	 * #### Cons:
 	 * - Cannot be passed optional arguments by `Scheduler.useSystem()`.
 	 * - Cannot easily infer a label from function name, requiring it to be manually given by `Scheduler.useSystem()`.
 	 *
-	 * # Example
-	 *
+	 * @example
 	 * ```ts
 	 * const greetPeople = query(Name, Person).bind((_e, name) => {
 	 *     print(`Hello, ${name}!`)
@@ -201,8 +196,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * The callback receives the entity, the values of the queried components, and the
 	 * newly added component's value.
 	 *
-	 * # Example
-	 *
+	 * @example
 	 * ```ts
 	 * query(Player).onAdded(Health, (entity, player, health) => {
 	 *     print(`${health}hp was added to ${player}!`)
@@ -232,8 +226,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * The callback receives the entity, the values of the queried components, the
 	 * new value of the changed component, and its previous value.
 	 *
-	 * # Example
-	 *
+	 * @example
 	 * ```ts
 	 * query(Player).onChanged(Health, (entity, player, newHealth, oldHealth) => {
 	 *     print(`${player}'s health changed from ${oldHealth} to ${newHealth}!`)
@@ -266,8 +259,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * component's last known value before removal, and a boolean indicating if the
 	 * removal was caused by the entity despawning.
 	 *
-	 * # Example
-	 *
+	 * @example
 	 * ```ts
 	 * query(Player).onRemoved(Health, (entity, player, oldHealth, despawned) => {
 	 *     if (despawned) {
@@ -395,8 +387,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 /**
  * Creates a new query for the specified components and/or pairs.
  *
- * # Example
- *
+ * @exampl
  * ```ts
  * const Position = component<Vector3>()
  * const Velocity = component<Vector3>()

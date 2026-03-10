@@ -46,8 +46,7 @@ export class Pair<Value = unknown> {
  * - Else if `target` is a _component_ with a value, then the _pair_ takes the same value type;
  * - Otherwise, the _pair_ is a _tag pair_ and does not hold a value.
  *
- * # Example
- *
+ * @example
  * ```ts
  * const Likes = component()
  * const Owns = component<number>()
@@ -60,8 +59,7 @@ export class Pair<Value = unknown> {
  *     .set(pair(Owns, car), 2)
  * ```
  *
- * # Example 2
- *
+ * @example
  * ```ts
  * const Begin = component()
  * const End = component()

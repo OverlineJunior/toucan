@@ -5,7 +5,7 @@ prev: false
 title: "Scheduler"
 ---
 
-Defined in: [src/scheduler.ts:165](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/scheduler.ts#L165)
+Defined in: [src/scheduler.ts:165](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/scheduler.ts#L165)
 
 The starting point of a game made with Toucan.
 
@@ -15,7 +15,7 @@ The starting point of a game made with Toucan.
 
 > **run**(): `this`
 
-Defined in: [src/scheduler.ts:230](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/scheduler.ts#L230)
+Defined in: [src/scheduler.ts:228](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/scheduler.ts#L228)
 
 Synchronously builds all initially registered plugins (user-defined first),
 and then bootstraps the engine to run all systems on their respective phases.
@@ -34,26 +34,12 @@ which only fires once during this method call).
 
 > **usePlugin**\<`Args`\>(`plugin`, ...`args`): `this`
 
-Defined in: [src/scheduler.ts:217](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/scheduler.ts#L217)
+Defined in: [src/scheduler.ts:215](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/scheduler.ts#L215)
 
 Schedules a plugin to be built, passing it the scheduler itself and the
 provided arguments.
 
-# Example
-
-```ts
-function updatePhysics(gravity: number) { ... }
-
-function physicsPlugin(scheduler: Scheduler, gravity: number) {
-    scheduler.useSystem(updatePhysics, UPDATE, gravity)
-}
-
-scheduler()
-   .usePlugin(physicsPlugin, 196.2)
-   .run()
-```
-
-# Reflection
+#### Reflection
 
 Plugins are entities with the standard `Plugin` component, thus, they can be
 queried and manipulated like any other entity in Toucan.
@@ -81,27 +67,31 @@ parent plugin.
 
 `this`
 
+#### Example
+
+```ts
+function updatePhysics(gravity: number) { ... }
+
+function physicsPlugin(scheduler: Scheduler, gravity: number) {
+    scheduler.useSystem(updatePhysics, UPDATE, gravity)
+}
+
+scheduler()
+   .usePlugin(physicsPlugin, 196.2)
+   .run()
+```
+
 ***
 
 ### useSystem()
 
 > **useSystem**\<`Args`\>(`system`, `phase`, `args?`, `label?`): `this`
 
-Defined in: [src/scheduler.ts:186](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/scheduler.ts#L186)
+Defined in: [src/scheduler.ts:185](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/scheduler.ts#L185)
 
 Schedules a system to run in the specified phase with the provided arguments.
 
-# Example
-
-```ts
-function fireGun(params: RaycastParams) { ... }
-
-scheduler()
-    .addSystems(UPDATE, [fireGun], new RaycastParams())
-    .run()
-```
-
-# Reflection
+#### Reflection
 
 Systems are entities with the standard `System` component, thus, they can be
 queried and manipulated like any other entity in Toucan.
@@ -135,3 +125,13 @@ Systems scheduled within plugins are automatically parented to the plugin.
 #### Returns
 
 `this`
+
+#### Example
+
+```ts
+function fireGun(params: RaycastParams) { ... }
+
+scheduler()
+    .addSystems(UPDATE, [fireGun], new RaycastParams())
+    .run()
+```

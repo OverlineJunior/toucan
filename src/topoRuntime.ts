@@ -15,13 +15,12 @@ const frameCallCounts = new Map<string, number>()
  * This function is used for implementing your own topologically-aware functions. It should not be used in your
  * systems directly. You should use this function to implement your own utilities, similar to `useEvent` and
  * `useThrottle`.
- * :::
  *
  * `useHookState` does one thing: it returns a table. An empty, pristine table. Here's the cool thing though:
  * it always returns the *same* table, based on the script and line where *your function* (the function calling
  * `useHookState`) was called.
  *
- * ### Uniqueness
+ * #### Uniqueness
  *
  * If your function is called multiple times from the same line, perhaps within a loop, the default behavior of
  * `useHookState` is to uniquely identify these by call count, and will return a unique table for each call.
@@ -30,7 +29,7 @@ const frameCallCounts = new Map<string, number>()
  * script and line number, the storage will also only return the same table if the unique value (otherwise known as the
  * "discriminator") is the same.
  *
- * ### Cleaning up
+ * #### Cleaning up
  *
  * As a second optional parameter, you can pass a function that is automatically invoked when your storage is about
  * to be cleaned up. This happens when your function (and by extension, `useHookState`) ceases to be called again
@@ -47,10 +46,7 @@ const frameCallCounts = new Map<string, number>()
  * If cleanup is aborted, your cleanup function will continue to be called every frame, until you don't abort cleanup,
  * or the user actually calls your function again.
  *
- * ### Example: useThrottle
- *
- * This is the entire implementation of the built-in `useThrottle` function:
- *
+ * @example
  * ```ts
  * export function useThrottle(seconds: number, identifier?: unknown): boolean {
  *     const state = useHookState(
@@ -70,8 +66,6 @@ const frameCallCounts = new Map<string, number>()
  *     return false;
  * }
  * ```
- *
- * A lot of talk for something so simple, right?
  *
  * @param initial - The initial storage object.
  * @param identifier - A unique value to additionally key by (optional).

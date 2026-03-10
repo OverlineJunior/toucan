@@ -7,21 +7,11 @@ title: "component"
 
 > **component**\<`Value`\>(`label?`): [`ComponentHandle`](/api/interfaces/componenthandle/)\<`Value`\>
 
-Defined in: [src/handle.ts:508](https://github.com/OverlineJunior/toucan/blob/1c94ed864ac1c53d93ff8719b10efe66053841ce/src/handle.ts#L508)
+Defined in: [src/handle.ts:497](https://github.com/OverlineJunior/toucan/blob/f28f04d91a1f401a88e2816c1566e4ef64224416/src/handle.ts#L497)
 
 Creates a new component.
 
 Additionally, a `label` can be provided for easier identification during debugging.
-
-# Example
-
-```ts
-// A component with a value.
-const Health = component<number>()
-
-// A tag component.
-const IsAlive = component()
-```
 
 ## Type Parameters
 
@@ -38,3 +28,13 @@ const IsAlive = component()
 ## Returns
 
 [`ComponentHandle`](/api/interfaces/componenthandle/)\<`Value`\>
+
+## Exampl
+
+```ts
+// A component with a value.
+const Health = component<number>()
+
+// A tag component.
+const IsAlive = component()
+```
