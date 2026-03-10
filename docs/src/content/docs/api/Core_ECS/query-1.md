@@ -5,9 +5,9 @@ prev: false
 title: "query"
 ---
 
-> **query**\<`Cs`\>(...`components`): [`Query`](/toucan/api/core_ecs/query/)\<`Cs`\>
+> **query**\<`Cs`\>(...`components`): [`Query`](/api/core_ecs/query/)\<`Cs`\>
 
-Defined in: [query.ts:428](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/query.ts#L428)
+Defined in: [src/query.ts:428](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/query.ts#L428)
 
 Creates a new query for the specified components and/or pairs.
 
@@ -15,7 +15,7 @@ Creates a new query for the specified components and/or pairs.
 
 ### Cs
 
-`Cs` *extends* `ZeroUpToEight`\<[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>\>
+`Cs` *extends* `ZeroUpToEight`\<[`Pair`](/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>\>
 
 ## Parameters
 
@@ -25,7 +25,7 @@ Creates a new query for the specified components and/or pairs.
 
 ## Returns
 
-[`Query`](/toucan/api/core_ecs/query/)\<`Cs`\>
+[`Query`](/api/core_ecs/query/)\<`Cs`\>
 
 ## Example
 

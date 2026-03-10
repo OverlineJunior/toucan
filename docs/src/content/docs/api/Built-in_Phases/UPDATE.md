@@ -5,9 +5,9 @@ prev: false
 title: "UPDATE"
 ---
 
-> `const` **UPDATE**: `Phase`
+> `const` **UPDATE**: [`Phase`](/api/interfaces/phase/)
 
-Defined in: [std/phases.ts:67](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/std/phases.ts#L67)
+Defined in: [src/std/phases.ts:67](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/std/phases.ts#L67)
 
 Runs on `RunService.Heartbeat` in the following order (assuming no custom phases are added):
 

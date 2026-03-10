@@ -1,14 +1,10 @@
-name: Deploy to GitHub Pages
+name: Deploy Documentation to GitHub Pages
 
 on:
-  # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch’s name
   push:
-    branches: [ master ]
-  # Allows you to run this workflow manually from the Actions tab on GitHub.
+    branches: [master]
   workflow_dispatch:
 
-# Allow this job to clone the repo and create a page deployment
 permissions:
   contents: read
   pages: write
@@ -18,23 +14,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
-        uses: actions/checkout@v5
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Clean previous build artifacts
-        run: |
-          rm -rf docs/.astro
-          rm -rf docs/dist
-          rm -rf docs/src/content/docs/api
-
-      - name: Install, build, and upload your site
-        uses: withastro/action@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          path: ./docs
-          build-cmd: npm run build
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist'
 
   deploy:
     needs: build
@@ -43,6 +32,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4

@@ -5,13 +5,13 @@ prev: false
 title: "ResourceHandle"
 ---
 
-Defined in: [handle.ts:543](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L543)
+Defined in: [src/handle.ts:543](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L543)
 
 A handle for resources spawned with `resource()`.
 
 ## Extends
 
-- [`Handle`](/toucan/api/core_ecs/handle/)
+- [`Handle`](/api/core_ecs/handle/)
 
 ## Type Parameters
 
@@ -25,15 +25,15 @@ A handle for resources spawned with `resource()`.
 
 > **\[VALUE\_SYMBOL\]**: `Value`
 
-Defined in: [handle.ts:544](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L544)
+Defined in: [src/handle.ts:544](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L544)
 
 ***
 
 ### id
 
-> `readonly` **id**: [`RawId`](/toucan/api/core_ecs/rawid/)
+> `readonly` **id**: [`RawId`](/api/core_ecs/rawid/)
 
-Defined in: [handle.ts:130](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L130)
+Defined in: [src/handle.ts:130](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L130)
 
 The numeric ID underlying this handle.
 
@@ -46,7 +46,7 @@ In order to get back the high-level handle from an ID, use the
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`id`](/toucan/api/core_ecs/handle/#id)
+[`Handle`](/api/core_ecs/handle/).[`id`](/api/core_ecs/handle/#id)
 
 ## Methods
 
@@ -54,7 +54,7 @@ In order to get back the high-level handle from an ID, use the
 
 > **changed**(`listener`): () => `void`
 
-Defined in: [handle.ts:572](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L572)
+Defined in: [src/handle.ts:572](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L572)
 
 Registers a listener that is called whenever the value of this resource changes.
 
@@ -78,15 +78,15 @@ The returned function can be called to unregister the listener.
 
 ### children()
 
-> **children**(): [`Handle`](/toucan/api/core_ecs/handle/)[]
+> **children**(): [`Handle`](/api/core_ecs/handle/)[]
 
-Defined in: [handle.ts:347](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L347)
+Defined in: [src/handle.ts:347](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L347)
 
 Gets all children (the sources of `ChildOf` relationships) for this entity.
 
 #### Returns
 
-[`Handle`](/toucan/api/core_ecs/handle/)[]
+[`Handle`](/api/core_ecs/handle/)[]
 
 #### Example
 
@@ -100,7 +100,7 @@ const children = alice.children() // [charlie, bob]
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`children`](/toucan/api/core_ecs/handle/#children)
+[`Handle`](/api/core_ecs/handle/).[`children`](/api/core_ecs/handle/#children)
 
 ***
 
@@ -108,7 +108,7 @@ const children = alice.children() // [charlie, bob]
 
 > **clear**(): `this`
 
-Defined in: [handle.ts:262](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L262)
+Defined in: [src/handle.ts:262](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L262)
 
 Clears all components and relationship pairs from this entity, but
 does not despawn the entity.
@@ -119,25 +119,25 @@ does not despawn the entity.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`clear`](/toucan/api/core_ecs/handle/#clear)
+[`Handle`](/api/core_ecs/handle/).[`clear`](/api/core_ecs/handle/#clear)
 
 ***
 
 ### components()
 
-> **components**(): [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>[]
+> **components**(): [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>[]
 
-Defined in: [handle.ts:271](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L271)
+Defined in: [src/handle.ts:271](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L271)
 
 Returns all components associated with this entity.
 
 #### Returns
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>[]
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>[]
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`components`](/toucan/api/core_ecs/handle/#components)
+[`Handle`](/api/core_ecs/handle/).[`components`](/api/core_ecs/handle/#components)
 
 ***
 
@@ -145,7 +145,7 @@ Returns all components associated with this entity.
 
 > **despawn**(): `void`
 
-Defined in: [handle.ts:449](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L449)
+Defined in: [src/handle.ts:449](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L449)
 
 Completely deletes this entity from the world.
 
@@ -155,7 +155,7 @@ Completely deletes this entity from the world.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`despawn`](/toucan/api/core_ecs/handle/#despawn)
+[`Handle`](/api/core_ecs/handle/).[`despawn`](/api/core_ecs/handle/#despawn)
 
 ***
 
@@ -163,7 +163,7 @@ Completely deletes this entity from the world.
 
 > **exists**(): `boolean`
 
-Defined in: [handle.ts:358](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L358)
+Defined in: [src/handle.ts:358](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L358)
 
 Returns `true` if this entity exists.
 
@@ -173,7 +173,7 @@ Returns `true` if this entity exists.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`exists`](/toucan/api/core_ecs/handle/#exists)
+[`Handle`](/api/core_ecs/handle/).[`exists`](/api/core_ecs/handle/#exists)
 
 ***
 
@@ -181,7 +181,7 @@ Returns `true` if this entity exists.
 
 > **get**\<`Args`\>(...`componentsOrPairs`): `Flatten`\<`Nullable`\<`InferValues`\<`Args`\>\>\>
 
-Defined in: [handle.ts:216](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L216)
+Defined in: [src/handle.ts:216](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L216)
 
 Retrieves the values of up to 4 components or relationship pairs on
 this entity.
@@ -192,7 +192,7 @@ Missing components or pairs will return `undefined`.
 
 ##### Args
 
-`Args` *extends* `OneUpToFour`\<[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>\>
+`Args` *extends* `OneUpToFour`\<[`Pair`](/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>\>
 
 #### Parameters
 
@@ -216,7 +216,7 @@ const carCount = myEntity.get(pair(Owns, car))
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`get`](/toucan/api/core_ecs/handle/#get)
+[`Handle`](/api/core_ecs/handle/).[`get`](/api/core_ecs/handle/#get)
 
 ***
 
@@ -224,7 +224,7 @@ const carCount = myEntity.get(pair(Owns, car))
 
 > **has**(...`componentsOrPairs`): `boolean`
 
-Defined in: [handle.ts:245](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L245)
+Defined in: [src/handle.ts:245](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L245)
 
 Returns `true` if this entity has _all_ of the specified components or
 relationship pairs.
@@ -235,7 +235,7 @@ A maximum of 4 components or pairs can be checked at once.
 
 ##### componentsOrPairs
 
-...`OneUpToFour`\<[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>\>
+...`OneUpToFour`\<[`Pair`](/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>\>
 
 #### Returns
 
@@ -259,21 +259,21 @@ if (bob.has(IsDead, pair(Owns, house))) {
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`has`](/toucan/api/core_ecs/handle/#has)
+[`Handle`](/api/core_ecs/handle/).[`has`](/api/core_ecs/handle/#has)
 
 ***
 
 ### parent()
 
-> **parent**(): [`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+> **parent**(): [`Handle`](/api/core_ecs/handle/) \| `undefined`
 
-Defined in: [handle.ts:330](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L330)
+Defined in: [src/handle.ts:330](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L330)
 
 Gets the parent (the target of a `ChildOf` relationship) for this entity, if such a relationship exists.
 
 #### Returns
 
-[`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+[`Handle`](/api/core_ecs/handle/) \| `undefined`
 
 #### Example
 
@@ -286,7 +286,7 @@ const parent = charlie.parent() // alice
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`parent`](/toucan/api/core_ecs/handle/#parent)
+[`Handle`](/api/core_ecs/handle/).[`parent`](/api/core_ecs/handle/#parent)
 
 ***
 
@@ -294,7 +294,7 @@ const parent = charlie.parent() // alice
 
 > **read**(): `Value`
 
-Defined in: [handle.ts:552](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L552)
+Defined in: [src/handle.ts:552](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L552)
 
 Returns the current value of this resource.
 
@@ -309,19 +309,19 @@ components attached to resources, just like with entities.
 
 ### relationships()
 
-> **relationships**(): [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>[]
+> **relationships**(): [`Pair`](/api/core_ecs/pair/)\<`unknown`\>[]
 
-Defined in: [handle.ts:292](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L292)
+Defined in: [src/handle.ts:292](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L292)
 
 Returns all relationship pairs associated with this entity.
 
 #### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>[]
+[`Pair`](/api/core_ecs/pair/)\<`unknown`\>[]
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`relationships`](/toucan/api/core_ecs/handle/#relationships)
+[`Handle`](/api/core_ecs/handle/).[`relationships`](/api/core_ecs/handle/#relationships)
 
 ***
 
@@ -329,7 +329,7 @@ Returns all relationship pairs associated with this entity.
 
 > **remove**(`componentOrPair`): `this`
 
-Defined in: [handle.ts:252](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L252)
+Defined in: [src/handle.ts:252](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L252)
 
 Removes a component or relationship pair from this entity.
 
@@ -337,7 +337,7 @@ Removes a component or relationship pair from this entity.
 
 ##### componentOrPair
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> | [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>
+[`Pair`](/api/core_ecs/pair/)\<`unknown`\> | [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>
 
 #### Returns
 
@@ -345,7 +345,7 @@ Removes a component or relationship pair from this entity.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`remove`](/toucan/api/core_ecs/handle/#remove)
+[`Handle`](/api/core_ecs/handle/).[`remove`](/api/core_ecs/handle/#remove)
 
 ***
 
@@ -355,7 +355,7 @@ Removes a component or relationship pair from this entity.
 
 > **set**(`tagComponent`): `this`
 
-Defined in: [handle.ts:145](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L145)
+Defined in: [src/handle.ts:145](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L145)
 
 Assigns a tag component to this entity.
 
@@ -363,7 +363,7 @@ Assigns a tag component to this entity.
 
 ###### tagComponent
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`undefined`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`undefined`\>
 
 ##### Returns
 
@@ -378,13 +378,13 @@ myEntity.set(IsAlive)
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`set`](/toucan/api/core_ecs/handle/#set)
+[`Handle`](/api/core_ecs/handle/).[`set`](/api/core_ecs/handle/#set)
 
 #### Call Signature
 
 > **set**\<`V`\>(`component`, `value`): `this`
 
-Defined in: [handle.ts:159](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L159)
+Defined in: [src/handle.ts:159](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L159)
 
 Assigns a component and its value to this entity.
 
@@ -398,11 +398,11 @@ Assigns a component and its value to this entity.
 
 ###### component
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`V`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`V`\>
 
 ###### value
 
-`NoInfer`\<`V`\>
+`NoInfer`
 
 ##### Returns
 
@@ -421,13 +421,13 @@ entity()
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`set`](/toucan/api/core_ecs/handle/#set)
+[`Handle`](/api/core_ecs/handle/).[`set`](/api/core_ecs/handle/#set)
 
 #### Call Signature
 
 > **set**(`tagPair`): `this`
 
-Defined in: [handle.ts:172](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L172)
+Defined in: [src/handle.ts:172](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L172)
 
 Assigns a relationship pair to this entity.
 
@@ -435,7 +435,7 @@ Assigns a relationship pair to this entity.
 
 ###### tagPair
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`undefined`\>
+[`Pair`](/api/core_ecs/pair/)\<`undefined`\>
 
 ##### Returns
 
@@ -453,13 +453,13 @@ const alice = entity()
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`set`](/toucan/api/core_ecs/handle/#set)
+[`Handle`](/api/core_ecs/handle/).[`set`](/api/core_ecs/handle/#set)
 
 #### Call Signature
 
 > **set**\<`P`\>(`pair`, `value`): `this`
 
-Defined in: [handle.ts:188](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L188)
+Defined in: [src/handle.ts:188](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L188)
 
 Assigns a relationship pair and its value to this entity.
 
@@ -467,7 +467,7 @@ Assigns a relationship pair and its value to this entity.
 
 ###### P
 
-`P` *extends* [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>
+`P` *extends* [`Pair`](/api/core_ecs/pair/)\<`unknown`\>
 
 ##### Parameters
 
@@ -498,15 +498,15 @@ const alice = entity()
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`set`](/toucan/api/core_ecs/handle/#set)
+[`Handle`](/api/core_ecs/handle/).[`set`](/api/core_ecs/handle/#set)
 
 ***
 
 ### targetOf()
 
-> **targetOf**(`relation`, `nth?`): [`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+> **targetOf**(`relation`, `nth?`): [`Handle`](/api/core_ecs/handle/) \| `undefined`
 
-Defined in: [handle.ts:383](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L383)
+Defined in: [src/handle.ts:383](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L383)
 
 Returns the target entity of a relationship pair from this entity.
 
@@ -517,7 +517,7 @@ can be specified (starting at 0).
 
 ##### relation
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)
+[`ComponentHandle`](/api/core_ecs/componenthandle/)
 
 ##### nth?
 
@@ -525,7 +525,7 @@ can be specified (starting at 0).
 
 #### Returns
 
-[`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+[`Handle`](/api/core_ecs/handle/) \| `undefined`
 
 #### Example
 
@@ -545,15 +545,15 @@ const maybeCharlie = alice.targetOf(Likes, 1)
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`targetOf`](/toucan/api/core_ecs/handle/#targetof)
+[`Handle`](/api/core_ecs/handle/).[`targetOf`](/api/core_ecs/handle/#targetof)
 
 ***
 
 ### targetsOf()
 
-> **targetsOf**(`relation`): [`Handle`](/toucan/api/core_ecs/handle/)[]
+> **targetsOf**(`relation`): [`Handle`](/api/core_ecs/handle/)[]
 
-Defined in: [handle.ts:404](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L404)
+Defined in: [src/handle.ts:404](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L404)
 
 Returns all target entities of a relationship pair from this entity.
 
@@ -561,11 +561,11 @@ Returns all target entities of a relationship pair from this entity.
 
 ##### relation
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)
+[`ComponentHandle`](/api/core_ecs/componenthandle/)
 
 #### Returns
 
-[`Handle`](/toucan/api/core_ecs/handle/)[]
+[`Handle`](/api/core_ecs/handle/)[]
 
 #### Example
 
@@ -583,7 +583,7 @@ const likedEntities = alice.targetsOf(Likes)
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`targetsOf`](/toucan/api/core_ecs/handle/#targetsof)
+[`Handle`](/api/core_ecs/handle/).[`targetsOf`](/api/core_ecs/handle/#targetsof)
 
 ***
 
@@ -591,7 +591,7 @@ const likedEntities = alice.targetsOf(Likes)
 
 > **toString**(): `string`
 
-Defined in: [handle.ts:315](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L315)
+Defined in: [src/handle.ts:315](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L315)
 
 Gets the label assigned to this entity.
 
@@ -601,7 +601,7 @@ Gets the label assigned to this entity.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/core_ecs/handle/).[`toString`](/toucan/api/core_ecs/handle/#tostring)
+[`Handle`](/api/core_ecs/handle/).[`toString`](/api/core_ecs/handle/#tostring)
 
 ***
 
@@ -609,7 +609,7 @@ Gets the label assigned to this entity.
 
 > **write**(`value`): `this`
 
-Defined in: [handle.ts:562](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L562)
+Defined in: [src/handle.ts:562](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L562)
 
 Updates the value of the resource.
 

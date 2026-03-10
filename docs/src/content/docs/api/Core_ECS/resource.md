@@ -5,9 +5,9 @@ prev: false
 title: "resource"
 ---
 
-> **resource**\<`Value`\>(`value`, `label?`): [`ResourceHandle`](/toucan/api/core_ecs/resourcehandle/)\<`Value`\>
+> **resource**\<`Value`\>(`value`, `label?`): [`ResourceHandle`](/api/core_ecs/resourcehandle/)\<`Value`\>
 
-Defined in: [handle.ts:601](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L601)
+Defined in: [src/handle.ts:601](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L601)
 
 Creates a new resource with the given initial `value`.
 
@@ -34,7 +34,7 @@ Additionally, a `label` can be provided for easier identification during debuggi
 
 ## Returns
 
-[`ResourceHandle`](/toucan/api/core_ecs/resourcehandle/)\<`Value`\>
+[`ResourceHandle`](/api/core_ecs/resourcehandle/)\<`Value`\>
 
 ## Example
 

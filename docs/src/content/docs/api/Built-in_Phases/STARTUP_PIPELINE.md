@@ -5,6 +5,6 @@ prev: false
 title: "STARTUP_PIPELINE"
 ---
 
-> `const` **STARTUP\_PIPELINE**: `Pipeline`
+> `const` **STARTUP\_PIPELINE**: [`Pipeline`](/api/interfaces/pipeline/)
 
-Defined in: [std/phases.ts:136](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/std/phases.ts#L136)
+Defined in: [src/std/phases.ts:136](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/std/phases.ts#L136)

@@ -7,9 +7,9 @@ title: "pair"
 
 ## Call Signature
 
-> **pair**\<`R`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
+> **pair**\<`R`\>(`relation`, `target`): [`Pair`](/api/core_ecs/pair/)\<`R`\>
 
-Defined in: [pair.ts:81](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/pair.ts#L81)
+Defined in: [src/pair.ts:81](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/pair.ts#L81)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -32,15 +32,15 @@ _pair_ is determined by its `relation` and `target` arguments:
 
 #### relation
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`R`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`R`\>
 
 #### target
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`undefined`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`undefined`\>
 
 ### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
+[`Pair`](/api/core_ecs/pair/)\<`R`\>
 
 ### Examples
 
@@ -69,9 +69,9 @@ const line = entity()
 
 ## Call Signature
 
-> **pair**\<`T`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`T`\>
+> **pair**\<`T`\>(`relation`, `target`): [`Pair`](/api/core_ecs/pair/)\<`T`\>
 
-Defined in: [pair.ts:82](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/pair.ts#L82)
+Defined in: [src/pair.ts:82](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/pair.ts#L82)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -94,15 +94,15 @@ _pair_ is determined by its `relation` and `target` arguments:
 
 #### relation
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`undefined`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`undefined`\>
 
 #### target
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`T`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`T`\>
 
 ### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`T`\>
+[`Pair`](/api/core_ecs/pair/)\<`T`\>
 
 ### Examples
 
@@ -131,9 +131,9 @@ const line = entity()
 
 ## Call Signature
 
-> **pair**\<`R`, `T`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
+> **pair**\<`R`, `T`\>(`relation`, `target`): [`Pair`](/api/core_ecs/pair/)\<`R`\>
 
-Defined in: [pair.ts:83](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/pair.ts#L83)
+Defined in: [src/pair.ts:83](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/pair.ts#L83)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -160,15 +160,15 @@ _pair_ is determined by its `relation` and `target` arguments:
 
 #### relation
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`R`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`R`\>
 
 #### target
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`T`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`T`\>
 
 ### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
+[`Pair`](/api/core_ecs/pair/)\<`R`\>
 
 ### Examples
 
@@ -197,9 +197,9 @@ const line = entity()
 
 ## Call Signature
 
-> **pair**\<`R`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
+> **pair**\<`R`\>(`relation`, `target`): [`Pair`](/api/core_ecs/pair/)\<`R`\>
 
-Defined in: [pair.ts:84](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/pair.ts#L84)
+Defined in: [src/pair.ts:84](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/pair.ts#L84)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -222,15 +222,15 @@ _pair_ is determined by its `relation` and `target` arguments:
 
 #### relation
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`R`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`R`\>
 
 #### target
 
-[`EntityHandle`](/toucan/api/core_ecs/entityhandle/)
+[`EntityHandle`](/api/core_ecs/entityhandle/)
 
 ### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
+[`Pair`](/api/core_ecs/pair/)\<`R`\>
 
 ### Examples
 
@@ -259,9 +259,9 @@ const line = entity()
 
 ## Call Signature
 
-> **pair**\<`T`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`T`\>
+> **pair**\<`T`\>(`relation`, `target`): [`Pair`](/api/core_ecs/pair/)\<`T`\>
 
-Defined in: [pair.ts:85](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/pair.ts#L85)
+Defined in: [src/pair.ts:85](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/pair.ts#L85)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -284,15 +284,15 @@ _pair_ is determined by its `relation` and `target` arguments:
 
 #### relation
 
-[`EntityHandle`](/toucan/api/core_ecs/entityhandle/)
+[`EntityHandle`](/api/core_ecs/entityhandle/)
 
 #### target
 
-[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`T`\>
+[`ComponentHandle`](/api/core_ecs/componenthandle/)\<`T`\>
 
 ### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`T`\>
+[`Pair`](/api/core_ecs/pair/)\<`T`\>
 
 ### Examples
 
@@ -321,9 +321,9 @@ const line = entity()
 
 ## Call Signature
 
-> **pair**(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`undefined`\>
+> **pair**(`relation`, `target`): [`Pair`](/api/core_ecs/pair/)\<`undefined`\>
 
-Defined in: [pair.ts:86](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/pair.ts#L86)
+Defined in: [src/pair.ts:86](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/pair.ts#L86)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -340,15 +340,15 @@ _pair_ is determined by its `relation` and `target` arguments:
 
 #### relation
 
-[`EntityHandle`](/toucan/api/core_ecs/entityhandle/)
+[`EntityHandle`](/api/core_ecs/entityhandle/)
 
 #### target
 
-[`EntityHandle`](/toucan/api/core_ecs/entityhandle/)
+[`EntityHandle`](/api/core_ecs/entityhandle/)
 
 ### Returns
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`undefined`\>
+[`Pair`](/api/core_ecs/pair/)\<`undefined`\>
 
 ### Examples
 

@@ -3,14 +3,7 @@ import starlight from '@astrojs/starlight';
 import starlightTypeDoc from 'starlight-typedoc';
 
 export default defineConfig({
-  site: 'https://OverlineJunior.github.io',
-  base: '/toucan',
-  vite: {
-    ssr: {
-      noExternal: ['zod'],
-    },
-  },
-  integrations: [
+  integrations:[
     starlight({
       title: 'Toucan',
       logo: {
@@ -20,17 +13,15 @@ export default defineConfig({
       customCss: [
         './src/styles.css',
       ],
+      site: 'https://OverlineJunior.github.io',
+      base: 'toucan',
       plugins: [
         starlightTypeDoc({
-          entryPoints: ['../src/index.ts'],
+          entryPoints:['../src/index.ts'],
           tsconfig: './tsconfig.json',
           skipErrorChecking: true,
           typeDoc: {
             router: 'group',
-            name: 'Toucan API',
-            excludeExternals: true,
-            exclude: ['**/node_modules/**'],
-            skipErrorChecking: true,
           },
         }),
       ],

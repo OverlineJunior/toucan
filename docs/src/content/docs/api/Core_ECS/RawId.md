@@ -7,6 +7,6 @@ title: "RawId"
 
 > **RawId** = `JecsEntity`
 
-Defined in: [handle.ts:17](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L17)
+Defined in: [src/handle.ts:17](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L17)
 
 The raw Jecs ID type.

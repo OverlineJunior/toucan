@@ -24,6 +24,5 @@
 		"tsBuildInfoFile": "out/tsconfig.tsbuildinfo",
 		"declaration": true,
 		"stripInternal": true,
-	},
-	"exclude": ["docs"]
+	}
 }

@@ -5,9 +5,9 @@ prev: false
 title: "PRE_STARTUP"
 ---
 
-> `const` **PRE\_STARTUP**: `Phase`
+> `const` **PRE\_STARTUP**: [`Phase`](/api/interfaces/phase/)
 
-Defined in: [std/phases.ts:16](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/std/phases.ts#L16)
+Defined in: [src/std/phases.ts:16](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/std/phases.ts#L16)
 
 The first phase in the startup pipeline, running once before all others, even custom ones.
 

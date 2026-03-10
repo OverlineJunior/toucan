@@ -5,9 +5,9 @@ prev: false
 title: "STARTUP"
 ---
 
-> `const` **STARTUP**: `Phase`
+> `const` **STARTUP**: [`Phase`](/api/interfaces/phase/)
 
-Defined in: [std/phases.ts:28](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/std/phases.ts#L28)
+Defined in: [src/std/phases.ts:28](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/std/phases.ts#L28)
 
 Runs once on app startup in the following order:
 

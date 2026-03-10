@@ -2,21 +2,15 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "skipLibCheck": true,
-    "noEmit": true,
-    "moduleResolution": "Node",
-    "target": "ESNext",
-    "noLib": false,
-    "lib": ["ESNext"],
-    "typeRoots": ["../node_modules/@rbxts", "../node_modules/@types"],
-    "types": ["@rbxts/types"]
+    "noEmit": true
   },
-  "include": [
-    "../src/**/*.ts"
+  "include":[
+    "../src/**/*"
   ],
-  "exclude": [
+  "exclude":[
     "../node_modules",
     "node_modules",
-    "src/index.ts", // Only include the files you want to document
+    "src",
     "astro.config.mjs"
   ]
 }

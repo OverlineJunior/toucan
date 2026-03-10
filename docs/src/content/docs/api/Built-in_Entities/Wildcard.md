@@ -5,9 +5,9 @@ prev: false
 title: "Wildcard"
 ---
 
-> `const` **Wildcard**: [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>
+> `const` **Wildcard**: [`ComponentHandle`](/api/core_ecs/componenthandle/)\<`unknown`\>
 
-Defined in: [handle.ts:669](https://github.com/OverlineJunior/toucan/blob/62f1b2542b7786caa0f969ae53354577a38c701d/src/handle.ts#L669)
+Defined in: [src/handle.ts:669](https://github.com/OverlineJunior/toucan/blob/d9d8710f3d24167621f79a1bf7051c996358ce73/src/handle.ts#L669)
 
 Built-in component that acts as a wildcard in queries. It has two use cases:
 1. To query for all entities, including variations, such as components, systems and so on;
