@@ -130,7 +130,7 @@ export abstract class Handle {
 	/**
 	 * Assigns a tag component to this entity.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const IsAlive = component()
 	 * myEntity.set(IsAlive)
@@ -140,7 +140,7 @@ export abstract class Handle {
 	/**
 	 * Assigns a component and its value to this entity.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const Health = component<number>()
 	 * const Stamina = component<number>()
@@ -154,7 +154,7 @@ export abstract class Handle {
 	/**
 	 * Assigns a relationship pair to this entity.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const Likes = component()
 	 *
@@ -167,7 +167,7 @@ export abstract class Handle {
 	/**
 	 * Assigns a relationship pair and its value to this entity.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const Owns = component<number>()
 	 *
@@ -198,7 +198,7 @@ export abstract class Handle {
 	 *
 	 * Missing components or pairs will return `undefined`.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const name = myEntity.get(Name)
 	 *
@@ -221,7 +221,7 @@ export abstract class Handle {
 	 *
 	 * A maximum of 4 components or pairs can be checked at once.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const IsDead = component()
 	 * const Owns = component()
@@ -313,7 +313,7 @@ export abstract class Handle {
 	/**
 	 * Gets the parent (the target of a `ChildOf` relationship) for this entity, if such a relationship exists.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const alice = entity()
 	 * const charlie = entity().set(pair(ChildOf, alice))
@@ -329,7 +329,7 @@ export abstract class Handle {
 	/**
 	 * Gets all children (the sources of `ChildOf` relationships) for this entity.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const alice = entity()
 	 * const charlie = entity().set(pair(ChildOf, alice))
@@ -359,7 +359,7 @@ export abstract class Handle {
 	 * If there are multiple targets for the given relationship, the `nth` index
 	 * can be specified (starting at 0).
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const Likes = component()
 	 *
@@ -382,7 +382,7 @@ export abstract class Handle {
 	/**
 	 * Returns all target entities of a relationship pair from this entity.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const Likes = component()
 	 *

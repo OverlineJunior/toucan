@@ -156,7 +156,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * - Cannot be passed optional arguments by `Scheduler.useSystem()`.
 	 * - Cannot easily infer a label from function name, requiring it to be manually given by `Scheduler.useSystem()`.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * const greetPeople = query(Name, Person).bind((_e, name) => {
 	 *     print(`Hello, ${name}!`)
@@ -196,7 +196,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * The callback receives the entity, the values of the queried components, and the
 	 * newly added component's value.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * query(Player).onAdded(Health, (entity, player, health) => {
 	 *     print(`${health}hp was added to ${player}!`)
@@ -226,7 +226,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * The callback receives the entity, the values of the queried components, the
 	 * new value of the changed component, and its previous value.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * query(Player).onChanged(Health, (entity, player, newHealth, oldHealth) => {
 	 *     print(`${player}'s health changed from ${oldHealth} to ${newHealth}!`)
@@ -259,7 +259,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * component's last known value before removal, and a boolean indicating if the
 	 * removal was caused by the entity despawning.
 	 *
-	 * @examplee
+	 * @example
 	 * ```ts
 	 * query(Player).onRemoved(Health, (entity, player, oldHealth, despawned) => {
 	 *     if (despawned) {
