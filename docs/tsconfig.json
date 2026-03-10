@@ -3,7 +3,8 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "noEmit": true,
-    "moduleResolution": "node",
+    // TypeDoc needs these to simulate the Roblox environment
+    "moduleResolution": "Node",
     "target": "ESNext",
     "noLib": false,
     "lib": ["ESNext"],
