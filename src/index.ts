@@ -12,6 +12,9 @@ export {
 	Plugin,
 	Wildcard,
 	ChildOf,
+	Internal,
+	External,
+	Label,
 } from './handle'
 export type { RawId, Handle, EntityHandle, ComponentHandle, ResourceHandle } from './handle'
 
