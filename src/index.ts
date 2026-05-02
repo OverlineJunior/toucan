@@ -5,6 +5,7 @@ export {
 	entity,
 	component,
 	resource,
+	resolveId,
 	Component,
 	Resource,
 	System,
@@ -12,13 +13,7 @@ export {
 	Wildcard,
 	ChildOf,
 } from './handle'
-export type {
-	RawId,
-	Handle,
-	EntityHandle,
-	ComponentHandle,
-	ResourceHandle,
-} from './handle'
+export type { RawId, Handle, EntityHandle, ComponentHandle, ResourceHandle } from './handle'
 
 export { query } from './query'
 export type { Query } from './query'
