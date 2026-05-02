@@ -1,9 +1,5 @@
 import { world } from './world'
-import {
-	Entity as JecsEntity,
-	Wildcard as JecsWildcard,
-	ChildOf as JecsChildOf,
-} from '@rbxts/jecs'
+import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
 import { Flatten, Nullable, OneUpToFour } from './util'
 import { getPairRelation, getPairTarget, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
@@ -83,12 +79,12 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 
 function isInternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
-	return callerScriptPath.match('node_modules.@rbxts.toucan')[0] !== undefined
+	return callerScriptPath.match('node_modules.*toucan')[0] !== undefined
 }
 
 function isExternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
-	return callerScriptPath.match('node_modules')[0] !== undefined
+	return callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
 }
 
 // -----------------------------------------------------------------------------
