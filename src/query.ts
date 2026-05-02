@@ -38,7 +38,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
-	private readonly filters: ((entity: Handle, ...components: InferValues<Cs>) => boolean)[] = []
+	private readonly filters: ((entity: Handle, ...components: unknown[]) => boolean)[] = []
 
 	constructor(...components: Cs) {
 		this.requiredIds = components.map((c) => c.id)
@@ -60,8 +60,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Does not append the values of these components to the results.
 	 */
 	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
-		this.filters.push((e, ..._args) => components.some((c) => e.has(c)))
-		return this
+		return this.addFilter((e) => components.some((c) => e.has(c)))
 	}
 
 	/**
@@ -76,16 +75,14 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Excludes entities with _any_ of the specified components from the query's results.
 	 */
 	withoutAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
-		this.filters.push((e, ..._args) => components.every((c) => !e.has(c)))
-		return this
+		return this.addFilter((e) => components.every((c) => !e.has(c)))
 	}
 
 	/**
 	 * Adds a filter predicate to the query that entities must satisfy in order to be queried.
 	 */
 	filter(predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean): Query<Cs> {
-		this.filters.push(predicate)
-		return this
+		return this.addFilter(predicate as unknown as (entity: Handle, ...components: unknown[]) => boolean)
 	}
 
 	/**
@@ -163,7 +160,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		const results: [Handle, ...unknown[]][] = []
 
 		this.forEach((e, ...components) => {
-			results.push([resolveId(e.id)!, ...components])
+			results.push([e, ...components])
 		})
 
 		return results as QueryResult<Cs>[]
@@ -320,10 +317,10 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	): void {
 		// TODO! Optimize this by adding a flag when we add Wildcard to the query.
 		// Wildcard queries are a special case where we want all entities.
-		if (this.requiredIds.includes(Wildcard.id) || this.includedIds.includes(Wildcard.id)) {
+		if (this.isWildcardQuery()) {
 			for (const rawId of world.entity_index.dense_array) {
 				const id = resolveId(rawId)
-				if (!id || !this.useFilters(id)) continue
+				if (!id || !this.matchesFilters(id)) continue
 
 				if (callback(id)) return
 			}
@@ -334,7 +331,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
 		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
 			const id = resolveId(rawId)!
-			if (!this.useFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
+			if (!this.matchesFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
 
 			if (callback(id, v1, v2, v3, v4, v5, v6, v7, v8)) return
 		}
@@ -347,7 +344,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			.without(...this.excludedIds)
 	}
 
-	private useFilters(
+	private matchesFilters(
 		e: Handle,
 		v1?: unknown,
 		v2?: unknown,
@@ -358,17 +355,16 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		v7?: unknown,
 		v8?: unknown,
 	): boolean {
-		const filters = this.filters as unknown as ((e: Handle, ...args: unknown[]) => boolean)[]
+		return this.filters.every((filter) => filter(e, v1, v2, v3, v4, v5, v6, v7, v8))
+	}
 
-		let passed = true
-		for (const filter of filters) {
-			if (!filter(e, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				passed = false
-				break
-			}
-		}
+	private addFilter(predicate: (entity: Handle, ...components: unknown[]) => boolean): Query<Cs> {
+		this.filters.push(predicate)
+		return this
+	}
 
-		return passed
+	private isWildcardQuery(): boolean {
+		return this.requiredIds.includes(Wildcard.id) || this.includedIds.includes(Wildcard.id)
 	}
 
 	private match(e: Handle): InferValues<Cs> | undefined {
@@ -389,7 +385,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			if (world.has(e.id, compId)) return undefined
 		}
 
-		if (!this.useFilters(e, ...requiredValues)) return undefined
+		if (!this.matchesFilters(e, ...requiredValues)) return undefined
 
 		return requiredValues as unknown as InferValues<Cs>
 	}

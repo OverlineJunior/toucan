@@ -1,5 +1,5 @@
 {
-	"typescript.tsdk": "node_modules/typescript/lib",
+	"js/ts.tsdk.path": "node_modules/typescript/lib",
 	"files.eol": "\n",
 	"[typescript]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -12,5 +12,5 @@
 	"eslint.run": "onType",
 	"eslint.format.enable": true,
 	"eslint.useFlatConfig": true,
-	"typescript.format.semicolons": "remove"
+	"js/ts.format.semicolons": "remove"
 }
