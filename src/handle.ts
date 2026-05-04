@@ -1,7 +1,7 @@
 import { world } from './world'
 import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
-import { Flatten, Nullable, OneUpToFour } from './util'
-import { getPairRelation, getPairTarget, isPair, pair, type Pair } from './pair'
+import { ECS_ENTITY_MASK, Flatten, getAliveId, Nullable, OneUpToFour } from './util'
+import { getPairRelationFromId, getPairTargetFromId, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
 
@@ -287,15 +287,25 @@ export abstract class Handle {
 	 */
 	relationships(): Pair[] {
 		const rels: Pair[] = []
-		const record = world.entity_index.sparse_array[this.id - 1]
+
+		// We're touching memory here, so we need to strip down the entity ID to its 24-bit index.
+		const entityIndex = this.id % ECS_ENTITY_MASK
+		const record = world.entity_index.sparse_array[entityIndex - 1]
 		if (!record) return rels
 
 		record.archetype.types.forEach((compId_) => {
 			const compId = compId_ as RawId
 			if (!isPair(compId)) return
 
-			const relationHandle = resolveId(getPairRelation(compId))
-			const targetHandle = resolveId(getPairTarget(compId))
+			const relationIndex = getPairRelationFromId(compId)
+			const targetIndex = getPairTargetFromId(compId)
+
+			// Reconstruct the full 32-bit IDs.
+			const aliveRelationId = getAliveId(relationIndex)
+			const aliveTargetId = getAliveId(targetIndex)
+
+			const relationHandle = resolveId(aliveRelationId)
+			const targetHandle = resolveId(aliveTargetId)
 
 			if (relationHandle && targetHandle) {
 				rels.push(pair(relationHandle as EntityHandle, targetHandle as EntityHandle))

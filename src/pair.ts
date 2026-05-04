@@ -1,19 +1,17 @@
 import type { ComponentHandle, EntityHandle, Handle, RawId, VALUE_SYMBOL } from './handle'
 import { pair as jecsPair } from '@rbxts/jecs'
-
-const ECS_PAIR_OFFSET = 2 ** 48
-const ECS_ENTITY_MASK = 0x1000000
+import { ECS_ENTITY_MASK, ECS_PAIR_OFFSET } from './util'
 
 export function isPair(id: RawId): boolean {
 	return id >= ECS_PAIR_OFFSET
 }
 
-export function getPairRelation(id: RawId): RawId {
-	return math.floor((id - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK) as RawId
+export function getPairRelationFromId(pairId: RawId): RawId {
+	return math.floor((pairId - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK) as RawId
 }
 
-export function getPairTarget(id: RawId): RawId {
-	return ((id - ECS_PAIR_OFFSET) % ECS_ENTITY_MASK) as RawId
+export function getPairTargetFromId(pairId: RawId): RawId {
+	return ((pairId - ECS_PAIR_OFFSET) % ECS_ENTITY_MASK) as RawId
 }
 
 /**
