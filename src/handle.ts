@@ -1,6 +1,6 @@
-import { world } from './world'
+import { getAllComponentIdsIn, world } from './world'
 import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
-import { ECS_ENTITY_MASK, Flatten, getAliveId, Nullable, OneUpToFour } from './util'
+import { Flatten, Nullable, OneUpToFour } from './util'
 import { getPairRelationFromId, getPairTargetFromId, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
@@ -266,10 +266,8 @@ export abstract class Handle {
 	 */
 	components(): ComponentHandle[] {
 		const comps: ComponentHandle[] = []
-		const record = world.entity_index.sparse_array[this.id % ECS_ENTITY_MASK - 1]
-		if (!record) return comps
 
-		record.archetype.types.forEach((compId_) => {
+		getAllComponentIdsIn(this.id).forEach((compId_) => {
 			const compId = compId_ as RawId
 			if (isPair(compId)) return
 			const handle = resolveId(compId as RawId)
@@ -287,24 +285,15 @@ export abstract class Handle {
 	relationships(): Pair[] {
 		const rels: Pair[] = []
 
-		// We're touching memory here, so we need to strip down the entity ID to its 24-bit index.
-		const entityIndex = this.id % ECS_ENTITY_MASK
-		const record = world.entity_index.sparse_array[entityIndex - 1]
-		if (!record) return rels
-
-		record.archetype.types.forEach((compId_) => {
+		getAllComponentIdsIn(this.id).forEach((compId_) => {
 			const compId = compId_ as RawId
 			if (!isPair(compId)) return
 
-			const relationIndex = getPairRelationFromId(compId)
-			const targetIndex = getPairTargetFromId(compId)
+			const relationId = getPairRelationFromId(compId)
+			const targetId = getPairTargetFromId(compId)
 
-			// Reconstruct the full 32-bit IDs.
-			const aliveRelationId = getAliveId(relationIndex)
-			const aliveTargetId = getAliveId(targetIndex)
-
-			const relationHandle = resolveId(aliveRelationId)
-			const targetHandle = resolveId(aliveTargetId)
+			const relationHandle = resolveId(relationId)
+			const targetHandle = resolveId(targetId)
 
 			if (relationHandle && targetHandle) {
 				rels.push(pair(relationHandle as EntityHandle, targetHandle as EntityHandle))
