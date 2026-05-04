@@ -77,14 +77,32 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 	}
 }
 
+/**
+ * Returns `true` if the caller script is internal to Toucan (i.e. belongs to the Toucan package).
+ * Must be called from a function directly invoked by the caller script.
+ */
 function isInternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
 	return callerScriptPath.match('node_modules.*toucan')[0] !== undefined
 }
 
+/**
+ * Returns `true` if the caller script is external to Toucan (i.e. belongs to a package other than Toucan).
+ * Must be called from a function directly invoked by the caller script.
+ */
 function isExternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
 	return callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
+}
+
+function applyOriginComponent<T extends Handle>(handle: T, isInternal: boolean, isExternal: boolean) {
+	if (isInternal) {
+		handle.set(Internal)
+	} else if (isExternal) {
+		handle.set(External)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
@@ -471,14 +489,7 @@ export class EntityHandle extends Handle {
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
 	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
+	return applyOriginComponent(handle, isInternal(), isExternal())
 }
 
 // -----------------------------------------------------------------------------
@@ -514,15 +525,17 @@ export class ComponentHandle<Value = unknown> extends Handle {
  */
 export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	const handle = new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
+	return setupComponent(new ComponentHandle<Value>(rawId), label ?? `Component #${rawId}`, isInternal(), isExternal())
+}
 
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
+function setupComponent<C extends ComponentHandle>(
+	comp: C,
+	label: string,
+	isInternal: boolean,
+	isExternal: boolean,
+): C {
+	comp.set(Component).set(Label, label)
+	return applyOriginComponent(comp, isInternal, isExternal)
 }
 
 // -----------------------------------------------------------------------------
@@ -597,47 +610,47 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 	world.set(rawId, rawId, value)
 
 	const handle = new ResourceHandle<Value>(rawId).set(Resource).set(Label, label ?? `Resource #${rawId}`)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
+	return applyOriginComponent(handle, isInternal(), isExternal())
 }
 
 // -----------------------------------------------------------------------------
-// Bootstrapped Standards
+// Built-in Components
 // -----------------------------------------------------------------------------
+
+const bootstrappedComponents: [ComponentHandle, string][] = []
+
+function bootstrapBuiltinComponent<C extends ComponentHandle>(handle: C, label: string): C {
+	bootstrappedComponents.push([handle, label])
+	return handle
+}
 
 /**
  * Built-in component used to distinguish entities created internally by Toucan.
  *
  * @group Built-in Entities
  */
-export const Internal = new ComponentHandle<undefined>(world.component())
+export const Internal = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Internal')
 
 /**
  * Built-in component used to distinguish entities created externally by packages.
  *
  * @group Built-in Entities
  */
-export const External = new ComponentHandle<undefined>(world.component())
+export const External = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'External')
 
 /**
  * Built-in component used to assign human-readable labels to entities.
  *
  * @group Built-in Entities
  */
-export const Label = new ComponentHandle<string>(world.component())
+export const Label = bootstrapBuiltinComponent(new ComponentHandle<string>(world.component()), 'Label')
 
 /**
  * Built-in component used to distinguish entities that represent components.
  *
  * @group Built-in Entities
  */
-export const Component = new ComponentHandle<undefined>(world.component())
+export const Component = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Component')
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
@@ -660,7 +673,7 @@ export const Component = new ComponentHandle<undefined>(world.component())
  *
  * @group Built-in Entities
  */
-export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
+export const Wildcard = bootstrapBuiltinComponent(new ComponentHandle<undefined>(JecsWildcard), 'Wildcard')
 
 // TODO! Consider making a standard system that removes previous ChildOf
 // ! relationships when setting a new one.
@@ -676,63 +689,43 @@ export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
  *
  * @group Built-in Entities
  */
-export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
-
-Internal.set(Component)
-Internal.set(Label, 'Internal')
-Internal.set(Internal)
-
-External.set(Component)
-External.set(Label, 'External')
-External.set(Internal)
-
-Label.set(Component)
-Label.set(Label, 'Label')
-Label.set(Internal)
-
-Component.set(Component)
-Component.set(Label, 'Component')
-Component.set(Internal)
-
-Wildcard.set(Component)
-Wildcard.set(Label, 'Wildcard')
-Wildcard.set(Internal)
-
-ChildOf.set(Component)
-ChildOf.set(Label, 'ChildOf')
-ChildOf.set(Internal)
-
-// -----------------------------------------------------------------------------
-// Other Standards
-// -----------------------------------------------------------------------------
+export const ChildOf = bootstrapBuiltinComponent(new ComponentHandle<undefined>(JecsChildOf), 'ChildOf')
 
 /**
  * Built-in component used to distinguish entities that represent resources.
  *
  * @group Built-in Entities
  */
-export const Resource = component('Resource')
+export const Resource = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Resource')
 
 /**
  * Built-in component used to distinguish entities that represent systems.
  *
  * @group Built-in Entities
  */
-export const System = component<{
-	callback: (...args: defined[]) => void
-	phase: Phase
-	args: defined[]
-	scheduled: boolean
-	lastDeltaTime: number
-}>('System')
+export const System = bootstrapBuiltinComponent(
+	new ComponentHandle<{
+		callback: (...args: defined[]) => void
+		phase: Phase
+		args: defined[]
+		scheduled: boolean
+		lastDeltaTime: number
+	}>(world.component()),
+	'System',
+)
 
 /**
  * Built-in component used to distinguish entities that represent plugins.
  *
  * @group Built-in Entities
  */
-export const Plugin = component<{
-	build: PluginBuildFn<defined[]>
-	built: boolean
-	args: defined[]
-}>('Plugin')
+export const Plugin = bootstrapBuiltinComponent(
+	new ComponentHandle<{
+		build: PluginBuildFn<defined[]>
+		built: boolean
+		args: defined[]
+	}>(world.component()),
+	'Plugin',
+)
+
+bootstrappedComponents.forEach(([comp, label]) => setupComponent(comp, label, true, false))
