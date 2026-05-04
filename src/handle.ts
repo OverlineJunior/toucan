@@ -266,13 +266,12 @@ export abstract class Handle {
 	 */
 	components(): ComponentHandle[] {
 		const comps: ComponentHandle[] = []
-		const record = world.entity_index.sparse_array[this.id - 1]
+		const record = world.entity_index.sparse_array[this.id % ECS_ENTITY_MASK - 1]
 		if (!record) return comps
 
 		record.archetype.types.forEach((compId_) => {
 			const compId = compId_ as RawId
 			if (isPair(compId)) return
-
 			const handle = resolveId(compId as RawId)
 			if (handle) {
 				comps.push(handle as ComponentHandle)
