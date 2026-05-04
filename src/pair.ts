@@ -1,4 +1,4 @@
-import type { ComponentHandle, EntityHandle, RawId, VALUE_SYMBOL } from './handle'
+import type { ComponentHandle, EntityHandle, Handle, RawId, VALUE_SYMBOL } from './handle'
 import { pair as jecsPair } from '@rbxts/jecs'
 
 const ECS_PAIR_OFFSET = 2 ** 48
@@ -24,11 +24,15 @@ export function getPairTarget(id: RawId): RawId {
 export class Pair<Value = unknown> {
 	declare [VALUE_SYMBOL]: Value
 
+	public readonly relation: Handle
+	public readonly target: Handle
 	/** @internal */
 	public readonly id: RawId
 
-	constructor(id: RawId) {
-		this.id = id
+	constructor(relation: Handle, target: Handle) {
+		this.relation = relation
+		this.target = target
+		this.id = jecsPair(relation.id, target.id) as unknown as RawId
 
 		const mt = getmetatable(this) as { __eq?: (a: Pair, b: Pair) => boolean }
 		mt.__eq = (a, b) => a.id === b.id
@@ -85,5 +89,5 @@ export function pair<R>(relation: ComponentHandle<R>, target: EntityHandle): Pai
 export function pair<T>(relation: EntityHandle, target: ComponentHandle<T>): Pair<T>
 export function pair(relation: EntityHandle, target: EntityHandle): Pair<undefined>
 export function pair(relation: EntityHandle | ComponentHandle, target: EntityHandle | ComponentHandle) {
-	return new Pair(jecsPair(relation.id, target.id) as unknown as RawId)
+	return new Pair(relation, target)
 }
