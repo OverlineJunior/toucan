@@ -1,6 +1,6 @@
 import { getAllComponentIdsIn, world } from './world'
 import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
-import { Flatten, Nullable, OneUpToFour } from './util'
+import { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
 import { getPairRelationFromId, getPairTargetFromId, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
@@ -15,6 +15,8 @@ export type RawId = JecsEntity
 export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
 
 export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
+
+type GetComponentValues<Args extends any[]> = WrapLuaTuple<Flatten<Nullable<InferValues<Args>>>>
 
 // We use this as a key to a "phantom property" on Id subclasses to represent
 // their value type. With this, we:
@@ -229,12 +231,8 @@ export abstract class Handle {
 	 * const carCount = myEntity.get(pair(Owns, car))
 	 * ```
 	 */
-	get<Args extends OneUpToFour<ComponentHandle | Pair>>(
-		...componentsOrPairs: Args
-	): Flatten<Nullable<InferValues<Args>>> {
-		return world.get(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>)) as Flatten<
-			Nullable<InferValues<Args>>
-		>
+	get<Args extends OneUpToFour<ComponentHandle | Pair>>(...componentsOrPairs: Args): GetComponentValues<Args> {
+		return world.get(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>)) as any
 	}
 
 	/**
@@ -264,7 +262,7 @@ export abstract class Handle {
 
 	/**
 	 * Removes a component or relationship pair from this entity.
-	 * 
+	 *
 	 * Throws an error if trying to remove a component with the `Persistent` component (i.e. built-in components).
 	 */
 	remove(componentOrPair: ComponentHandle | Pair): this {
