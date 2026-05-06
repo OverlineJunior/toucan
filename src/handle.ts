@@ -98,6 +98,8 @@ function isExternal(): boolean {
 function applyOriginComponent<T extends Handle>(handle: T, isInternal: boolean, isExternal: boolean) {
 	if (isInternal) {
 		handle.set(Internal)
+		// We assume every internal component should be persistent, since they should not be messed with by the user.
+		handle.set(Persistent)
 	} else if (isExternal) {
 		handle.set(External)
 	}
@@ -262,19 +264,32 @@ export abstract class Handle {
 
 	/**
 	 * Removes a component or relationship pair from this entity.
+	 * 
+	 * Throws an error if trying to remove a component with the `Persistent` component (i.e. built-in components).
 	 */
 	remove(componentOrPair: ComponentHandle | Pair): this {
+		if (world.has(componentOrPair.id, Persistent.id)) {
+			error(
+				`Cannot remove component ${componentOrPair} from entity ${this} because it is persistent.\n` +
+					`In order to know if a component is persistent, you can check if it has the Persistent component itself.`,
+			)
+		}
+
 		world.remove(this.id, componentOrPair.id)
 		entityHistory.deleteComponent(this.id, componentOrPair.id)
 		return this
 	}
 
 	/**
-	 * Clears all components and relationship pairs from this entity, but
-	 * does not despawn the entity.
+	 * Clears all components and relationship pairs from this entity, but does not despawn the entity.
+	 *
+	 * Components with the `Persistent` component (i.e. built-in components) will not removed.
 	 */
 	clear(): this {
-		world.clear(this.id)
+		this.components()
+			.filter((c) => !world.has(c.id, Persistent.id))
+			.forEach((c) => this.remove(c))
+
 		entityHistory.clearComponents(this.id)
 		return this
 	}
@@ -623,6 +638,15 @@ function bootstrapBuiltinComponent<C extends ComponentHandle>(handle: C, label: 
 	bootstrappedComponents.push([handle, label])
 	return handle
 }
+
+/**
+ * Built-in component used to mark components that cannot be removed by any means.
+ *
+ * Given to every internal component, since they are essential for Toucan's functionality and shouldn't be messed with by the user.
+ *
+ * @group Built-in Entities
+ */
+export const Persistent = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Persistent')
 
 /**
  * Built-in component used to distinguish entities created internally by Toucan.
