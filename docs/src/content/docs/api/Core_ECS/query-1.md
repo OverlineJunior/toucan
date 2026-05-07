@@ -7,7 +7,7 @@ title: "query"
 
 > **query**\<`Cs`\>(...`components`): [`Query`](/toucan/api/core_ecs/query/)\<`Cs`\>
 
-Defined in: [src/query.ts:428](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L428)
+Defined in: [src/query.ts:424](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L424)
 
 Creates a new query for the specified components and/or pairs.
 

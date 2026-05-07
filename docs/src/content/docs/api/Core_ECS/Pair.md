@@ -5,7 +5,7 @@ prev: false
 title: "Pair"
 ---
 
-Defined in: [src/pair.ts:24](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L24)
+Defined in: [src/pair.ts:41](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L41)
 
 A special handle for relationship pairs created with `pair()`.
 
@@ -21,7 +21,23 @@ A special handle for relationship pairs created with `pair()`.
 
 > **\[VALUE\_SYMBOL\]**: `Value`
 
-Defined in: [src/pair.ts:25](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L25)
+Defined in: [src/pair.ts:42](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L42)
+
+***
+
+### relation
+
+> `readonly` **relation**: [`Handle`](/toucan/api/core_ecs/handle/)
+
+Defined in: [src/pair.ts:44](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L44)
+
+***
+
+### target
+
+> `readonly` **target**: [`Handle`](/toucan/api/core_ecs/handle/)
+
+Defined in: [src/pair.ts:45](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L45)
 
 ## Methods
 
@@ -29,7 +45,7 @@ Defined in: [src/pair.ts:25](https://github.com/OverlineJunior/toucan/blob/maste
 
 > **toString**(): `string`
 
-Defined in: [src/pair.ts:37](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L37)
+Defined in: [src/pair.ts:58](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L58)
 
 #### Returns
 

@@ -7,7 +7,7 @@ title: "entity"
 
 > **entity**(`label?`): [`EntityHandle`](/toucan/api/core_ecs/entityhandle/)
 
-Defined in: [src/handle.ts:477](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L477)
+Defined in: [src/handle.ts:502](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L502)
 
 Spawns a new, empty entity and returns it.
 

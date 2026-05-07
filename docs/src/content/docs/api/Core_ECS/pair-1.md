@@ -9,7 +9,7 @@ title: "pair"
 
 > **pair**\<`R`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
 
-Defined in: [src/pair.ts:81](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L81)
+Defined in: [src/pair.ts:102](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L102)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -71,7 +71,7 @@ const line = entity()
 
 > **pair**\<`T`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`T`\>
 
-Defined in: [src/pair.ts:82](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L82)
+Defined in: [src/pair.ts:103](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L103)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -133,7 +133,7 @@ const line = entity()
 
 > **pair**\<`R`, `T`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
 
-Defined in: [src/pair.ts:83](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L83)
+Defined in: [src/pair.ts:104](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L104)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -199,7 +199,7 @@ const line = entity()
 
 > **pair**\<`R`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`R`\>
 
-Defined in: [src/pair.ts:84](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L84)
+Defined in: [src/pair.ts:105](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L105)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -261,7 +261,7 @@ const line = entity()
 
 > **pair**\<`T`\>(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`T`\>
 
-Defined in: [src/pair.ts:85](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L85)
+Defined in: [src/pair.ts:106](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L106)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
@@ -323,7 +323,7 @@ const line = entity()
 
 > **pair**(`relation`, `target`): [`Pair`](/toucan/api/core_ecs/pair/)\<`undefined`\>
 
-Defined in: [src/pair.ts:86](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L86)
+Defined in: [src/pair.ts:107](https://github.com/OverlineJunior/toucan/blob/master/src/pair.ts#L107)
 
 Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
 where both `relation` and `target` can be either _entities_ or _components_.
