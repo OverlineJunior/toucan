@@ -15,6 +15,7 @@ export {
 	Internal,
 	External,
 	Label,
+	Persistent,
 } from './handle'
 export type { RawId, Handle, EntityHandle, ComponentHandle, ResourceHandle } from './handle'
 
