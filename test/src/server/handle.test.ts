@@ -14,6 +14,7 @@ import {
 	Component,
 	Resource,
 	RawId,
+	Persistent,
 } from '@rbxts/toucan'
 
 class EntityTests {
@@ -368,6 +369,13 @@ class EntityTests {
 
 		Assert.equal(alice.get(pair(Owns, car)), 1, 'Expected correct value for car pair')
 		Assert.equal(alice.get(pair(Owns, house)), 2, 'Expected correct value for house pair')
+	}
+
+	@Test
+	public internals_arePersistent() {
+		query(Internal).forEach((e) => {
+			Assert.true(e.has(Persistent), 'Expected all internal entities to have the Persistent component')
+		})
 	}
 }
 
