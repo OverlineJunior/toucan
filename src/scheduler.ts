@@ -9,7 +9,7 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External } from './handle'
+import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External, applyOriginComponent } from './handle'
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'
@@ -110,12 +110,7 @@ function spawnSystem<Args extends defined[]>(
 		})
 		.set(Label, label ?? generatedLabel)
 
-	// TODO! Fix not using `applyOrigin`, which causes the `System` component to not have the `Persistent` component.
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
+	applyOriginComponent(handle, true, false)
 
 	const parentPlugin = findPluginInCallStack()
 	if (parentPlugin) {

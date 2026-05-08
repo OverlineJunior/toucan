@@ -97,7 +97,7 @@ function isExternal(): boolean {
 	return callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
 }
 
-function applyOriginComponent<T extends Handle>(handle: T, isInternal: boolean, isExternal: boolean) {
+export function applyOriginComponent<T extends Handle>(handle: T, isInternal: boolean, isExternal: boolean) {
 	if (isInternal) {
 		handle.set(Internal)
 		// We assume every internal component should be persistent, since they should not be messed with by the user.
