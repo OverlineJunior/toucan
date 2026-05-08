@@ -731,6 +731,7 @@ export const System = bootstrapBuiltinComponent(
 		phase: Phase
 		args: defined[]
 		scheduled: boolean
+		registrationIndex: number
 		lastDeltaTime: number
 	}>(world.component()),
 	'System',

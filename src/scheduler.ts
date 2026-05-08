@@ -105,10 +105,12 @@ function spawnSystem<Args extends defined[]>(
 			phase,
 			args: args ?? [],
 			scheduled: false,
+			registrationIndex: nextSystemRegistrationIndex++,
 			lastDeltaTime: 0,
 		})
 		.set(Label, label ?? generatedLabel)
 
+	// TODO! Fix not using `applyOrigin`, which causes the `System` component to not have the `Persistent` component.
 	if (isInternal()) {
 		handle.set(Internal)
 	} else if (isExternal()) {
@@ -144,7 +146,13 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 
 	const handle = entity()
 
-	handle.set(Plugin, { build: build as Plugin<defined[]>, built: false, args }).set(Label, label)
+	handle
+		.set(Plugin, {
+			build: build as Plugin<defined[]>,
+			built: false,
+			args,
+		})
+		.set(Label, label)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -159,12 +167,16 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 	return handle
 }
 
+let nextSystemRegistrationIndex = 0
+
 /**
  * The starting point of a game made with Toucan.
  *
  * @group Core ECS
  */
 export class Scheduler {
+	// TODO! Consider removing the `label` argument and adding a `useSystemWithLabel` method instead.
+	// ! Then, make `args` a spread parameter, just like `usePlugin`.
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
 	 *
@@ -237,7 +249,9 @@ export class Scheduler {
 			.insert(POST_SIMULATION, RunService, 'PostSimulation')
 
 		function buildPlugins(scheduler: Scheduler) {
-			let pendingPlugins = query(Plugin).collect().filter(([, p]) => !p.built)
+			let pendingPlugins = query(Plugin)
+				.collect()
+				.filter(([, p]) => !p.built)
 
 			// We use a while loop to ensure that if a plugin registers another plugin,
 			// the child plugin is also fully built during this exact step.
@@ -253,14 +267,18 @@ export class Scheduler {
 						p.build(scheduler, ...p.args)
 					})
 
-				pendingPlugins = query(Plugin).collect().filter(([, p]) => !p.built)
+				pendingPlugins = query(Plugin)
+					.collect()
+					.filter(([, p]) => !p.built)
 			}
 		}
 
 		function scheduleSystems() {
 			query(System)
-				.filter((_, system) => !system.scheduled)
-				.forEach((e, system) => {
+				.collect() // We collect since `Query` doesn't have a `sort` method yet.
+				.filter(([_, system]) => !system.scheduled)
+				.sort(([_e1, s1], [_e2, s2]) => s1.registrationIndex < s2.registrationIndex)
+				.forEach(([e, system]) => {
 					const wrappedCallback = () => {
 						debug.profilebegin(e.toString())
 						const t = os.clock()

@@ -1,4 +1,5 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
+import { Each } from '@rbxts/lunit/out/lib/decorator'
 import {
 	query,
 	Wildcard,
@@ -11,6 +12,7 @@ import {
 	scheduler,
 	Scheduler,
 	UPDATE,
+	STARTUP,
 	EntityHandle,
 } from '@rbxts/toucan'
 
@@ -62,6 +64,25 @@ class SchedulerTests {
 		Assert.equal(tostring(result), label, 'Expected system label to match the custom label provided')
 	}
 
+	@Each([['Alpha', 'Beta', 'Gamma'], ['Zeta', 'Omega', 'Delta', 'Epsilon', 'Theta'], ['LonelySystem']])
+	@Test
+	public useSystem_implicitOrdering(...systemNames: string[]) {
+		const executionOrder: string[] = []
+		const sched = scheduler()
+
+		systemNames.forEach((name) => {
+			sched.useSystem(() => executionOrder.push(name), STARTUP)
+		})
+
+		sched.run()
+
+		Assert.equal(
+			executionOrder.join(','),
+			systemNames.join(','),
+			'Expected systems to execute in the exact order they were registered',
+		)
+	}
+
 	@Test
 	public usePlugin_spawnsPluginEntity() {
 		function myTestPlugin() {}
@@ -77,9 +98,13 @@ class SchedulerTests {
 
 	@Test
 	public usePlugin_throwsOnAnonymousFunction() {
-		Assert.throws(() => {
-			scheduler().usePlugin(() => {})
-		}, undefined, 'Expected usePlugin to throw an error when passed an anonymous function')
+		Assert.throws(
+			() => {
+				scheduler().usePlugin(() => {})
+			},
+			undefined,
+			'Expected usePlugin to throw an error when passed an anonymous function',
+		)
 	}
 
 	@Test
@@ -104,9 +129,13 @@ class SchedulerTests {
 		const sched = scheduler()
 		sched.usePlugin(conflictPlugin, 1)
 
-		Assert.throws(() => {
-			sched.usePlugin(conflictPlugin, 2)
-		}, undefined, 'Expected usePlugin to throw an error when passed duplicate plugins with different arguments')
+		Assert.throws(
+			() => {
+				sched.usePlugin(conflictPlugin, 2)
+			},
+			undefined,
+			'Expected usePlugin to throw an error when passed duplicate plugins with different arguments',
+		)
 	}
 
 	@Test
