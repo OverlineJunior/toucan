@@ -176,13 +176,6 @@ export class Scheduler {
 	 * The system's label is inferred from the function name. If the function is anonymous,
 	 * a default label is generated instead.
 	 *
-	 * #### Reflection
-	 *
-	 * Systems are entities with the standard `System` component, thus, they can be
-	 * queried and manipulated like any other entity in Toucan.
-	 *
-	 * Systems scheduled within plugins are automatically parented to the plugin.
-	 *
 	 * @example
 	 * ```ts
 	 * function fireGun(params: RaycastParams) { ... }
@@ -191,6 +184,29 @@ export class Scheduler {
 	 *     .useSystem(fireGun, UPDATE, new RaycastParams())
 	 *     .run()
 	 * ```
+	 *
+	 * #### Implicit Execution Order
+	 *
+	 * If multiple systems are registered in the same phase, they will be executed in the
+	 * order they were registered in the codebase.
+	 *
+	 * Phases should still be the main tool for controlling execution order, but this allows
+	 * for more fine-grained control when creating an entire new phase would be overkill.
+	 *
+	 * @example
+	 * ```ts
+	 * scheduler()
+	 *     .useSystem(runsFirst, UPDATE)
+	 * 	   .useSystem(runsSecond, UPDATE)
+	 * 	   .run()
+	 * ```
+	 *
+	 * #### Reflection
+	 *
+	 * Systems are entities with the standard `System` component, thus, they can be
+	 * queried and manipulated like any other entity in Toucan.
+	 *
+	 * Systems scheduled within plugins are automatically parented to the plugin.
 	 */
 	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
 		spawnSystem(system, phase, args)
