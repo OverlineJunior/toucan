@@ -51,19 +51,6 @@ class SchedulerTests {
 		Assert.equal(tostring(result), 'myTestSystem', 'Expected system label to match the function name')
 	}
 
-	@Test
-	public useSystem_assignsCustomLabel() {
-		const unnamedSystemFn = () => {}
-		const label = 'CustomLabel'
-
-		scheduler().useSystem(unnamedSystemFn, UPDATE, [], label)
-
-		const result = query(System).find((e, sys) => sys.callback === unnamedSystemFn)?.[0]
-
-		Assert.true(result !== undefined, 'Expected to find the unnamed system entity')
-		Assert.equal(tostring(result), label, 'Expected system label to match the custom label provided')
-	}
-
 	@Each([['Alpha', 'Beta', 'Gamma'], ['Zeta', 'Omega', 'Delta', 'Epsilon', 'Theta'], ['LonelySystem']])
 	@Test
 	public useSystem_implicitOrdering(...systemNames: string[]) {
@@ -81,6 +68,19 @@ class SchedulerTests {
 			systemNames.join(','),
 			'Expected systems to execute in the exact order they were registered',
 		)
+	}
+
+	@Test
+	public useSystemWithLabel_assignsCustomLabel() {
+		const unnamedSystemFn = () => {}
+		const label = 'CustomLabel'
+
+		scheduler().useSystemWithLabel(unnamedSystemFn, UPDATE, label)
+
+		const result = query(System).find((e, sys) => sys.callback === unnamedSystemFn)?.[0]
+
+		Assert.true(result !== undefined, 'Expected to find the unnamed system entity')
+		Assert.equal(tostring(result), label, 'Expected system label to match the custom label provided')
 	}
 
 	@Test

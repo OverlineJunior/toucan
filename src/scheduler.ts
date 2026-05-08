@@ -92,7 +92,7 @@ function spawnSystem<Args extends defined[]>(
 	callback: System<Args>,
 	phase: Planck.Phase,
 	args: Args,
-	label?: string,
+	customLabel?: string,
 ): EntityHandle {
 	const handle = entity()
 
@@ -108,7 +108,7 @@ function spawnSystem<Args extends defined[]>(
 			registrationIndex: nextSystemRegistrationIndex++,
 			lastDeltaTime: 0,
 		})
-		.set(Label, label ?? generatedLabel)
+		.set(Label, customLabel ?? generatedLabel)
 
 	applyOriginComponent(handle, true, false)
 
@@ -170,10 +170,11 @@ let nextSystemRegistrationIndex = 0
  * @group Core ECS
  */
 export class Scheduler {
-	// TODO! Consider removing the `label` argument and adding a `useSystemWithLabel` method instead.
-	// ! Then, make `args` a spread parameter, just like `usePlugin`.
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
+	 *
+	 * The system's label is inferred from the function name. If the function is anonymous,
+	 * a default label is generated instead.
 	 *
 	 * #### Reflection
 	 *
@@ -187,12 +188,26 @@ export class Scheduler {
 	 * function fireGun(params: RaycastParams) { ... }
 	 *
 	 * scheduler()
-	 *     .addSystems(UPDATE, [fireGun], new RaycastParams())
+	 *     .useSystem(fireGun, UPDATE, new RaycastParams())
 	 *     .run()
 	 * ```
 	 */
-	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, args?: Args, label?: string): this {
-		spawnSystem(system, phase, args ?? ([] as unknown as Args), label)
+	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
+		spawnSystem(system, phase, args)
+		return this
+	}
+
+	/**
+	 * Similar to `useSystem`, but allows you to specify a custom label for the system.
+	 * Useful for anonymous functions.
+	 */
+	useSystemWithLabel<Args extends defined[]>(
+		system: System<Args>,
+		phase: Planck.Phase,
+		label: string,
+		...args: Args
+	): this {
+		spawnSystem(system, phase, args, label)
 		return this
 	}
 
@@ -294,7 +309,7 @@ export class Scheduler {
 		// All plugins must be built before we start scheduling systems.
 		buildPlugins(this)
 
-		this.useSystem(buildPlugins, ABSOLUTE_FIRST, [this])
+		this.useSystem(buildPlugins, ABSOLUTE_FIRST, this)
 		this.useSystem(scheduleSystems, ABSOLUTE_FIRST)
 
 		scheduleSystems()
