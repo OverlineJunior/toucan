@@ -17,6 +17,7 @@ import { STANDARD_PLUGINS } from './std/plugins'
 
 export type System<Args extends defined[]> = (...args: Args) => void
 export type Plugin<Args extends defined[]> = (scheduler: Scheduler, ...args: Args) => void
+export type Phase = Planck.Phase
 
 function isInternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
@@ -170,6 +171,8 @@ let nextSystemRegistrationIndex = 0
  * @group Core ECS
  */
 export class Scheduler {
+	private readonly planckScheduler = new Planck.Scheduler()
+
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
 	 *
@@ -266,40 +269,63 @@ export class Scheduler {
 	 * which only fires once during this method call).
 	 */
 	run(): this {
-		const scheduler = new Planck.Scheduler()
+		this.useStandardSchedule()
+		this.useStandardPlugins()
+
+		// All plugins must be built before we start scheduling systems.
+		this.buildPlugins()
+
+		this.useSystemWithLabel(() => this.buildPlugins(), ABSOLUTE_FIRST, 'buildPlugins')
+		this.useSystemWithLabel(() => this.scheduleSystems(), ABSOLUTE_FIRST, 'scheduleSystems')
+
+		// Since `scheduleSystems` is also a system, we have to bootstrap it.
+		this.scheduleSystems()
+
+		this.planckScheduler.runAll()
+
+		return this
+	}
+
+	private useStandardSchedule() {
+		this.planckScheduler
 			.insert(STARTUP_PIPELINE)
 			.insert(UPDATE_PIPELINE, RunService, 'Heartbeat')
 			.insert(PRE_RENDER, RunService, 'PreRender')
 			.insert(PRE_ANIMATION, RunService, 'PreAnimation')
 			.insert(PRE_SIMULATION, RunService, 'PreSimulation')
 			.insert(POST_SIMULATION, RunService, 'PostSimulation')
+	}
 
-		function buildPlugins(scheduler: Scheduler) {
-			let pendingPlugins = query(Plugin)
+	private useStandardPlugins() {
+		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
+	}
+
+	private buildPlugins() {
+		let pendingPlugins = query(Plugin)
+			.collect()
+			.filter(([, p]) => !p.built)
+
+		// We use a while loop to ensure that if a plugin registers another plugin,
+		// the child plugin is also fully built during this exact step.
+		while (!pendingPlugins.isEmpty()) {
+			pendingPlugins
+				.sort(([p1], [p2]) => {
+					const a = p1.has(External)
+					const b = p2.has(External)
+					return a === b ? false : !a
+				})
+				.forEach(([, p]) => {
+					p.built = true
+					p.build(this, ...p.args)
+				})
+
+			pendingPlugins = query(Plugin)
 				.collect()
 				.filter(([, p]) => !p.built)
-
-			// We use a while loop to ensure that if a plugin registers another plugin,
-			// the child plugin is also fully built during this exact step.
-			while (!pendingPlugins.isEmpty()) {
-				pendingPlugins
-					.sort(([p1], [p2]) => {
-						const a = p1.has(External)
-						const b = p2.has(External)
-						return a === b ? false : !a
-					})
-					.forEach(([, p]) => {
-						p.built = true
-						p.build(scheduler, ...p.args)
-					})
-
-				pendingPlugins = query(Plugin)
-					.collect()
-					.filter(([, p]) => !p.built)
-			}
 		}
+	}
 
-		function scheduleSystems() {
+	private scheduleSystems() {
 			query(System)
 				.collect() // We collect since `Query` doesn't have a `sort` method yet.
 				.filter(([_, system]) => !system.scheduled)
@@ -316,24 +342,9 @@ export class Scheduler {
 					}
 
 					system.scheduled = true
-					scheduler.addSystem(wrappedCallback, system.phase)
+					this.planckScheduler.addSystem(wrappedCallback, system.phase)
 				})
 		}
-
-		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
-
-		// All plugins must be built before we start scheduling systems.
-		buildPlugins(this)
-
-		this.useSystem(buildPlugins, ABSOLUTE_FIRST, this)
-		this.useSystem(scheduleSystems, ABSOLUTE_FIRST)
-
-		scheduleSystems()
-
-		scheduler.runAll()
-
-		return this
-	}
 }
 
 /**
