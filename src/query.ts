@@ -1,9 +1,10 @@
-import { Handle, RawId, InferValues, resolveId, ComponentHandle, Wildcard, entityHistory, InferValue } from './handle'
+import { Handle, RawId, InferValues, resolveId, ComponentHandle, Wildcard } from './handle'
 import { Pair } from './pair'
 import { System } from './scheduler'
 import { ZeroUpToEight } from './util'
 import { getAllEntityIds, world } from './world'
 import * as jecs from '@rbxts/jecs'
+import { observer, monitor } from '@rbxts/jecs-utils'
 
 export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [Handle, ...InferValues<Cs>]
 
@@ -211,102 +212,88 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Registers a callback that fires whenever the specified component is added to an
-	 * entity that matches this query.
+	 * Registers a callback that fires whenever an entity starts matching this query.
 	 *
-	 * The callback receives the entity, the values of the queried components, and the
-	 * newly added component's value.
+	 * This fires when all required components become present on an entity (regardless of
+	 * the order they were added), as well as when `.with()` components are added and
+	 * `.without()` components are removed.
+	 *
+	 * The callback receives the entity and the current values of the queried components.
 	 *
 	 * @example
 	 * ```ts
-	 * query(Player).onAdded(Health, (entity, player, health) => {
-	 *     print(`${health}hp was added to ${player}!`)
+	 * query(Player, Health).onAdded((entity, player, health) => {
+	 *     print(`${player} joined with ${health}hp!`)
 	 * })
 	 * ```
 	 */
-	onAdded<C extends ComponentHandle>(
-		component: C,
-		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C]>) => void,
-	): DisconnectFn {
-		return world.added(component.id, (id, _, value) => {
-			const e = resolveId(id)
+	onAdded(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): DisconnectFn {
+		const rawQuery = this.makeRawQuery()
+		const mon = monitor(rawQuery)
+		mon.added((rawEntity) => {
+			const e = resolveId(rawEntity as RawId)
 			if (!e) return
 
 			const requiredValues = this.match(e)
 			if (!requiredValues) return
 
-			// Roblox-TS doesn't allow spreading function arguments unless they're last, and we wanna preserve order.
-			callback(e, ...[...requiredValues, value as InferValue<C>])
+			callback(e, ...(requiredValues as InferValues<Cs>))
 		})
+		return () => mon.disconnect()
 	}
 
 	/**
-	 * Registers a callback that fires whenever the specified component's value changes
+	 * Registers a callback that fires whenever a queried component's value changes
 	 * on an entity that matches this query.
 	 *
-	 * The callback receives the entity, the values of the queried components, the
-	 * new value of the changed component, and its previous value.
+	 * The callback receives the entity and the current values of the queried components.
 	 *
 	 * @example
 	 * ```ts
-	 * query(Player).onChanged(Health, (entity, player, newHealth, oldHealth) => {
-	 *     print(`${player}'s health changed from ${oldHealth} to ${newHealth}!`)
+	 * query(Player, Health).onChanged((entity, player, health) => {
+	 *     print(`${player}'s health changed to ${health}!`)
 	 * })
 	 * ```
 	 */
-	onChanged<C extends ComponentHandle>(
-		component: C,
-		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C, C]>) => void,
-	): DisconnectFn {
-		return world.changed(component.id, (id, _, value) => {
-			const e = resolveId(id)
+	onChanged(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): DisconnectFn {
+		const rawQuery = this.makeRawQuery()
+		const obs = observer(rawQuery, (rawEntity) => {
+			const e = resolveId(rawEntity as RawId)
 			if (!e) return
 
 			const requiredValues = this.match(e)
 			if (!requiredValues) return
 
-			callback(
-				e,
-				...[...requiredValues, value as InferValue<C>, entityHistory.get(id, component.id)! as InferValue<C>],
-			)
+			callback(e, ...(requiredValues as InferValues<Cs>))
 		})
+		return () => obs.disconnect()
 	}
 
 	/**
-	 * Registers a callback that fires whenever the specified component is removed from
-	 * an entity that matches this query, or when the entity itself is despawned.
+	 * Registers a callback that fires whenever an entity stops matching this query.
 	 *
-	 * The callback receives the entity, the values of the queried components, the
-	 * component's last known value before removal, and a boolean indicating if the
-	 * removal was caused by the entity despawning.
+	 * This fires when a required component is removed from an entity, the entity is
+	 * despawned, a `.with()` component is removed, or a `.without()` component is added.
+	 *
+	 * The callback receives the entity handle.
 	 *
 	 * @example
 	 * ```ts
-	 * query(Player).onRemoved(Health, (entity, player, oldHealth, despawned) => {
-	 *     if (despawned) {
-	 *         print(`${player} had ${oldHealth}hp before their entity was completely annihilated.`)
-	 *     } else {
-	 *         print(`${player} had ${oldHealth}hp before their Health component was removed.`)
-	 *     }
+	 * query(Player, Health).onRemoved((entity) => {
+	 *     print(`An entity left the query!`)
 	 * })
 	 * ```
 	 */
-	onRemoved<C extends ComponentHandle>(
-		component: C,
-		callback: (entity: Handle, ...componentValues: [...InferValues<Cs>, InferValue<C>, boolean]) => void,
-	): DisconnectFn {
-		return world.removed(component.id, (id, _, despawned) => {
-			const e = resolveId(id)
+	onRemoved(callback: (entity: Handle) => void): DisconnectFn {
+		const rawQuery = this.makeRawQuery()
+		const mon = monitor(rawQuery)
+		mon.removed((rawEntity) => {
+			const e = resolveId(rawEntity as RawId)
 			if (!e) return
 
-			const requiredValues = this.match(e)
-			if (!requiredValues) return
-
-			callback(
-				e,
-				...[...requiredValues, entityHistory.get(id, component.id)! as InferValue<C>, despawned ?? false],
-			)
+			callback(e)
 		})
+		return () => mon.disconnect()
 	}
 
 	/**

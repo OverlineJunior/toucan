@@ -55,7 +55,7 @@ function validatePluginConflict(
 ) {
 	// If the plugin takes no extra arguments, there can't be a conflict.
 	const argCount = debug.info(build, 'a')[0]!
-	if (argCount === 1) return
+	if (argCount === 2) return
 
 	const existingParent = existing.parent()
 	const isIncomingExternal = incomingParent !== undefined && incomingParent.has(External)
@@ -171,7 +171,7 @@ let nextSystemRegistrationIndex = 0
  * @group Core ECS
  */
 export class Scheduler {
-	private readonly planckScheduler = new Planck.Scheduler()
+	public readonly planckScheduler = new Planck.Scheduler()
 
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
