@@ -59,7 +59,8 @@
 		"yalc-watch": "^0.0.6"
 	},
 	"dependencies": {
-		"@rbxts/jecs": "^0.10.4",
+		"@rbxts/jecs": "^0.11.0",
+		"@rbxts/jecs-utils": "^1.4.3",
 		"@rbxts/planck": "^0.3.0-alpha.1",
 		"@rbxts/services": "^1.6.0"
 	}
