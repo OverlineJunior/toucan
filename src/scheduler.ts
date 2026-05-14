@@ -171,7 +171,7 @@ let nextSystemRegistrationIndex = 0
  * @group Core ECS
  */
 export class Scheduler {
-	private readonly planckScheduler = new Planck.Scheduler()
+	public readonly planckScheduler = new Planck.Scheduler()
 
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
@@ -246,7 +246,7 @@ export class Scheduler {
 	 * ```ts
 	 * function updatePhysics(gravity: number) { ... }
 	 *
-	 * function physicsPlugin(scheduler: Scheduler, planckScheduler: Planck.Scheduler, gravity: number) {
+	 * function physicsPlugin(scheduler: Scheduler, gravity: number) {
 	 *     scheduler.useSystem(updatePhysics, UPDATE, gravity)
 	 * }
 	 *
