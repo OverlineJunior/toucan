@@ -1,0 +1,26 @@
+{
+	"name": "toucan-test",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "rbxtsc",
+		"watch": "rbxtsc -w"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"devDependencies": {
+		"@rbxts/compiler-types": "^3.0.0-types.0",
+		"@rbxts/types": "^1.0.918",
+		"roblox-ts": "^3.0.0",
+		"typescript": "^6.0.3"
+	},
+	"dependencies": {
+		"@rbxts/jecs": "^0.10.4",
+		"@rbxts/lunit": "^4.0.2",
+		"@rbxts/planck": "^0.3.0-alpha.1",
+		"@rbxts/services": "^1.6.0"
+	}
+}

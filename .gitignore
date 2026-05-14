@@ -1,6 +1,5 @@
-/node_modules
-/out
-/include
-*.tsbuildinfo
-*.tgz
-docs/node_modules
+**/node_modules
+**/out
+**/include
+**/*.tsbuildinfo
+**/*.tgz

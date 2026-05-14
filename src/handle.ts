@@ -1,11 +1,7 @@
-import { world } from './world'
-import {
-	Entity as JecsEntity,
-	Wildcard as JecsWildcard,
-	ChildOf as JecsChildOf,
-} from '@rbxts/jecs'
-import { Flatten, Nullable, OneUpToFour } from './util'
-import { getPairRelation, getPairTarget, isPair, pair, type Pair } from './pair'
+import { getAllComponentIdsIn, world } from './world'
+import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
+import { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
+import { getPairRelationFromId, getPairTargetFromId, isPair, pair, type Pair } from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
 
@@ -19,6 +15,8 @@ export type RawId = JecsEntity
 export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
 
 export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
+
+type GetComponentValues<Args extends any[]> = WrapLuaTuple<Flatten<Nullable<InferValues<Args>>>>
 
 // We use this as a key to a "phantom property" on Id subclasses to represent
 // their value type. With this, we:
@@ -81,14 +79,34 @@ export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | Resour
 	}
 }
 
+/**
+ * Returns `true` if the caller script is internal to Toucan (i.e. belongs to the Toucan package).
+ * Must be called from a function directly invoked by the caller script.
+ */
 function isInternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
-	return callerScriptPath.match('node_modules.@rbxts.toucan')[0] !== undefined
+	return callerScriptPath.match('node_modules.*toucan')[0] !== undefined
 }
 
+/**
+ * Returns `true` if the caller script is external to Toucan (i.e. belongs to a package other than Toucan).
+ * Must be called from a function directly invoked by the caller script.
+ */
 function isExternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
-	return callerScriptPath.match('node_modules')[0] !== undefined
+	return callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
+}
+
+export function applyOriginComponent<T extends Handle>(handle: T, isInternal: boolean, isExternal: boolean) {
+	if (isInternal) {
+		handle.set(Internal)
+		// We assume every internal component should be persistent, since they should not be messed with by the user.
+		handle.set(Persistent)
+	} else if (isExternal) {
+		handle.set(External)
+	}
+
+	return handle
 }
 
 // -----------------------------------------------------------------------------
@@ -213,12 +231,8 @@ export abstract class Handle {
 	 * const carCount = myEntity.get(pair(Owns, car))
 	 * ```
 	 */
-	get<Args extends OneUpToFour<ComponentHandle | Pair>>(
-		...componentsOrPairs: Args
-	): Flatten<Nullable<InferValues<Args>>> {
-		return world.get(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>)) as Flatten<
-			Nullable<InferValues<Args>>
-		>
+	get<Args extends OneUpToFour<ComponentHandle | Pair>>(...componentsOrPairs: Args): GetComponentValues<Args> {
+		return world.get(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>)) as any
 	}
 
 	/**
@@ -248,19 +262,32 @@ export abstract class Handle {
 
 	/**
 	 * Removes a component or relationship pair from this entity.
+	 *
+	 * Throws an error if trying to remove a component with the `Persistent` component (i.e. built-in components).
 	 */
 	remove(componentOrPair: ComponentHandle | Pair): this {
+		if (world.has(componentOrPair.id, Persistent.id)) {
+			error(
+				`Cannot remove component ${componentOrPair} from entity ${this} because it is persistent.\n` +
+					`In order to know if a component is persistent, you can check if it has the Persistent component itself.`,
+			)
+		}
+
 		world.remove(this.id, componentOrPair.id)
 		entityHistory.deleteComponent(this.id, componentOrPair.id)
 		return this
 	}
 
 	/**
-	 * Clears all components and relationship pairs from this entity, but
-	 * does not despawn the entity.
+	 * Clears all components and relationship pairs from this entity, but does not despawn the entity.
+	 *
+	 * Components with the `Persistent` component (i.e. built-in components) will not removed.
 	 */
 	clear(): this {
-		world.clear(this.id)
+		this.components()
+			.filter((c) => !world.has(c.id, Persistent.id))
+			.forEach((c) => this.remove(c))
+
 		entityHistory.clearComponents(this.id)
 		return this
 	}
@@ -270,13 +297,10 @@ export abstract class Handle {
 	 */
 	components(): ComponentHandle[] {
 		const comps: ComponentHandle[] = []
-		const record = world.entity_index.sparse_array[this.id - 1]
-		if (!record) return comps
 
-		record.archetype.types.forEach((compId_) => {
+		getAllComponentIdsIn(this.id).forEach((compId_) => {
 			const compId = compId_ as RawId
 			if (isPair(compId)) return
-
 			const handle = resolveId(compId as RawId)
 			if (handle) {
 				comps.push(handle as ComponentHandle)
@@ -291,15 +315,16 @@ export abstract class Handle {
 	 */
 	relationships(): Pair[] {
 		const rels: Pair[] = []
-		const record = world.entity_index.sparse_array[this.id - 1]
-		if (!record) return rels
 
-		record.archetype.types.forEach((compId_) => {
+		getAllComponentIdsIn(this.id).forEach((compId_) => {
 			const compId = compId_ as RawId
 			if (!isPair(compId)) return
 
-			const relationHandle = resolveId(getPairRelation(compId))
-			const targetHandle = resolveId(getPairTarget(compId))
+			const relationId = getPairRelationFromId(compId)
+			const targetId = getPairTargetFromId(compId)
+
+			const relationHandle = resolveId(relationId)
+			const targetHandle = resolveId(targetId)
 
 			if (relationHandle && targetHandle) {
 				rels.push(pair(relationHandle as EntityHandle, targetHandle as EntityHandle))
@@ -477,14 +502,7 @@ export class EntityHandle extends Handle {
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
 	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
+	return applyOriginComponent(handle, isInternal(), isExternal())
 }
 
 // -----------------------------------------------------------------------------
@@ -520,15 +538,17 @@ export class ComponentHandle<Value = unknown> extends Handle {
  */
 export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	const handle = new ComponentHandle<Value>(rawId).set(Component).set(Label, label ?? `Component #${rawId}`)
+	return setupComponent(new ComponentHandle<Value>(rawId), label ?? `Component #${rawId}`, isInternal(), isExternal())
+}
 
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
+function setupComponent<C extends ComponentHandle>(
+	comp: C,
+	label: string,
+	isInternal: boolean,
+	isExternal: boolean,
+): C {
+	comp.set(Component).set(Label, label)
+	return applyOriginComponent(comp, isInternal, isExternal)
 }
 
 // -----------------------------------------------------------------------------
@@ -603,47 +623,56 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 	world.set(rawId, rawId, value)
 
 	const handle = new ResourceHandle<Value>(rawId).set(Resource).set(Label, label ?? `Resource #${rawId}`)
-
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
-
-	return handle
+	return applyOriginComponent(handle, isInternal(), isExternal())
 }
 
 // -----------------------------------------------------------------------------
-// Bootstrapped Standards
+// Built-in Components
 // -----------------------------------------------------------------------------
+
+const bootstrappedComponents: [ComponentHandle, string][] = []
+
+function bootstrapBuiltinComponent<C extends ComponentHandle>(handle: C, label: string): C {
+	bootstrappedComponents.push([handle, label])
+	return handle
+}
+
+/**
+ * Built-in component used to mark components that cannot be removed by any means.
+ *
+ * Given to every internal component, since they are essential for Toucan's functionality and shouldn't be messed with by the user.
+ *
+ * @group Built-in Entities
+ */
+export const Persistent = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Persistent')
 
 /**
  * Built-in component used to distinguish entities created internally by Toucan.
  *
  * @group Built-in Entities
  */
-export const Internal = new ComponentHandle<undefined>(world.component())
+export const Internal = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Internal')
 
 /**
  * Built-in component used to distinguish entities created externally by packages.
  *
  * @group Built-in Entities
  */
-export const External = new ComponentHandle<undefined>(world.component())
+export const External = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'External')
 
 /**
  * Built-in component used to assign human-readable labels to entities.
  *
  * @group Built-in Entities
  */
-export const Label = new ComponentHandle<string>(world.component())
+export const Label = bootstrapBuiltinComponent(new ComponentHandle<string>(world.component()), 'Label')
 
 /**
  * Built-in component used to distinguish entities that represent components.
  *
  * @group Built-in Entities
  */
-export const Component = new ComponentHandle<undefined>(world.component())
+export const Component = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Component')
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
@@ -666,7 +695,7 @@ export const Component = new ComponentHandle<undefined>(world.component())
  *
  * @group Built-in Entities
  */
-export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
+export const Wildcard = bootstrapBuiltinComponent(new ComponentHandle<undefined>(JecsWildcard), 'Wildcard')
 
 // TODO! Consider making a standard system that removes previous ChildOf
 // ! relationships when setting a new one.
@@ -682,63 +711,44 @@ export const Wildcard = new ComponentHandle<unknown>(JecsWildcard)
  *
  * @group Built-in Entities
  */
-export const ChildOf = new ComponentHandle<undefined>(JecsChildOf)
-
-Internal.set(Component)
-Internal.set(Label, 'Internal')
-Internal.set(Internal)
-
-External.set(Component)
-External.set(Label, 'External')
-External.set(Internal)
-
-Label.set(Component)
-Label.set(Label, 'Label')
-Label.set(Internal)
-
-Component.set(Component)
-Component.set(Label, 'Component')
-Component.set(Internal)
-
-Wildcard.set(Component)
-Wildcard.set(Label, 'Wildcard')
-Wildcard.set(Internal)
-
-ChildOf.set(Component)
-ChildOf.set(Label, 'ChildOf')
-ChildOf.set(Internal)
-
-// -----------------------------------------------------------------------------
-// Other Standards
-// -----------------------------------------------------------------------------
+export const ChildOf = bootstrapBuiltinComponent(new ComponentHandle<undefined>(JecsChildOf), 'ChildOf')
 
 /**
  * Built-in component used to distinguish entities that represent resources.
  *
  * @group Built-in Entities
  */
-export const Resource = component('Resource')
+export const Resource = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Resource')
 
 /**
  * Built-in component used to distinguish entities that represent systems.
  *
  * @group Built-in Entities
  */
-export const System = component<{
-	callback: (...args: defined[]) => void
-	phase: Phase
-	args: defined[]
-	scheduled: boolean
-	lastDeltaTime: number
-}>('System')
+export const System = bootstrapBuiltinComponent(
+	new ComponentHandle<{
+		callback: (...args: defined[]) => void
+		phase: Phase
+		args: defined[]
+		scheduled: boolean
+		registrationIndex: number
+		lastDeltaTime: number
+	}>(world.component()),
+	'System',
+)
 
 /**
  * Built-in component used to distinguish entities that represent plugins.
  *
  * @group Built-in Entities
  */
-export const Plugin = component<{
-	build: PluginBuildFn<defined[]>
-	built: boolean
-	args: defined[]
-}>('Plugin')
+export const Plugin = bootstrapBuiltinComponent(
+	new ComponentHandle<{
+		build: PluginBuildFn<defined[]>
+		built: boolean
+		args: defined[]
+	}>(world.component()),
+	'Plugin',
+)
+
+bootstrappedComponents.forEach(([comp, label]) => setupComponent(comp, label, true, false))

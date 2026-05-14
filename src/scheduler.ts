@@ -9,18 +9,15 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External } from './handle'
+import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External, applyOriginComponent } from './handle'
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'
 import { STANDARD_PLUGINS } from './std/plugins'
 
 export type System<Args extends defined[]> = (...args: Args) => void
-export type Plugin<Args extends defined[]> = (
-	scheduler: Scheduler,
-	planckScheduler: Planck.Scheduler<[]>,
-	...args: Args
-) => void
+export type Plugin<Args extends defined[]> = (scheduler: Scheduler, ...args: Args) => void
+export type Phase = Planck.Phase
 
 function isInternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
@@ -96,7 +93,7 @@ function spawnSystem<Args extends defined[]>(
 	callback: System<Args>,
 	phase: Planck.Phase,
 	args: Args,
-	label?: string,
+	customLabel?: string,
 ): EntityHandle {
 	const handle = entity()
 
@@ -109,15 +106,12 @@ function spawnSystem<Args extends defined[]>(
 			phase,
 			args: args ?? [],
 			scheduled: false,
+			registrationIndex: nextSystemRegistrationIndex++,
 			lastDeltaTime: 0,
 		})
-		.set(Label, label ?? generatedLabel)
+		.set(Label, customLabel ?? generatedLabel)
 
-	if (isInternal()) {
-		handle.set(Internal)
-	} else if (isExternal()) {
-		handle.set(External)
-	}
+	applyOriginComponent(handle, true, false)
 
 	const parentPlugin = findPluginInCallStack()
 	if (parentPlugin) {
@@ -148,7 +142,13 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 
 	const handle = entity()
 
-	handle.set(Plugin, { build: build as Plugin<defined[]>, built: false, args }).set(Label, label)
+	handle
+		.set(Plugin, {
+			build: build as Plugin<defined[]>,
+			built: false,
+			args,
+		})
+		.set(Label, label)
 
 	if (isInternal()) {
 		handle.set(Internal)
@@ -163,14 +163,46 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 	return handle
 }
 
+let nextSystemRegistrationIndex = 0
+
 /**
  * The starting point of a game made with Toucan.
  *
  * @group Core ECS
  */
 export class Scheduler {
+	private readonly planckScheduler = new Planck.Scheduler()
+
 	/**
 	 * Schedules a system to run in the specified phase with the provided arguments.
+	 *
+	 * The system's label is inferred from the function name. If the function is anonymous,
+	 * a default label is generated instead.
+	 *
+	 * @example
+	 * ```ts
+	 * function fireGun(params: RaycastParams) { ... }
+	 *
+	 * scheduler()
+	 *     .useSystem(fireGun, UPDATE, new RaycastParams())
+	 *     .run()
+	 * ```
+	 *
+	 * #### Implicit Execution Order
+	 *
+	 * If multiple systems are registered in the same phase, they will be executed in the
+	 * order they were registered in the codebase.
+	 *
+	 * Phases should still be the main tool for controlling execution order, but this allows
+	 * for more fine-grained control when creating an entire new phase would be overkill.
+	 *
+	 * @example
+	 * ```ts
+	 * scheduler()
+	 *     .useSystem(runsFirst, UPDATE)
+	 * 	   .useSystem(runsSecond, UPDATE)
+	 * 	   .run()
+	 * ```
 	 *
 	 * #### Reflection
 	 *
@@ -178,18 +210,23 @@ export class Scheduler {
 	 * queried and manipulated like any other entity in Toucan.
 	 *
 	 * Systems scheduled within plugins are automatically parented to the plugin.
-	 *
-	 * @example
-	 * ```ts
-	 * function fireGun(params: RaycastParams) { ... }
-	 *
-	 * scheduler()
-	 *     .addSystems(UPDATE, [fireGun], new RaycastParams())
-	 *     .run()
-	 * ```
 	 */
-	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, args?: Args, label?: string): this {
-		spawnSystem(system, phase, args ?? ([] as unknown as Args), label)
+	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
+		spawnSystem(system, phase, args)
+		return this
+	}
+
+	/**
+	 * Similar to `useSystem`, but allows you to specify a custom label for the system.
+	 * Useful for anonymous functions.
+	 */
+	useSystemWithLabel<Args extends defined[]>(
+		system: System<Args>,
+		phase: Planck.Phase,
+		label: string,
+		...args: Args
+	): this {
+		spawnSystem(system, phase, args, label)
 		return this
 	}
 
@@ -232,39 +269,68 @@ export class Scheduler {
 	 * which only fires once during this method call).
 	 */
 	run(): this {
-		const planckScheduler = new Planck.Scheduler()
+		this.useStandardSchedule()
+		this.useStandardPlugins()
+
+		// All plugins must be built before we start scheduling systems.
+		this.buildPlugins()
+
+		this.useSystemWithLabel(() => this.buildPlugins(), ABSOLUTE_FIRST, 'buildPlugins')
+		this.useSystemWithLabel(() => this.scheduleSystems(), ABSOLUTE_FIRST, 'scheduleSystems')
+
+		// Since `scheduleSystems` is also a system, we have to bootstrap it.
+		this.scheduleSystems()
+
+		this.planckScheduler.runAll()
+
+		return this
+	}
+
+	private useStandardSchedule() {
+		this.planckScheduler
 			.insert(STARTUP_PIPELINE)
 			.insert(UPDATE_PIPELINE, RunService, 'Heartbeat')
 			.insert(PRE_RENDER, RunService, 'PreRender')
 			.insert(PRE_ANIMATION, RunService, 'PreAnimation')
 			.insert(PRE_SIMULATION, RunService, 'PreSimulation')
 			.insert(POST_SIMULATION, RunService, 'PostSimulation')
+	}
 
-		function buildPlugins(toucanScheduler: Scheduler) {
-			let pendingPlugins = query(Plugin).collect().filter(([, p]) => !p.built)
+	private useStandardPlugins() {
+		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
+	}
 
-			// We use a while loop to ensure that if a plugin registers another plugin,
-			// the child plugin is also fully built during this exact step.
-			while (!pendingPlugins.isEmpty()) {
-				pendingPlugins
-					.sort(([p1], [p2]) => {
-						const a = p1.has(External)
-						const b = p2.has(External)
-						return a === b ? false : !a
-					})
-					.forEach(([, p]) => {
-						p.built = true
-						p.build(toucanScheduler, planckScheduler, ...p.args)
-					})
+	private buildPlugins() {
+		let pendingPlugins = query(Plugin)
+			.collect()
+			.filter(([, p]) => !p.built)
 
-				pendingPlugins = query(Plugin).collect().filter(([, p]) => !p.built)
-			}
+		// We use a while loop to ensure that if a plugin registers another plugin,
+		// the child plugin is also fully built during this exact step.
+		while (!pendingPlugins.isEmpty()) {
+			pendingPlugins
+				.sort(([p1], [p2]) => {
+					const a = p1.has(External)
+					const b = p2.has(External)
+					return a === b ? false : !a
+				})
+				.forEach(([, p]) => {
+					p.built = true
+					p.build(this, ...p.args)
+				})
+
+			pendingPlugins = query(Plugin)
+				.collect()
+				.filter(([, p]) => !p.built)
 		}
+	}
 
-		function scheduleSystems() {
+	private scheduleSystems() {
 			query(System)
-				.filter((_, system) => !system.scheduled)
-				.forEach((e, system) => {
+				.collect() // We collect since `Query` doesn't have a `sort` method yet.
+				.filter(([_, system]) => !system.scheduled)
+				.sort(([_e1, s1], [_e2, s2]) => s1.registrationIndex < s2.registrationIndex)
+				.forEach(([e, system]) => {
 					const wrappedCallback = () => {
 						debug.profilebegin(e.toString())
 						const t = os.clock()
@@ -276,24 +342,9 @@ export class Scheduler {
 					}
 
 					system.scheduled = true
-					planckScheduler.addSystem(wrappedCallback, system.phase)
+					this.planckScheduler.addSystem(wrappedCallback, system.phase)
 				})
 		}
-
-		STANDARD_PLUGINS.forEach((plugin) => this.usePlugin(plugin))
-
-		// All plugins must be built before we start scheduling systems.
-		buildPlugins(this)
-
-		this.useSystem(buildPlugins, ABSOLUTE_FIRST, [this])
-		this.useSystem(scheduleSystems, ABSOLUTE_FIRST)
-
-		scheduleSystems()
-
-		planckScheduler.runAll()
-
-		return this
-	}
 }
 
 /**

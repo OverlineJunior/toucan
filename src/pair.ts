@@ -1,19 +1,36 @@
-import type { ComponentHandle, EntityHandle, RawId, VALUE_SYMBOL } from './handle'
+import type { ComponentHandle, EntityHandle, Handle, RawId, VALUE_SYMBOL } from './handle'
 import { pair as jecsPair } from '@rbxts/jecs'
+import { world, ECS_ENTITY_MASK, ECS_PAIR_OFFSET } from './world'
 
-const ECS_PAIR_OFFSET = 2 ** 48
-const ECS_ENTITY_MASK = 0x1000000
+/**
+ * Due to Roblox's max of 53 bits of integer precision, Jecs' pairs use a stripped ID format (relation's 24 bits + target's 24 bits).
+ * Because of this, we need to reconstruct the full ID by checking if the stripped ID exists, and if not, we add the pair offset until we find a match.
+ */
+function reconstructStrippedId(strippedId: RawId): RawId {
+	if (world.contains(strippedId)) return strippedId
+
+	for (let gen = 1; gen < 256; gen++) {
+		const fullId = strippedId + gen * ECS_ENTITY_MASK
+		if (world.contains(fullId)) {
+			return fullId as RawId
+		}
+	}
+
+	return strippedId
+}
 
 export function isPair(id: RawId): boolean {
 	return id >= ECS_PAIR_OFFSET
 }
 
-export function getPairRelation(id: RawId): RawId {
-	return math.floor((id - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK) as RawId
+export function getPairRelationFromId(pairId: RawId): RawId {
+	const strippedId = math.floor((pairId - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK) as RawId
+	return reconstructStrippedId(strippedId)
 }
 
-export function getPairTarget(id: RawId): RawId {
-	return ((id - ECS_PAIR_OFFSET) % ECS_ENTITY_MASK) as RawId
+export function getPairTargetFromId(pairId: RawId): RawId {
+	const strippedId = ((pairId - ECS_PAIR_OFFSET) % ECS_ENTITY_MASK) as RawId
+	return reconstructStrippedId(strippedId)
 }
 
 /**
@@ -24,11 +41,15 @@ export function getPairTarget(id: RawId): RawId {
 export class Pair<Value = unknown> {
 	declare [VALUE_SYMBOL]: Value
 
+	public readonly relation: Handle
+	public readonly target: Handle
 	/** @internal */
 	public readonly id: RawId
 
-	constructor(id: RawId) {
-		this.id = id
+	constructor(relation: Handle, target: Handle) {
+		this.relation = relation
+		this.target = target
+		this.id = jecsPair(relation.id, target.id) as unknown as RawId
 
 		const mt = getmetatable(this) as { __eq?: (a: Pair, b: Pair) => boolean }
 		mt.__eq = (a, b) => a.id === b.id
@@ -85,5 +106,5 @@ export function pair<R>(relation: ComponentHandle<R>, target: EntityHandle): Pai
 export function pair<T>(relation: EntityHandle, target: ComponentHandle<T>): Pair<T>
 export function pair(relation: EntityHandle, target: EntityHandle): Pair<undefined>
 export function pair(relation: EntityHandle | ComponentHandle, target: EntityHandle | ComponentHandle) {
-	return new Pair(jecsPair(relation.id, target.id) as unknown as RawId)
+	return new Pair(relation, target)
 }

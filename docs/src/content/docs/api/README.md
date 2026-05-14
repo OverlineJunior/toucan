@@ -14,6 +14,9 @@ title: "@rbxts/toucan"
 
 - [ChildOf](/toucan/api/built-in_entities/childof/)
 - [Component](/toucan/api/built-in_entities/component/)
+- [External](/toucan/api/built-in_entities/external/)
+- [Internal](/toucan/api/built-in_entities/internal/)
+- [Label](/toucan/api/built-in_entities/label/)
 - [Plugin](/toucan/api/built-in_entities/plugin/)
 - [Resource](/toucan/api/built-in_entities/resource/)
 - [System](/toucan/api/built-in_entities/system/)
@@ -52,6 +55,7 @@ title: "@rbxts/toucan"
 - [entity](/toucan/api/core_ecs/entity/)
 - [pair](/toucan/api/core_ecs/pair-1/)
 - [query](/toucan/api/core_ecs/query-1/)
+- [resolveId](/toucan/api/core_ecs/resolveid/)
 - [resource](/toucan/api/core_ecs/resource/)
 - [scheduler](/toucan/api/core_ecs/scheduler-1/)
 

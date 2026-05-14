@@ -5,20 +5,19 @@ export {
 	entity,
 	component,
 	resource,
+	resolveId,
 	Component,
 	Resource,
 	System,
 	Plugin,
 	Wildcard,
 	ChildOf,
+	Internal,
+	External,
+	Label,
+	Persistent,
 } from './handle'
-export type {
-	RawId,
-	Handle,
-	EntityHandle,
-	ComponentHandle,
-	ResourceHandle,
-} from './handle'
+export type { RawId, Handle, EntityHandle, ComponentHandle, ResourceHandle } from './handle'
 
 export { query } from './query'
 export type { Query } from './query'

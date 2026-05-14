@@ -2,7 +2,7 @@ import { Handle, RawId, InferValues, resolveId, ComponentHandle, Wildcard } from
 import { Pair } from './pair'
 import { System } from './scheduler'
 import { ZeroUpToEight } from './util'
-import { world } from './world'
+import { getAllEntityIds, world } from './world'
 import * as jecs from '@rbxts/jecs'
 import { observer, monitor } from '@rbxts/jecs-utils'
 
@@ -318,7 +318,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		// TODO! Optimize this by adding a flag when we add Wildcard to the query.
 		// Wildcard queries are a special case where we want all entities.
 		if (this.isWildcardQuery()) {
-			for (const rawId of world.entity_index.dense_array) {
+			for (const rawId of getAllEntityIds()) {
 				const id = resolveId(rawId)
 				if (!id || !this.matchesFilters(id)) continue
 
