@@ -2,14 +2,17 @@
 	"name": "@rbxts/toucan",
 	"version": "0.4.1",
 	"main": "out/init.lua",
+	"packageManager": "bun@1.3.14",
 	"scripts": {
 		"build": "rbxtsc",
 		"watch": "yalc-watch",
-		"prepublishOnly": "npm run build",
+		"prepublishOnly": "bun run build",
 		"lint": "eslint ./src --ext .ts",
 		"format": "prettier --write \"src/**/*.ts\"",
-		"packInstall": "rimraf --glob \"*.tgz\" && npm run build && npm pack && cd ../toucan-test && npm i ../toucan/*.tgz",
-		"test": "concurrently -n \"LIB,TEST,ROJO\" -c \"blue,magenta,yellow\" \"rbxtsc -w\" \"rbxtsc -p test -w\" \"rojo serve test/default.project.json\""
+		"packInstall": "rimraf --glob \"*.tgz\" && bun run build && bun pack && cd ../toucan-test && bun i ../toucan/*.tgz",
+		"pretest": "bun i --cwd test && rokit install",
+		"test": "concurrently -n \"LIB,TEST,ROJO\" -c \"blue,magenta,yellow\" \"rbxtsc -w\" \"rbxtsc -p test -w\" \"rojo serve test/default.project.json\"",
+		"preinstall": "npx only-allow bun"
 	},
 	"keywords": [
 		"ecs",

@@ -17,7 +17,7 @@ those Pipelines.
 
 > **insert**(`phase`): `this`
 
-Defined in: node\_modules/@rbxts/planck/src/Pipeline.d.ts:19
+Defined in: node\_modules/@rbxts/planck/src/Pipeline.d.ts:21
 
 Adds a Phase to the Pipeline, ordering it implicitly.
 
@@ -37,7 +37,7 @@ Adds a Phase to the Pipeline, ordering it implicitly.
 
 > **insertAfter**(`phase`, `after`): `this`
 
-Defined in: node\_modules/@rbxts/planck/src/Pipeline.d.ts:21
+Defined in: node\_modules/@rbxts/planck/src/Pipeline.d.ts:23
 
 Adds a Phase to the Pipeline after another Phase, ordering it explicitly.
 
@@ -61,7 +61,7 @@ Adds a Phase to the Pipeline after another Phase, ordering it explicitly.
 
 > **insertBefore**(`phase`, `before`): `this`
 
-Defined in: node\_modules/@rbxts/planck/src/Pipeline.d.ts:23
+Defined in: node\_modules/@rbxts/planck/src/Pipeline.d.ts:25
 
 Adds a Phase to the Pipeline before another Phase, ordering it explicitly.
 

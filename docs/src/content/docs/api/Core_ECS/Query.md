@@ -132,7 +132,7 @@ Adds a filter predicate to the query that entities must satisfy in order to be q
 
 ### find()
 
-> **find**(`predicate`): \[[`Handle`](/toucan/api/core_ecs/handle/), `...InferValues<Cs>[]`\] \| `undefined`
+> **find**(`predicate`): \[[`Handle`](/toucan/api/core_ecs/handle/), `...InferValues<Cs>[]`\]
 
 Defined in: [src/query.ts:104](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L104)
 
@@ -148,7 +148,7 @@ component values, or `undefined` if no such entity exists.
 
 #### Returns
 
-\[[`Handle`](/toucan/api/core_ecs/handle/), `...InferValues<Cs>[]`\] \| `undefined`
+\[[`Handle`](/toucan/api/core_ecs/handle/), `...InferValues<Cs>[]`\]
 
 ***
 
@@ -381,7 +381,7 @@ Does not append the values of these components to the results.
 
 ##### components
 
-...([`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>)[]
+...([`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -403,7 +403,7 @@ Does not append the values of these components to the results.
 
 ##### components
 
-...([`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>)[]
+...([`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -423,7 +423,7 @@ Excludes entities with _all_ of the specified components from the query's result
 
 ##### components
 
-...([`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>)[]
+...([`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -443,7 +443,7 @@ Excludes entities with _any_ of the specified components from the query's result
 
 ##### components
 
-...([`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>)[]
+...([`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>)[]
 
 #### Returns
 

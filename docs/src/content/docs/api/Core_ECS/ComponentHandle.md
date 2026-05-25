@@ -169,7 +169,7 @@ Missing components or pairs will return `undefined`.
 
 ##### Args
 
-`Args` *extends* `OneUpToFour`\<[`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| `ComponentHandle`\<`unknown`\>\>
+`Args` *extends* `OneUpToFour`\<`ComponentHandle`\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>\>
 
 #### Parameters
 
@@ -212,7 +212,7 @@ A maximum of 4 components or pairs can be checked at once.
 
 ##### componentsOrPairs
 
-...`OneUpToFour`\<[`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| `ComponentHandle`\<`unknown`\>\>
+...`OneUpToFour`\<`ComponentHandle`\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>\>
 
 #### Returns
 
@@ -242,7 +242,7 @@ if (bob.has(IsDead, pair(Owns, house))) {
 
 ### parent()
 
-> **parent**(): [`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+> **parent**(): [`Handle`](/toucan/api/core_ecs/handle/)
 
 Defined in: [src/handle.ts:355](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L355)
 
@@ -250,7 +250,7 @@ Gets the parent (the target of a `ChildOf` relationship) for this entity, if suc
 
 #### Returns
 
-[`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+[`Handle`](/toucan/api/core_ecs/handle/)
 
 #### Example
 
@@ -299,7 +299,7 @@ Throws an error if trying to remove a component with the `Persistent` component 
 
 ##### componentOrPair
 
-[`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> | `ComponentHandle`\<`unknown`\>
+`ComponentHandle`\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>
 
 #### Returns
 
@@ -364,7 +364,7 @@ Assigns a component and its value to this entity.
 
 ###### value
 
-`NoInfer`
+`NoInfer`\<`V`\>
 
 ##### Returns
 
@@ -466,7 +466,7 @@ const alice = entity()
 
 ### targetOf()
 
-> **targetOf**(`relation`, `nth?`): [`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+> **targetOf**(`relation`, `nth?`): [`Handle`](/toucan/api/core_ecs/handle/)
 
 Defined in: [src/handle.ts:408](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L408)
 
@@ -487,7 +487,7 @@ can be specified (starting at 0).
 
 #### Returns
 
-[`Handle`](/toucan/api/core_ecs/handle/) \| `undefined`
+[`Handle`](/toucan/api/core_ecs/handle/)
 
 #### Example
 

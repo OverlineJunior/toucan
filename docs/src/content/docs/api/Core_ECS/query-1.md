@@ -15,7 +15,7 @@ Creates a new query for the specified components and/or pairs.
 
 ### Cs
 
-`Cs` *extends* `ZeroUpToEight`\<[`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\> \| [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\>\>
+`Cs` *extends* `ZeroUpToEight`\<[`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/core_ecs/pair/)\<`unknown`\>\>
 
 ## Parameters
 

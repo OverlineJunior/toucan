@@ -5,7 +5,7 @@ prev: false
 title: "System"
 ---
 
-> `const` **System**: [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<\{ `args`: `defined`[]; `callback`: (...`args`) => `void`; `lastDeltaTime`: `number`; `phase`: [`Phase`](/toucan/api/interfaces/phase/); `scheduled`: `boolean`; \}\>
+> `const` **System**: [`ComponentHandle`](/toucan/api/core_ecs/componenthandle/)\<\{ `args`: `defined`[]; `callback`: (...`args`) => `void`; `lastDeltaTime`: `number`; `phase`: [`Phase`](/toucan/api/interfaces/phase/); `registrationIndex`: `number`; `scheduled`: `boolean`; \}\>
 
 Defined in: [src/handle.ts:728](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L728)
 

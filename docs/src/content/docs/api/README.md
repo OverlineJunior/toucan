@@ -17,6 +17,7 @@ title: "@rbxts/toucan"
 - [External](/toucan/api/built-in_entities/external/)
 - [Internal](/toucan/api/built-in_entities/internal/)
 - [Label](/toucan/api/built-in_entities/label/)
+- [Persistent](/toucan/api/built-in_entities/persistent/)
 - [Plugin](/toucan/api/built-in_entities/plugin/)
 - [Resource](/toucan/api/built-in_entities/resource/)
 - [System](/toucan/api/built-in_entities/system/)

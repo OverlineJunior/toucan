@@ -20,8 +20,8 @@ export default defineConfig({
         starlightTypeDoc({
           entryPoints:['../src/index.ts'],
           tsconfig: './tsconfig.json',
-          skipErrorChecking: true,
           typeDoc: {
+            skipErrorChecking: true,
             router: 'group',
             gitRevision: 'master',
           },
