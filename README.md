@@ -61,17 +61,15 @@ scheduler().usePlugin(greetingPlugin).run()
 
 ```bash
 npm install @rbxts/toucan
+yarn add @rbxts/toucan
+pnpm add @rbxts/toucan
+bun add @rbxts/toucan
 ```
 
-# Testing Workflow
+## Development
 
-Given `toucan` and a test game `toucan-test`, in order to automatically send changes over, you must first follow the steps below a single time only:
+1. Before anything, make sure you have [bun](https://bun.sh) and [rokit](https://github.com/rojo-rbx/rokit) installed in your system;
 
-+ On `toucan`, run `npm run build`, then `yalc publish`
-+ On `toucan-test`, run `yalc add @rbxts/toucan`, then `npm install`
+1. Then, run `bun run setup` to install dependencies across the entire project;
 
-Then, in order to start testing `toucan` on `toucan-test`, run `npm run watch` on `toucan`.
-
-## Fallback
-
-In case `yalc` fails, the script `packInstall` works as a fallback, packaging `toucan` and installing it on `toucan-test`. Just remember to update it to reference the right test game.
+1. Finally, run `bun run dev` to start development.
