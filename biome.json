@@ -5,15 +5,10 @@
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
-	"files": {
-		"ignoreUnknown": false
-	},
 	"formatter": {
-		"enabled": true,
 		"indentStyle": "tab"
 	},
 	"linter": {
-		"enabled": true,
 		"rules": {
 			"recommended": true,
 			"style": {
@@ -27,12 +22,11 @@
 	},
 	"javascript": {
 		"formatter": {
-  		"quoteStyle": "single",
-      "semicolons": "asNeeded"
+			"quoteStyle": "single",
+			"semicolons": "asNeeded"
 		}
 	},
 	"assist": {
-		"enabled": true,
 		"actions": {
 			"source": {
 				"organizeImports": "on"
