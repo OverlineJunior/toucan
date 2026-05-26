@@ -8,8 +8,8 @@ import {
 	entity,
 	Internal,
 	Label,
-	Plugin,
-	System,
+	Plugin as PluginComponent,
+	System as SystemComponent,
 } from './handle'
 import { pair } from './pair'
 import { query } from './query'
@@ -56,15 +56,15 @@ function findPluginInCallStack(): EntityHandle | undefined {
 		}
 	}
 
-	return query(Plugin).find((_, p) => hasBuildInCallStack(p.build))?.[0] as
-		| EntityHandle
-		| undefined
+	return query(PluginComponent).find((_, p) =>
+		hasBuildInCallStack(p.build),
+	)?.[0] as EntityHandle | undefined
 }
 
-function validatePluginConflict(
+function validatePluginConflict<Args extends defined[]>(
 	existing: EntityHandle,
-	build: (...args: any[]) => void,
-	newArgs: defined[],
+	build: Plugin<Args>,
+	newArgs: Args,
 	incomingParent: EntityHandle | undefined,
 	inferredName: string,
 ) {
@@ -73,10 +73,8 @@ function validatePluginConflict(
 	if (argCount === 1) return
 
 	const existingParent = existing.parent()
-	const isIncomingExternal =
-		incomingParent !== undefined && incomingParent.has(External)
-	const isExistingExternal =
-		existingParent !== undefined && existingParent.has(External)
+	const isIncomingExternal = incomingParent?.has(External)
+	const isExistingExternal = existingParent?.has(External)
 
 	// We can safely ignore this case, as user-defined plugins take precedence.
 	if (!isExistingExternal && isIncomingExternal) {
@@ -84,7 +82,7 @@ function validatePluginConflict(
 	}
 
 	// Both plugins being initialized with the same arguments is not a conflict.
-	const existingArgs = existing.get(Plugin)!.args
+	const existingArgs = existing.get(PluginComponent)!.args
 	if (deepEqual(existingArgs, newArgs)) {
 		return
 	}
@@ -123,7 +121,7 @@ function spawnSystem<Args extends defined[]>(
 		_inferredLabel === '' ? `System #${handle.id}` : _inferredLabel
 
 	handle
-		.set(System, {
+		.set(SystemComponent, {
 			callback: callback as (...args: defined[]) => void,
 			phase,
 			args: args ?? [],
@@ -161,9 +159,9 @@ function spawnPlugin<Args extends defined[]>(
 
 	const parentPlugin = findPluginInCallStack()
 
-	const existing = query(Plugin).find((_, p) => p.build === build)?.[0] as
-		| EntityHandle
-		| undefined
+	const existing = query(PluginComponent).find(
+		(_, p) => p.build === build,
+	)?.[0] as EntityHandle | undefined
 	if (existing) {
 		validatePluginConflict(existing, build, args, parentPlugin, label)
 		return new EntityHandle(existing.id)
@@ -172,7 +170,7 @@ function spawnPlugin<Args extends defined[]>(
 	const handle = entity()
 
 	handle
-		.set(Plugin, {
+		.set(PluginComponent, {
 			build: build as Plugin<defined[]>,
 			built: false,
 			args,
@@ -342,7 +340,7 @@ export class Scheduler {
 	}
 
 	private buildPlugins() {
-		let pendingPlugins = query(Plugin)
+		let pendingPlugins = query(PluginComponent)
 			.collect()
 			.filter(([, p]) => !p.built)
 
@@ -360,14 +358,14 @@ export class Scheduler {
 					p.build(this, ...p.args)
 				})
 
-			pendingPlugins = query(Plugin)
+			pendingPlugins = query(PluginComponent)
 				.collect()
 				.filter(([, p]) => !p.built)
 		}
 	}
 
 	private scheduleSystems() {
-		query(System)
+		query(SystemComponent)
 			.collect() // We collect since `Query` doesn't have a `sort` method yet.
 			.filter(([_, system]) => !system.scheduled)
 			.sort(

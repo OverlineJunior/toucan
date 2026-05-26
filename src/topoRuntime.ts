@@ -6,7 +6,7 @@ interface Storage<S extends object> {
 
 export type CleanupFn<S extends object> = (state: S) => boolean | void
 
-const keyStorage = new Map<string, Storage<any>>()
+const keyStorage = new Map<string, Storage<object>>()
 const frameCallCounts = new Map<string, number>()
 
 /**
@@ -76,7 +76,7 @@ const frameCallCounts = new Map<string, number>()
  */
 export function useHookState<S extends object>(
 	initial: S,
-	identifier?: any,
+	identifier?: unknown,
 	cleanup?: CleanupFn<S>,
 ): S {
 	const [file, line] = debug.info(3, 'sl')
@@ -84,7 +84,7 @@ export function useHookState<S extends object>(
 	const baseKey = `${hookFn}:${file}:${line}`
 
 	// Used to uniquely identify hook calls within the same function and line.
-	let extraKey
+	let extraKey: unknown
 	if (identifier) {
 		extraKey = identifier
 	} else {
@@ -96,7 +96,11 @@ export function useHookState<S extends object>(
 	const key = `${baseKey}:${extraKey}`
 
 	if (!keyStorage.has(key)) {
-		keyStorage.set(key, { state: initial, accessed: false, cleanup })
+		keyStorage.set(key, {
+			state: initial,
+			accessed: false,
+			cleanup: cleanup as CleanupFn<object> | undefined,
+		})
 	}
 
 	const storage = keyStorage.get(key)!

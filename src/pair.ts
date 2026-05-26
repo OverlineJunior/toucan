@@ -1,11 +1,6 @@
 import { pair as jecsPair } from '@rbxts/jecs'
-import type {
-	ComponentHandle,
-	EntityHandle,
-	Handle,
-	RawId,
-	VALUE_SYMBOL,
-} from './handle'
+import type { ComponentHandle, EntityHandle, Handle, RawId } from './handle'
+import { VALUE_SYMBOL } from './handle'
 import { ECS_ENTITY_MASK, ECS_PAIR_OFFSET, world } from './world'
 
 /**

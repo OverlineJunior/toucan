@@ -26,7 +26,7 @@ export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
 
 export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
 
-type GetComponentValues<Args extends any[]> = WrapLuaTuple<
+type GetComponentValues<Args extends unknown[]> = WrapLuaTuple<
 	Flatten<Nullable<InferValues<Args>>>
 >
 
@@ -259,7 +259,7 @@ export abstract class Handle {
 		return world.get(
 			this.id,
 			...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>),
-		) as any
+		) as GetComponentValues<Args>
 	}
 
 	/**
