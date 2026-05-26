@@ -1,6 +1,6 @@
+import type { Scheduler } from '../../scheduler'
 import { cleanupHookState } from '../../topoRuntime'
 import { ABSOLUTE_LAST } from '../phases'
-import { Scheduler } from '../../scheduler'
 
 function topoRuntimeCleanup() {
 	cleanupHookState()

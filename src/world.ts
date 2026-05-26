@@ -1,5 +1,5 @@
 import * as jecs from '@rbxts/jecs'
-import { RawId } from './handle'
+import type { RawId } from './handle'
 
 type UnsafeWorld = jecs.World & {
 	entity_index: {

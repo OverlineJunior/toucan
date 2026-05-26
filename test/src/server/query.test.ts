@@ -1,13 +1,13 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import {
-	entity,
 	component,
+	External,
+	entity,
+	Internal,
+	Label,
 	pair,
 	query,
 	Wildcard,
-	Internal,
-	External,
-	Label,
 } from '@rbxts/toucan'
 
 class QueryTests {

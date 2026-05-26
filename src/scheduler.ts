@@ -1,6 +1,19 @@
 import * as Planck from '@rbxts/planck'
 import { RunService } from '@rbxts/services'
 import {
+	applyOriginComponent,
+	ChildOf,
+	EntityHandle,
+	External,
+	entity,
+	Internal,
+	Label,
+	Plugin,
+	System,
+} from './handle'
+import { pair } from './pair'
+import { query } from './query'
+import {
 	ABSOLUTE_FIRST,
 	POST_SIMULATION,
 	PRE_ANIMATION,
@@ -9,21 +22,8 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import {
-	ChildOf,
-	entity,
-	EntityHandle,
-	Internal,
-	Label,
-	Plugin,
-	System,
-	External,
-	applyOriginComponent,
-} from './handle'
-import { query } from './query'
-import { deepEqual } from './util'
-import { pair } from './pair'
 import { STANDARD_PLUGINS } from './std/plugins'
+import { deepEqual } from './util'
 
 export type System<Args extends defined[]> = (...args: Args) => void
 export type Plugin<Args extends defined[]> = (

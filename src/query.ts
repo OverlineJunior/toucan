@@ -1,18 +1,18 @@
+import type * as jecs from '@rbxts/jecs'
 import {
-	Handle,
-	RawId,
-	InferValues,
-	resolveId,
-	ComponentHandle,
-	Wildcard,
+	type ComponentHandle,
 	entityHistory,
-	InferValue,
+	type Handle,
+	type InferValue,
+	type InferValues,
+	type RawId,
+	resolveId,
+	Wildcard,
 } from './handle'
-import { Pair } from './pair'
-import { System } from './scheduler'
-import { ZeroUpToEight } from './util'
+import type { Pair } from './pair'
+import type { System } from './scheduler'
+import type { ZeroUpToEight } from './util'
 import { getAllEntityIds, world } from './world'
-import * as jecs from '@rbxts/jecs'
 
 export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [
 	Handle,
@@ -132,7 +132,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			e: Handle,
 			...args: unknown[]
 		) => boolean
-		let result: QueryResult<Cs> | undefined = undefined
+		let result: QueryResult<Cs> | undefined
 
 		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
 			if (pred(e, v1, v2, v3, v4, v5, v6, v7, v8)) {

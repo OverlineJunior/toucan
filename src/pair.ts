@@ -1,3 +1,4 @@
+import { pair as jecsPair } from '@rbxts/jecs'
 import type {
 	ComponentHandle,
 	EntityHandle,
@@ -5,8 +6,7 @@ import type {
 	RawId,
 	VALUE_SYMBOL,
 } from './handle'
-import { pair as jecsPair } from '@rbxts/jecs'
-import { world, ECS_ENTITY_MASK, ECS_PAIR_OFFSET } from './world'
+import { ECS_ENTITY_MASK, ECS_PAIR_OFFSET, world } from './world'
 
 /**
  * Due to Roblox's max of 53 bits of integer precision, Jecs' pairs use a stripped ID format (relation's 24 bits + target's 24 bits).

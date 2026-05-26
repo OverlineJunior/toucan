@@ -1,19 +1,19 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import { Each } from '@rbxts/lunit/out/lib/decorator'
 import {
-	query,
-	Wildcard,
-	Internal,
-	External,
 	ChildOf,
+	type EntityHandle,
+	External,
+	Internal,
 	Plugin,
-	System,
 	pair,
-	scheduler,
-	Scheduler,
-	UPDATE,
+	query,
+	type Scheduler,
 	STARTUP,
-	EntityHandle,
+	System,
+	scheduler,
+	UPDATE,
+	Wildcard,
 } from '@rbxts/toucan'
 
 class SchedulerTests {

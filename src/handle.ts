@@ -1,19 +1,19 @@
-import { getAllComponentIdsIn, world } from './world'
 import {
-	Entity as JecsEntity,
-	Wildcard as JecsWildcard,
 	ChildOf as JecsChildOf,
+	type Entity as JecsEntity,
+	Wildcard as JecsWildcard,
 } from '@rbxts/jecs'
-import { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
+import type { Phase } from '@rbxts/planck'
 import {
 	getPairRelationFromId,
 	getPairTargetFromId,
 	isPair,
-	pair,
 	type Pair,
+	pair,
 } from './pair'
-import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
+import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
+import { getAllComponentIdsIn, world } from './world'
 
 /**
  * The raw Jecs ID type.

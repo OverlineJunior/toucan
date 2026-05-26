@@ -1,20 +1,20 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import {
-	entity,
-	pair,
 	ChildOf,
-	resolveId,
-	query,
-	Wildcard,
-	Internal,
-	External,
-	Label,
-	component,
-	resource,
 	Component,
-	Resource,
-	RawId,
+	component,
+	External,
+	entity,
+	Internal,
+	Label,
 	Persistent,
+	pair,
+	query,
+	type RawId,
+	Resource,
+	resolveId,
+	resource,
+	Wildcard,
 } from '@rbxts/toucan'
 
 class EntityTests {
