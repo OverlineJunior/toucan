@@ -9,7 +9,7 @@
 		"dev": "concurrently -n \"LIB,TEST,ROJO\" -c \"blue,magenta,yellow\" \"rbxtsc -w\" \"rbxtsc -p test -w\" \"rojo serve test/default.project.json\"",
 		"prepublishOnly": "bun run build",
 		"lint": "biome check .",
-    "format": "biome format --write .",
+		"format": "biome format --write .",
 		"predev": "rbxtsc && rbxtsc -p test",
 		"preinstall": "npx only-allow bun"
 	},

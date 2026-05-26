@@ -32,11 +32,21 @@ class SchedulerTests {
 		scheduler().useSystem(myTestSystem, UPDATE)
 
 		const results = query(System).collect()
-		const systemData = results.find(([, sys]) => sys.callback === myTestSystem)?.[1]
+		const systemData = results.find(
+			([, sys]) => sys.callback === myTestSystem,
+		)?.[1]
 
 		Assert.true(systemData !== undefined, 'Expected systemData to be defined')
-		Assert.equal(systemData!.phase, UPDATE, 'Expected system phase to be UPDATE')
-		Assert.equal(systemData!.scheduled, false, 'Expected system to not be scheduled yet')
+		Assert.equal(
+			systemData!.phase,
+			UPDATE,
+			'Expected system phase to be UPDATE',
+		)
+		Assert.equal(
+			systemData!.scheduled,
+			false,
+			'Expected system to not be scheduled yet',
+		)
 	}
 
 	@Test
@@ -45,13 +55,23 @@ class SchedulerTests {
 
 		scheduler().useSystem(myTestSystem, UPDATE)
 
-		const result = query(System).find((e, sys) => sys.callback === myTestSystem)?.[0]
+		const result = query(System).find(
+			(e, sys) => sys.callback === myTestSystem,
+		)?.[0]
 
 		Assert.true(result !== undefined, 'Expected to find the system entity')
-		Assert.equal(tostring(result), 'myTestSystem', 'Expected system label to match the function name')
+		Assert.equal(
+			tostring(result),
+			'myTestSystem',
+			'Expected system label to match the function name',
+		)
 	}
 
-	@Each([['Alpha', 'Beta', 'Gamma'], ['Zeta', 'Omega', 'Delta', 'Epsilon', 'Theta'], ['LonelySystem']])
+	@Each([
+		['Alpha', 'Beta', 'Gamma'],
+		['Zeta', 'Omega', 'Delta', 'Epsilon', 'Theta'],
+		['LonelySystem'],
+	])
 	@Test
 	public useSystem_implicitOrdering(...systemNames: string[]) {
 		const executionOrder: string[] = []
@@ -77,10 +97,19 @@ class SchedulerTests {
 
 		scheduler().useSystemWithLabel(unnamedSystemFn, UPDATE, label)
 
-		const result = query(System).find((e, sys) => sys.callback === unnamedSystemFn)?.[0]
+		const result = query(System).find(
+			(e, sys) => sys.callback === unnamedSystemFn,
+		)?.[0]
 
-		Assert.true(result !== undefined, 'Expected to find the unnamed system entity')
-		Assert.equal(tostring(result), label, 'Expected system label to match the custom label provided')
+		Assert.true(
+			result !== undefined,
+			'Expected to find the unnamed system entity',
+		)
+		Assert.equal(
+			tostring(result),
+			label,
+			'Expected system label to match the custom label provided',
+		)
 	}
 
 	@Test
@@ -93,7 +122,11 @@ class SchedulerTests {
 		const pluginData = results.find(([, p]) => p.build === myTestPlugin)?.[1]
 
 		Assert.true(pluginData !== undefined, 'Expected pluginData to be defined')
-		Assert.equal(pluginData!.built, false, 'Expected plugin to not be built yet')
+		Assert.equal(
+			pluginData!.built,
+			false,
+			'Expected plugin to not be built yet',
+		)
 	}
 
 	@Test
@@ -119,7 +152,11 @@ class SchedulerTests {
 			.collect()
 			.filter(([, p]) => p.build === duplicatePlugin)
 
-		Assert.equal(plugins.size(), 1, 'Expected duplicate plugins with the same arguments to be ignored')
+		Assert.equal(
+			plugins.size(),
+			1,
+			'Expected duplicate plugins with the same arguments to be ignored',
+		)
 	}
 
 	@Test
@@ -148,7 +185,10 @@ class SchedulerTests {
 
 		scheduler().usePlugin(executionTestPlugin).run()
 
-		Assert.true(wasBuilt, 'Expected the plugin to be built upon running the scheduler')
+		Assert.true(
+			wasBuilt,
+			'Expected the plugin to be built upon running the scheduler',
+		)
 	}
 
 	@Test
@@ -157,10 +197,15 @@ class SchedulerTests {
 
 		scheduler().useSystem(runTestSystem, UPDATE).run()
 
-		const systemData = query(System).find((_, s) => s.callback === runTestSystem)?.[1]
+		const systemData = query(System).find(
+			(_, s) => s.callback === runTestSystem,
+		)?.[1]
 
 		Assert.true(systemData !== undefined, 'Expected to find the system data')
-		Assert.true(systemData!.scheduled, 'Expected the system to be marked as scheduled after running')
+		Assert.true(
+			systemData!.scheduled,
+			'Expected the system to be marked as scheduled after running',
+		)
 	}
 
 	@Test
@@ -174,10 +219,18 @@ class SchedulerTests {
 		scheduler().usePlugin(myParentPlugin).run()
 
 		const parent = query(Plugin).find((_, p) => p.build === myParentPlugin)?.[0]
-		const child = query(System).find((_, s) => s.callback === myNestedSystem)?.[0]
+		const child = query(System).find(
+			(_, s) => s.callback === myNestedSystem,
+		)?.[0]
 
-		Assert.true(parent !== undefined, 'Expected to find the parent plugin entity')
-		Assert.true(child !== undefined, 'Expected to find the nested child system entity')
+		Assert.true(
+			parent !== undefined,
+			'Expected to find the parent plugin entity',
+		)
+		Assert.true(
+			child !== undefined,
+			'Expected to find the nested child system entity',
+		)
 		Assert.true(
 			child!.has(pair(ChildOf, parent! as EntityHandle)),
 			'Expected child system to have a ChildOf relationship with the parent plugin',
@@ -189,7 +242,10 @@ class SchedulerTests {
 		scheduler().run()
 
 		const allPlugins = query(Plugin).collect()
-		Assert.true(allPlugins.size() > 0, 'Expected standard plugins to be loaded and present')
+		Assert.true(
+			allPlugins.size() > 0,
+			'Expected standard plugins to be loaded and present',
+		)
 	}
 }
 

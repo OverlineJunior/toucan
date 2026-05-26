@@ -25,7 +25,7 @@ export function useThrottledMemo<T>(
 	seconds: number,
 	factory: () => T,
 	initialValue: T,
-	identifier?: unknown
+	identifier?: unknown,
 ): T {
 	const storage = useHookState({ value: initialValue })
 

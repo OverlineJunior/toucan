@@ -1,4 +1,4 @@
-import { useHookState } from "../../topoRuntime"
+import { useHookState } from '../../topoRuntime'
 
 /**
  * Throttles execution based on a time interval in seconds.
@@ -26,7 +26,7 @@ export function useThrottle(seconds: number, identifier?: unknown): boolean {
 	const state = useHookState(
 		{} as { time?: number; expiry?: number },
 		identifier,
-		(state) => os.clock() < (state.expiry ?? 0)
+		(state) => os.clock() < (state.expiry ?? 0),
 	)
 
 	const now = os.clock()

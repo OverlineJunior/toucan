@@ -26,6 +26,6 @@
 		"baseUrl": "src",
 		"paths": {
 			"@rbxts/toucan": ["../../out"]
-		},
+		}
 	}
 }

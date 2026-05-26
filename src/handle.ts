@@ -1,7 +1,17 @@
 import { getAllComponentIdsIn, world } from './world'
-import { Entity as JecsEntity, Wildcard as JecsWildcard, ChildOf as JecsChildOf } from '@rbxts/jecs'
+import {
+	Entity as JecsEntity,
+	Wildcard as JecsWildcard,
+	ChildOf as JecsChildOf,
+} from '@rbxts/jecs'
 import { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
-import { getPairRelationFromId, getPairTargetFromId, isPair, pair, type Pair } from './pair'
+import {
+	getPairRelationFromId,
+	getPairTargetFromId,
+	isPair,
+	pair,
+	type Pair,
+} from './pair'
 import { Phase } from '@rbxts/planck'
 import type { Plugin as PluginBuildFn } from './scheduler'
 
@@ -16,7 +26,9 @@ export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
 
 export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
 
-type GetComponentValues<Args extends any[]> = WrapLuaTuple<Flatten<Nullable<InferValues<Args>>>>
+type GetComponentValues<Args extends any[]> = WrapLuaTuple<
+	Flatten<Nullable<InferValues<Args>>>
+>
 
 // We use this as a key to a "phantom property" on Id subclasses to represent
 // their value type. With this, we:
@@ -62,7 +74,9 @@ export const entityHistory = new EntityHistory()
  *
  * @group Core ECS
  */
-export function resolveId(rawId: RawId): EntityHandle | ComponentHandle | ResourceHandle | undefined {
+export function resolveId(
+	rawId: RawId,
+): EntityHandle | ComponentHandle | ResourceHandle | undefined {
 	if (!world.contains(rawId)) {
 		return
 	}
@@ -94,10 +108,16 @@ function isInternal(): boolean {
  */
 function isExternal(): boolean {
 	const callerScriptPath = debug.info(2, 's')[0]
-	return callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
+	return (
+		callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
+	)
 }
 
-export function applyOriginComponent<T extends Handle>(handle: T, isInternal: boolean, isExternal: boolean) {
+export function applyOriginComponent<T extends Handle>(
+	handle: T,
+	isInternal: boolean,
+	isExternal: boolean,
+) {
 	if (isInternal) {
 		handle.set(Internal)
 		// We assume every internal component should be persistent, since they should not be messed with by the user.
@@ -147,7 +167,9 @@ export abstract class Handle {
 		 */
 		public readonly id: RawId,
 	) {
-		const mt = getmetatable(this) as { __eq?: (a: Handle, b: Handle) => boolean }
+		const mt = getmetatable(this) as {
+			__eq?: (a: Handle, b: Handle) => boolean
+		}
 		mt.__eq = (a, b) => a.id === b.id
 	}
 
@@ -231,8 +253,13 @@ export abstract class Handle {
 	 * const carCount = myEntity.get(pair(Owns, car))
 	 * ```
 	 */
-	get<Args extends OneUpToFour<ComponentHandle | Pair>>(...componentsOrPairs: Args): GetComponentValues<Args> {
-		return world.get(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>)) as any
+	get<Args extends OneUpToFour<ComponentHandle | Pair>>(
+		...componentsOrPairs: Args
+	): GetComponentValues<Args> {
+		return world.get(
+			this.id,
+			...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>),
+		) as any
 	}
 
 	/**
@@ -257,7 +284,10 @@ export abstract class Handle {
 	 * ```
 	 */
 	has(...componentsOrPairs: OneUpToFour<ComponentHandle | Pair>): boolean {
-		return world.has(this.id, ...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>))
+		return world.has(
+			this.id,
+			...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>),
+		)
 	}
 
 	/**
@@ -327,7 +357,9 @@ export abstract class Handle {
 			const targetHandle = resolveId(targetId)
 
 			if (relationHandle && targetHandle) {
-				rels.push(pair(relationHandle as EntityHandle, targetHandle as EntityHandle))
+				rels.push(
+					pair(relationHandle as EntityHandle, targetHandle as EntityHandle),
+				)
 			}
 		})
 
@@ -489,7 +521,7 @@ export abstract class Handle {
  * @group Core ECS
  */
 export class EntityHandle extends Handle {
-	declare protected readonly __brand: 'entity'
+	protected declare readonly __brand: 'entity'
 }
 
 /**
@@ -536,9 +568,16 @@ export class ComponentHandle<Value = unknown> extends Handle {
  *
  * @group Core ECS
  */
-export function component<Value = undefined>(label?: string): ComponentHandle<Value> {
+export function component<Value = undefined>(
+	label?: string,
+): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	return setupComponent(new ComponentHandle<Value>(rawId), label ?? `Component #${rawId}`, isInternal(), isExternal())
+	return setupComponent(
+		new ComponentHandle<Value>(rawId),
+		label ?? `Component #${rawId}`,
+		isInternal(),
+		isExternal(),
+	)
 }
 
 function setupComponent<C extends ComponentHandle>(
@@ -618,11 +657,16 @@ export class ResourceHandle<Value = unknown> extends Handle {
  *
  * @group Core ECS
  */
-export function resource<Value extends NonNullable<unknown>>(value: Value, label?: string): ResourceHandle<Value> {
+export function resource<Value extends NonNullable<unknown>>(
+	value: Value,
+	label?: string,
+): ResourceHandle<Value> {
 	const rawId = world.component<Value>()
 	world.set(rawId, rawId, value)
 
-	const handle = new ResourceHandle<Value>(rawId).set(Resource).set(Label, label ?? `Resource #${rawId}`)
+	const handle = new ResourceHandle<Value>(rawId)
+		.set(Resource)
+		.set(Label, label ?? `Resource #${rawId}`)
 	return applyOriginComponent(handle, isInternal(), isExternal())
 }
 
@@ -632,7 +676,10 @@ export function resource<Value extends NonNullable<unknown>>(value: Value, label
 
 const bootstrappedComponents: [ComponentHandle, string][] = []
 
-function bootstrapBuiltinComponent<C extends ComponentHandle>(handle: C, label: string): C {
+function bootstrapBuiltinComponent<C extends ComponentHandle>(
+	handle: C,
+	label: string,
+): C {
 	bootstrappedComponents.push([handle, label])
 	return handle
 }
@@ -644,35 +691,50 @@ function bootstrapBuiltinComponent<C extends ComponentHandle>(handle: C, label: 
  *
  * @group Built-in Entities
  */
-export const Persistent = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Persistent')
+export const Persistent = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(world.component()),
+	'Persistent',
+)
 
 /**
  * Built-in component used to distinguish entities created internally by Toucan.
  *
  * @group Built-in Entities
  */
-export const Internal = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Internal')
+export const Internal = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(world.component()),
+	'Internal',
+)
 
 /**
  * Built-in component used to distinguish entities created externally by packages.
  *
  * @group Built-in Entities
  */
-export const External = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'External')
+export const External = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(world.component()),
+	'External',
+)
 
 /**
  * Built-in component used to assign human-readable labels to entities.
  *
  * @group Built-in Entities
  */
-export const Label = bootstrapBuiltinComponent(new ComponentHandle<string>(world.component()), 'Label')
+export const Label = bootstrapBuiltinComponent(
+	new ComponentHandle<string>(world.component()),
+	'Label',
+)
 
 /**
  * Built-in component used to distinguish entities that represent components.
  *
  * @group Built-in Entities
  */
-export const Component = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Component')
+export const Component = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(world.component()),
+	'Component',
+)
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
@@ -695,7 +757,10 @@ export const Component = bootstrapBuiltinComponent(new ComponentHandle<undefined
  *
  * @group Built-in Entities
  */
-export const Wildcard = bootstrapBuiltinComponent(new ComponentHandle<undefined>(JecsWildcard), 'Wildcard')
+export const Wildcard = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(JecsWildcard),
+	'Wildcard',
+)
 
 // TODO! Consider making a standard system that removes previous ChildOf
 // ! relationships when setting a new one.
@@ -711,14 +776,20 @@ export const Wildcard = bootstrapBuiltinComponent(new ComponentHandle<undefined>
  *
  * @group Built-in Entities
  */
-export const ChildOf = bootstrapBuiltinComponent(new ComponentHandle<undefined>(JecsChildOf), 'ChildOf')
+export const ChildOf = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(JecsChildOf),
+	'ChildOf',
+)
 
 /**
  * Built-in component used to distinguish entities that represent resources.
  *
  * @group Built-in Entities
  */
-export const Resource = bootstrapBuiltinComponent(new ComponentHandle<undefined>(world.component()), 'Resource')
+export const Resource = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(world.component()),
+	'Resource',
+)
 
 /**
  * Built-in component used to distinguish entities that represent systems.
@@ -751,4 +822,6 @@ export const Plugin = bootstrapBuiltinComponent(
 	'Plugin',
 )
 
-bootstrappedComponents.forEach(([comp, label]) => setupComponent(comp, label, true, false))
+bootstrappedComponents.forEach(([comp, label]) =>
+	setupComponent(comp, label, true, false),
+)

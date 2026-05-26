@@ -133,7 +133,10 @@ export const ABSOLUTE_LAST = new Phase('ABSOLUTE_LAST')
 /**
  * @group Built-in Phases
  */
-export const STARTUP_PIPELINE = new Pipeline('STARTUP_PIPELINE').insert(PRE_STARTUP).insert(STARTUP).insert(POST_STARTUP)
+export const STARTUP_PIPELINE = new Pipeline('STARTUP_PIPELINE')
+	.insert(PRE_STARTUP)
+	.insert(STARTUP)
+	.insert(POST_STARTUP)
 
 /**
  * @group Built-in Phases

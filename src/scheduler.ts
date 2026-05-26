@@ -9,14 +9,27 @@ import {
 	STARTUP_PIPELINE,
 	UPDATE_PIPELINE,
 } from './std/phases'
-import { ChildOf, entity, EntityHandle, Internal, Label, Plugin, System, External, applyOriginComponent } from './handle'
+import {
+	ChildOf,
+	entity,
+	EntityHandle,
+	Internal,
+	Label,
+	Plugin,
+	System,
+	External,
+	applyOriginComponent,
+} from './handle'
 import { query } from './query'
 import { deepEqual } from './util'
 import { pair } from './pair'
 import { STANDARD_PLUGINS } from './std/plugins'
 
 export type System<Args extends defined[]> = (...args: Args) => void
-export type Plugin<Args extends defined[]> = (scheduler: Scheduler, ...args: Args) => void
+export type Plugin<Args extends defined[]> = (
+	scheduler: Scheduler,
+	...args: Args
+) => void
 export type Phase = Planck.Phase
 
 function isInternal(): boolean {
@@ -43,7 +56,9 @@ function findPluginInCallStack(): EntityHandle | undefined {
 		}
 	}
 
-	return query(Plugin).find((_, p) => hasBuildInCallStack(p.build))?.[0] as EntityHandle | undefined
+	return query(Plugin).find((_, p) => hasBuildInCallStack(p.build))?.[0] as
+		| EntityHandle
+		| undefined
 }
 
 function validatePluginConflict(
@@ -58,8 +73,10 @@ function validatePluginConflict(
 	if (argCount === 1) return
 
 	const existingParent = existing.parent()
-	const isIncomingExternal = incomingParent !== undefined && incomingParent.has(External)
-	const isExistingExternal = existingParent !== undefined && existingParent.has(External)
+	const isIncomingExternal =
+		incomingParent !== undefined && incomingParent.has(External)
+	const isExistingExternal =
+		existingParent !== undefined && existingParent.has(External)
 
 	// We can safely ignore this case, as user-defined plugins take precedence.
 	if (!isExistingExternal && isIncomingExternal) {
@@ -72,9 +89,13 @@ function validatePluginConflict(
 		return
 	}
 
-	const existingSource = isExistingExternal ? `external plugin '${existingParent}'` : 'user code'
+	const existingSource = isExistingExternal
+		? `external plugin '${existingParent}'`
+		: 'user code'
 
-	const incomingSource = isIncomingExternal ? `external plugin '${incomingParent}'` : 'user code'
+	const incomingSource = isIncomingExternal
+		? `external plugin '${incomingParent}'`
+		: 'user code'
 
 	const fix = isExistingExternal
 		? `Initialize '${inferredName}' manually in your codebase to establish a single source of truth.`
@@ -98,7 +119,8 @@ function spawnSystem<Args extends defined[]>(
 	const handle = entity()
 
 	const _inferredLabel = debug.info(callback, 'n')[0]!
-	const generatedLabel = _inferredLabel === '' ? `System #${handle.id}` : _inferredLabel
+	const generatedLabel =
+		_inferredLabel === '' ? `System #${handle.id}` : _inferredLabel
 
 	handle
 		.set(System, {
@@ -121,10 +143,15 @@ function spawnSystem<Args extends defined[]>(
 	return handle
 }
 
-function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args): EntityHandle {
+function spawnPlugin<Args extends defined[]>(
+	build: Plugin<Args>,
+	...args: Args
+): EntityHandle {
 	const label = debug.info(build, 'n')[0]!
 	if (label === '') {
-		const argsTip = args.isEmpty() ? '' : `Plugin arguments: [${args.join(', ')}]\n`
+		const argsTip = args.isEmpty()
+			? ''
+			: `Plugin arguments: [${args.join(', ')}]\n`
 		error(
 			`Failed to use plugin because its function has no name.\n` +
 				argsTip +
@@ -134,7 +161,9 @@ function spawnPlugin<Args extends defined[]>(build: Plugin<Args>, ...args: Args)
 
 	const parentPlugin = findPluginInCallStack()
 
-	const existing = query(Plugin).find((_, p) => p.build === build)?.[0] as EntityHandle | undefined
+	const existing = query(Plugin).find((_, p) => p.build === build)?.[0] as
+		| EntityHandle
+		| undefined
 	if (existing) {
 		validatePluginConflict(existing, build, args, parentPlugin, label)
 		return new EntityHandle(existing.id)
@@ -211,7 +240,11 @@ export class Scheduler {
 	 *
 	 * Systems scheduled within plugins are automatically parented to the plugin.
 	 */
-	useSystem<Args extends defined[]>(system: System<Args>, phase: Planck.Phase, ...args: Args): this {
+	useSystem<Args extends defined[]>(
+		system: System<Args>,
+		phase: Planck.Phase,
+		...args: Args
+	): this {
 		spawnSystem(system, phase, args)
 		return this
 	}
@@ -275,8 +308,16 @@ export class Scheduler {
 		// All plugins must be built before we start scheduling systems.
 		this.buildPlugins()
 
-		this.useSystemWithLabel(() => this.buildPlugins(), ABSOLUTE_FIRST, 'buildPlugins')
-		this.useSystemWithLabel(() => this.scheduleSystems(), ABSOLUTE_FIRST, 'scheduleSystems')
+		this.useSystemWithLabel(
+			() => this.buildPlugins(),
+			ABSOLUTE_FIRST,
+			'buildPlugins',
+		)
+		this.useSystemWithLabel(
+			() => this.scheduleSystems(),
+			ABSOLUTE_FIRST,
+			'scheduleSystems',
+		)
 
 		// Since `scheduleSystems` is also a system, we have to bootstrap it.
 		this.scheduleSystems()
@@ -326,25 +367,27 @@ export class Scheduler {
 	}
 
 	private scheduleSystems() {
-			query(System)
-				.collect() // We collect since `Query` doesn't have a `sort` method yet.
-				.filter(([_, system]) => !system.scheduled)
-				.sort(([_e1, s1], [_e2, s2]) => s1.registrationIndex < s2.registrationIndex)
-				.forEach(([e, system]) => {
-					const wrappedCallback = () => {
-						debug.profilebegin(e.toString())
-						const t = os.clock()
+		query(System)
+			.collect() // We collect since `Query` doesn't have a `sort` method yet.
+			.filter(([_, system]) => !system.scheduled)
+			.sort(
+				([_e1, s1], [_e2, s2]) => s1.registrationIndex < s2.registrationIndex,
+			)
+			.forEach(([e, system]) => {
+				const wrappedCallback = () => {
+					debug.profilebegin(e.toString())
+					const t = os.clock()
 
-						system.callback(...system.args)
+					system.callback(...system.args)
 
-						debug.profileend()
-						system.lastDeltaTime = os.clock() - t
-					}
+					debug.profileend()
+					system.lastDeltaTime = os.clock() - t
+				}
 
-					system.scheduled = true
-					this.planckScheduler.addSystem(wrappedCallback, system.phase)
-				})
-		}
+				system.scheduled = true
+				this.planckScheduler.addSystem(wrappedCallback, system.phase)
+			})
+	}
 }
 
 /**

@@ -1,4 +1,10 @@
-import type { ComponentHandle, EntityHandle, Handle, RawId, VALUE_SYMBOL } from './handle'
+import type {
+	ComponentHandle,
+	EntityHandle,
+	Handle,
+	RawId,
+	VALUE_SYMBOL,
+} from './handle'
 import { pair as jecsPair } from '@rbxts/jecs'
 import { world, ECS_ENTITY_MASK, ECS_PAIR_OFFSET } from './world'
 
@@ -24,7 +30,9 @@ export function isPair(id: RawId): boolean {
 }
 
 export function getPairRelationFromId(pairId: RawId): RawId {
-	const strippedId = math.floor((pairId - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK) as RawId
+	const strippedId = math.floor(
+		(pairId - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK,
+	) as RawId
 	return reconstructStrippedId(strippedId)
 }
 
@@ -99,12 +107,33 @@ export class Pair<Value = unknown> {
  *
  * @group Core ECS
  */
-export function pair<R>(relation: ComponentHandle<R>, target: ComponentHandle<undefined>): Pair<R>
-export function pair<T>(relation: ComponentHandle<undefined>, target: ComponentHandle<T>): Pair<T>
-export function pair<R, T>(relation: ComponentHandle<R>, target: ComponentHandle<T>): Pair<R>
-export function pair<R>(relation: ComponentHandle<R>, target: EntityHandle): Pair<R>
-export function pair<T>(relation: EntityHandle, target: ComponentHandle<T>): Pair<T>
-export function pair(relation: EntityHandle, target: EntityHandle): Pair<undefined>
-export function pair(relation: EntityHandle | ComponentHandle, target: EntityHandle | ComponentHandle) {
+export function pair<R>(
+	relation: ComponentHandle<R>,
+	target: ComponentHandle<undefined>,
+): Pair<R>
+export function pair<T>(
+	relation: ComponentHandle<undefined>,
+	target: ComponentHandle<T>,
+): Pair<T>
+export function pair<R, T>(
+	relation: ComponentHandle<R>,
+	target: ComponentHandle<T>,
+): Pair<R>
+export function pair<R>(
+	relation: ComponentHandle<R>,
+	target: EntityHandle,
+): Pair<R>
+export function pair<T>(
+	relation: EntityHandle,
+	target: ComponentHandle<T>,
+): Pair<T>
+export function pair(
+	relation: EntityHandle,
+	target: EntityHandle,
+): Pair<undefined>
+export function pair(
+	relation: EntityHandle | ComponentHandle,
+	target: EntityHandle | ComponentHandle,
+) {
 	return new Pair(relation, target)
 }

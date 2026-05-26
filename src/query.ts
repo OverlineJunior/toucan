@@ -1,11 +1,23 @@
-import { Handle, RawId, InferValues, resolveId, ComponentHandle, Wildcard, entityHistory, InferValue } from './handle'
+import {
+	Handle,
+	RawId,
+	InferValues,
+	resolveId,
+	ComponentHandle,
+	Wildcard,
+	entityHistory,
+	InferValue,
+} from './handle'
 import { Pair } from './pair'
 import { System } from './scheduler'
 import { ZeroUpToEight } from './util'
 import { getAllEntityIds, world } from './world'
 import * as jecs from '@rbxts/jecs'
 
-export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [Handle, ...InferValues<Cs>]
+export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [
+	Handle,
+	...InferValues<Cs>,
+]
 
 type DisconnectFn = () => void
 
@@ -37,7 +49,10 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
-	private readonly filters: ((entity: Handle, ...components: unknown[]) => boolean)[] = []
+	private readonly filters: ((
+		entity: Handle,
+		...components: unknown[]
+	) => boolean)[] = []
 
 	constructor(...components: Cs) {
 		this.requiredIds = components.map((c) => c.id)
@@ -80,15 +95,24 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	/**
 	 * Adds a filter predicate to the query that entities must satisfy in order to be queried.
 	 */
-	filter(predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean): Query<Cs> {
-		return this.addFilter(predicate as unknown as (entity: Handle, ...components: unknown[]) => boolean)
+	filter(
+		predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean,
+	): Query<Cs> {
+		return this.addFilter(
+			predicate as unknown as (
+				entity: Handle,
+				...components: unknown[]
+			) => boolean,
+		)
 	}
 
 	/**
 	 * Iterates over each entity that matches the query, calling the provided `callback`
 	 * with the entity itself and its corresponding component values.
 	 */
-	forEach(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): void {
+	forEach(
+		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
+	): void {
 		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
 
 		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
@@ -101,13 +125,28 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * `predicate` function, returning the entity itself and its corresponding
 	 * component values, or `undefined` if no such entity exists.
 	 */
-	find(predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean): QueryResult<Cs> | undefined {
-		const pred = predicate as unknown as (e: Handle, ...args: unknown[]) => boolean
+	find(
+		predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean,
+	): QueryResult<Cs> | undefined {
+		const pred = predicate as unknown as (
+			e: Handle,
+			...args: unknown[]
+		) => boolean
 		let result: QueryResult<Cs> | undefined = undefined
 
 		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
 			if (pred(e, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				result = [e, v1, v2, v3, v4, v5, v6, v7, v8] as unknown as QueryResult<Cs>
+				result = [
+					e,
+					v1,
+					v2,
+					v3,
+					v4,
+					v5,
+					v6,
+					v7,
+					v8,
+				] as unknown as QueryResult<Cs>
 				return true
 			}
 		})
@@ -123,7 +162,9 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * ⚠️ This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
-	map<R extends defined>(mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R): R[] {
+	map<R extends defined>(
+		mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R,
+	): R[] {
 		const results: R[] = []
 
 		this.forEach((e, ...components) => {
@@ -137,7 +178,14 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Reduces the entities that match the query to a single value using the provided
 	 * `reducer` function and `initialValue`.
 	 */
-	reduce<R>(reducer: (accumulator: R, entity: Handle, ...componentValues: InferValues<Cs>) => R, initialValue: R): R {
+	reduce<R>(
+		reducer: (
+			accumulator: R,
+			entity: Handle,
+			...componentValues: InferValues<Cs>
+		) => R,
+		initialValue: R,
+	): R {
 		let accumulator = initialValue
 
 		this.forEach((e, ...components) => {
@@ -200,13 +248,18 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 *     .run()
 	 * ```
 	 */
-	bind(callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void): System<[]> {
+	bind(
+		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
+	): System<[]> {
 		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
 
 		return () => {
-			this.iterate(this.makeRawQuery().cached(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-				fn(e, v1, v2, v3, v4, v5, v6, v7, v8)
-			})
+			this.iterate(
+				this.makeRawQuery().cached(),
+				(e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+					fn(e, v1, v2, v3, v4, v5, v6, v7, v8)
+				},
+			)
 		}
 	}
 
@@ -226,7 +279,10 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	onAdded<C extends ComponentHandle>(
 		component: C,
-		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C]>) => void,
+		callback: (
+			entity: Handle,
+			...componentValues: InferValues<[...Cs, C]>
+		) => void,
 	): DisconnectFn {
 		return world.added(component.id, (id, _, value) => {
 			const e = resolveId(id)
@@ -256,7 +312,10 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	onChanged<C extends ComponentHandle>(
 		component: C,
-		callback: (entity: Handle, ...componentValues: InferValues<[...Cs, C, C]>) => void,
+		callback: (
+			entity: Handle,
+			...componentValues: InferValues<[...Cs, C, C]>
+		) => void,
 	): DisconnectFn {
 		return world.changed(component.id, (id, _, value) => {
 			const e = resolveId(id)
@@ -267,7 +326,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 
 			callback(
 				e,
-				...[...requiredValues, value as InferValue<C>, entityHistory.get(id, component.id)! as InferValue<C>],
+				...[
+					...requiredValues,
+					value as InferValue<C>,
+					entityHistory.get(id, component.id)! as InferValue<C>,
+				],
 			)
 		})
 	}
@@ -293,7 +356,10 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	onRemoved<C extends ComponentHandle>(
 		component: C,
-		callback: (entity: Handle, ...componentValues: [...InferValues<Cs>, InferValue<C>, boolean]) => void,
+		callback: (
+			entity: Handle,
+			...componentValues: [...InferValues<Cs>, InferValue<C>, boolean]
+		) => void,
 	): DisconnectFn {
 		return world.removed(component.id, (id, _, despawned) => {
 			const e = resolveId(id)
@@ -304,7 +370,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 
 			callback(
 				e,
-				...[...requiredValues, entityHistory.get(id, component.id)! as InferValue<C>, despawned ?? false],
+				...[
+					...requiredValues,
+					entityHistory.get(id, component.id)! as InferValue<C>,
+					despawned ?? false,
+				],
 			)
 		})
 	}
@@ -368,16 +438,23 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		v7?: unknown,
 		v8?: unknown,
 	): boolean {
-		return this.filters.every((filter) => filter(e, v1, v2, v3, v4, v5, v6, v7, v8))
+		return this.filters.every((filter) =>
+			filter(e, v1, v2, v3, v4, v5, v6, v7, v8),
+		)
 	}
 
-	private addFilter(predicate: (entity: Handle, ...components: unknown[]) => boolean): Query<Cs> {
+	private addFilter(
+		predicate: (entity: Handle, ...components: unknown[]) => boolean,
+	): Query<Cs> {
 		this.filters.push(predicate)
 		return this
 	}
 
 	private isWildcardQuery(): boolean {
-		return this.requiredIds.includes(Wildcard.id) || this.includedIds.includes(Wildcard.id)
+		return (
+			this.requiredIds.includes(Wildcard.id) ||
+			this.includedIds.includes(Wildcard.id)
+		)
 	}
 
 	private match(e: Handle): InferValues<Cs> | undefined {
@@ -421,6 +498,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
  *
  * @group Core ECS
  */
-export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(...components: Cs): Query<Cs> {
+export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(
+	...components: Cs
+): Query<Cs> {
 	return new Query<Cs>(...components)
 }

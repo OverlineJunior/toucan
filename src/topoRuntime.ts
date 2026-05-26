@@ -74,7 +74,11 @@ const frameCallCounts = new Map<string, number>()
  *
  * @group Hooks
  */
-export function useHookState<S extends object>(initial: S, identifier?: any, cleanup?: CleanupFn<S>): S {
+export function useHookState<S extends object>(
+	initial: S,
+	identifier?: any,
+	cleanup?: CleanupFn<S>,
+): S {
 	const [file, line] = debug.info(3, 'sl')
 	const [hookFn] = debug.info(2, 'f')
 	const baseKey = `${hookFn}:${file}:${line}`
