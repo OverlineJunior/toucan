@@ -164,7 +164,7 @@ class QueryTests {
 		const car = entity('Car')
 		const alice = entity('Alice').set(pair(Owns, car), 2)
 
-		const result = query(pair(Owns, car)).find((entity, amount) => amount === 2)
+		const result = query(pair(Owns, car)).find((_e, amount) => amount === 2)
 
 		Assert.equal(
 			result?.[0],
@@ -261,7 +261,7 @@ class QueryTests {
 		let called = false
 		const unsubscribe = query(Label).onAdded(
 			Health,
-			(entity, label, health) => {
+			(entity, _label, health) => {
 				called = true
 				Assert.equal(entity, e, 'Expected onAdded event to fire for Alice')
 				Assert.equal(
@@ -286,7 +286,7 @@ class QueryTests {
 		let called = false
 		const unsubscribe = query(Label).onChanged(
 			Health,
-			(entity, label, newHealth, oldHealth) => {
+			(entity, _label, newHealth, oldHealth) => {
 				called = true
 				Assert.equal(entity, e, 'Expected onChanged event to fire for Alice')
 				Assert.equal(
@@ -316,7 +316,7 @@ class QueryTests {
 		let called = false
 		const unsubscribe = query(Label).onRemoved(
 			Health,
-			(entity, label, oldHealth, despawned) => {
+			(entity, _label, oldHealth, despawned) => {
 				called = true
 				Assert.equal(entity, e, 'Expected onRemoved event to fire for Alice')
 				Assert.equal(

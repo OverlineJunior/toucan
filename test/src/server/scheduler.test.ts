@@ -56,7 +56,7 @@ class SchedulerTests {
 		scheduler().useSystem(myTestSystem, UPDATE)
 
 		const result = query(System).find(
-			(e, sys) => sys.callback === myTestSystem,
+			(_e, sys) => sys.callback === myTestSystem,
 		)?.[0]
 
 		Assert.true(result !== undefined, 'Expected to find the system entity')
@@ -98,7 +98,7 @@ class SchedulerTests {
 		scheduler().useSystemWithLabel(unnamedSystemFn, UPDATE, label)
 
 		const result = query(System).find(
-			(e, sys) => sys.callback === unnamedSystemFn,
+			(_e, sys) => sys.callback === unnamedSystemFn,
 		)?.[0]
 
 		Assert.true(
@@ -142,7 +142,7 @@ class SchedulerTests {
 
 	@Test
 	public usePlugin_ignoresDuplicateCallsWithSameArgs() {
-		function duplicatePlugin(s: Scheduler, a: number) {}
+		function duplicatePlugin(_s: Scheduler, _a: number) {}
 
 		const sched = scheduler()
 		sched.usePlugin(duplicatePlugin, 42)
@@ -161,7 +161,7 @@ class SchedulerTests {
 
 	@Test
 	public usePlugin_throwsOnDuplicateCallsWithDifferentArgs() {
-		function conflictPlugin(s: Scheduler, a: number) {}
+		function conflictPlugin(_s: Scheduler, _a: number) {}
 
 		const sched = scheduler()
 		sched.usePlugin(conflictPlugin, 1)
