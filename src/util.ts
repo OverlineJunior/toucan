@@ -44,3 +44,11 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 
 	return false
 }
+
+export function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
+	const clone = new Map<K, V>()
+	for (const [key, value] of map) {
+		clone.set(key, value)
+	}
+	return clone
+}
