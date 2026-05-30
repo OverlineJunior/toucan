@@ -4,11 +4,11 @@ import {
 	External,
 	Internal,
 	query,
+	type Schedules,
 	scheduler,
 	systemSet,
 	Wildcard,
 } from '@rbxts/toucan'
-import type { Schedules } from '../../../out/scheduler'
 
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
@@ -423,13 +423,13 @@ class SchedulerTests {
 		const targetSys = () => order.push('Target')
 
 		scheduler()
-		    .useSystem('startup', sysA)
-		    .useSystem('startup', sysB)
-		    .useSystem('startup', sysC)
-		    .useSystem('startup', targetSys, { after: sysA })
-		    .useSystem('startup', targetSys, { after: sysB })
-		    .useSystem('startup', targetSys, { before: sysC })
-		    .run()
+			.useSystem('startup', sysA)
+			.useSystem('startup', sysB)
+			.useSystem('startup', sysC)
+			.useSystem('startup', targetSys, { after: sysA })
+			.useSystem('startup', targetSys, { after: sysB })
+			.useSystem('startup', targetSys, { before: sysC })
+			.run()
 
 		const targetIdx = order.indexOf('Target')
 		Assert.true(

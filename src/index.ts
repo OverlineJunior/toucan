@@ -26,6 +26,7 @@ export { type Query, query } from './query'
 
 export {
 	type Scheduler,
+	type Schedules,
 	type SystemSet,
 	scheduler,
 	systemSet,
