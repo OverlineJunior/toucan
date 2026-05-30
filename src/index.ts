@@ -24,4 +24,9 @@ export { type Pair, pair } from './pair'
 
 export { type Query, query } from './query'
 
-export { type Scheduler, scheduler } from './scheduler'
+export {
+	type Scheduler,
+	type SystemSet,
+	scheduler,
+	systemSet,
+} from './scheduler'

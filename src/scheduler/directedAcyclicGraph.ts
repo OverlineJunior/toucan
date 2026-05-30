@@ -3,6 +3,7 @@ import { cloneMap } from '../util'
 export type AddEdgeResult<T> =
 	| { ok: true }
 	| { ok: false; reason: 'cycle'; path: T[] }
+	| { ok: false; reason: 'undefinedNode'; node: T }
 
 export class DirectedAcyclicGraph<T extends defined> {
 	private readonly adjacency = new Map<defined, Set<defined>>()
@@ -14,7 +15,7 @@ export class DirectedAcyclicGraph<T extends defined> {
 		private readonly getKey: (node: T) => defined = (node) => node,
 	) {}
 
-	addNode(node: T): void {
+	tryAddNode(node: T): void {
 		const key = this.getKey(node)
 		if (!this.adjacency.has(key)) {
 			this.adjacency.set(key, new Set())
@@ -24,8 +25,12 @@ export class DirectedAcyclicGraph<T extends defined> {
 	}
 
 	addEdge(from: T, to: T): AddEdgeResult<T> {
-		this.addNode(from)
-		this.addNode(to)
+		if (!this.hasNode(from)) {
+			return { ok: false, reason: 'undefinedNode', node: from }
+		}
+		if (!this.hasNode(to)) {
+			return { ok: false, reason: 'undefinedNode', node: to }
+		}
 
 		const fromKey = this.getKey(from)
 		const toKey = this.getKey(to)

@@ -1,11 +1,15 @@
 import type { Scheduler } from './scheduler'
+import type { SystemSet } from './systemSet'
 
 export type System<Args extends unknown[] = unknown[]> = (...args: Args) => void
 
+export type RunCondition = () => boolean
+
 export interface SystemConfig {
-	before?: System | System[]
-	after?: System | System[]
-	inSet?: unknown | unknown[]
+	before?: System | SystemSet | (System | SystemSet)[]
+	after?: System | SystemSet | (System | SystemSet)[]
+	inSet?: SystemSet | SystemSet[]
+	runIf?: RunCondition | RunCondition[]
 }
 
 export type Plugin<Args extends unknown[] = unknown[]> = (

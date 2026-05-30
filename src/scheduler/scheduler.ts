@@ -1,5 +1,6 @@
 import { RunService } from '@rbxts/services'
 import { Schedule } from './schedule'
+import type { SetConfig, SystemSet } from './systemSet'
 import type { Schedules, System, SystemConfig } from './types'
 
 export class Scheduler {
@@ -39,37 +40,41 @@ export class Scheduler {
 		return this
 	}
 
+	configureSet(schedule: Schedules, set: SystemSet, config: SetConfig): this {
+		this.assertNotRunning('configureSet')
+		this.scheduleMap.get(schedule)!.configureSet(set, config)
+		return this
+	}
+
 	run() {
-		this.assertNotRunning('run')
+        this.assertNotRunning('run')
+        this.running = true
+
+        this.runSchedule('preStartup')
+        this.runSchedule('startup')
+        this.runSchedule('postStartup')
 
 		RunService.Heartbeat.Connect((_dt) => {
-			this.scheduleMap
-				.get('first')!
-				.getSortedSystems()
-				.forEach((s) => this.runSystem(s))
+			this.runSchedule('first')
+			this.runSchedule('preUpdate')
+			this.runSchedule('update')
+			this.runSchedule('postUpdate')
+			this.runSchedule('last')
+        })
 
-			this.scheduleMap
-				.get('preUpdate')!
-				.getSortedSystems()
-				.forEach((s) => this.runSystem(s))
+        RunService.PreRender.Connect((_dt) => this.runSchedule('preRender'))
+        RunService.PreAnimation.Connect((_dt) => this.runSchedule('preAnimation'))
+        RunService.PreSimulation.Connect((_dt) => this.runSchedule('preSimulation'))
+        RunService.PostSimulation.Connect((_dt) => this.runSchedule('postSimulation'))
+	}
 
-			this.scheduleMap
-				.get('update')!
-				.getSortedSystems()
-				.forEach((s) => this.runSystem(s))
-
-			this.scheduleMap
-				.get('postUpdate')!
-				.getSortedSystems()
-				.forEach((s) => this.runSystem(s))
-
-			this.scheduleMap
-				.get('last')!
-				.getSortedSystems()
-				.forEach((s) => this.runSystem(s))
-		})
-
-		this.running = true
+	private runSchedule(schedule: Schedules): void {
+		this.scheduleMap
+			.get(schedule)!
+			.getSortedSystems()
+			.forEach(({ system, runIf }) => {
+				if (runIf.every((cond) => cond())) this.runSystem(system)
+			})
 	}
 
 	private runSystem(system: System): void {
@@ -81,7 +86,13 @@ export class Scheduler {
 			!this.running,
 			`${methodName} cannot be called when the scheduler is already running`,
 		)
-	}
+    }
+
+    debug(): void {
+        const sorted = this.scheduleMap.get('startup')!.getSortedSystems()
+        warn('sorted')
+        warn(sorted.map(({ system }) => debug.info(system, 'n')[0]!).join(' -> '))
+    }
 }
 
 export function scheduler(): Scheduler {

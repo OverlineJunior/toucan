@@ -1,252 +1,502 @@
-// import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-// import { Each } from '@rbxts/lunit/out/lib/decorator'
-// import {
-// 	ChildOf,
-// 	type EntityHandle,
-// 	External,
-// 	Internal,
-// 	Plugin,
-// 	pair,
-// 	query,
-// 	type Scheduler,
-// 	STARTUP,
-// 	System,
-// 	scheduler,
-// 	UPDATE,
-// 	Wildcard,
-// } from '@rbxts/toucan'
+import { Assert, BeforeEach, Test } from '@rbxts/lunit'
+import { Each } from '@rbxts/lunit/out/lib/decorator'
+import {
+	External,
+	Internal,
+	query,
+	scheduler,
+	systemSet,
+	Wildcard,
+} from '@rbxts/toucan'
+import type { Schedules } from '../../../out/scheduler'
 
-// class SchedulerTests {
-// 	@BeforeEach
-// 	public reset() {
-// 		query(Wildcard)
-// 			.filter((e) => !e.has(Internal) && !e.has(External))
-// 			.collect() // We collect due to iterator invalidation; see issue #2.
-// 			.forEach(([e]) => e.despawn())
-// 	}
+// This is enough time for all of the RunService schedules to run at least once.
+const SCHEDULE_SETTLE_DELAY = 0.5
 
-// 	@Test
-// 	public useSystem_spawnsSystemEntity() {
-// 		function myTestSystem() {}
+class SchedulerTests {
+	@BeforeEach
+	reset() {
+		query(Wildcard)
+			.filter((e) => !e.has(Internal) && !e.has(External))
+			.collect() // We collect due to iterator invalidation; see issue #2.
+			.forEach(([e]) => e.despawn())
+	}
 
-// 		scheduler().useSystem(myTestSystem, UPDATE)
+	@Test
+	run_startupSchedulesRunOnce() {
+		const scheds: Schedules[] = ['preStartup', 'startup', 'postStartup']
+		let counter = 0
+		const sched = scheduler()
+		scheds.forEach((s) => {
+			sched.useSystem(s, () => counter++)
+		})
+		sched.run()
 
-// 		const results = query(System).collect()
-// 		const systemData = results.find(
-// 			([, sys]) => sys.callback === myTestSystem,
-// 		)?.[1]
+		Assert.equal(
+			counter,
+			scheds.size(),
+			'Expected startup schedules to run once',
+		)
+	}
 
-// 		Assert.true(systemData !== undefined, 'Expected systemData to be defined')
-// 		Assert.equal(
-// 			systemData!.phase,
-// 			UPDATE,
-// 			'Expected system phase to be UPDATE',
-// 		)
-// 		Assert.equal(
-// 			systemData!.scheduled,
-// 			false,
-// 			'Expected system to not be scheduled yet',
-// 		)
-// 	}
+	@Test
+	run_updateSchedulesRunMultipleTimes() {
+		const scheds: Schedules[] = [
+			'first',
+			'preUpdate',
+			'update',
+			'postUpdate',
+			'last',
+		]
+		let counter = 0
+		const sched = scheduler()
+		scheds.forEach((s) => {
+			sched.useSystem(s, () => counter++)
+		})
+		sched.run()
 
-// 	@Test
-// 	public useSystem_infersLabelFromNamedFunction() {
-// 		function myTestSystem() {}
+		task.wait(SCHEDULE_SETTLE_DELAY)
 
-// 		scheduler().useSystem(myTestSystem, UPDATE)
+		Assert.greaterThan(
+			counter,
+			scheds.size(),
+			`Expected update schedules to run multiple times`,
+		)
+	}
 
-// 		const result = query(System).find(
-// 			(_e, sys) => sys.callback === myTestSystem,
-// 		)?.[0]
+	@Test
+	useSystem_throwsAfterRun() {
+		Assert.throws(
+			() => {
+				const sched = scheduler()
+				sched.run()
+				sched.useSystem('update', () => {})
+			},
+			undefined,
+			'Expected useSystem to throw after run',
+		)
+	}
 
-// 		Assert.true(result !== undefined, 'Expected to find the system entity')
-// 		Assert.equal(
-// 			tostring(result),
-// 			'myTestSystem',
-// 			'Expected system label to match the function name',
-// 		)
-// 	}
+	@Test
+	useSystemChain_throwsAfterRun() {
+		Assert.throws(
+			() => {
+				const sched = scheduler()
+				sched.run()
+				sched.useSystemChain('update', () => {})
+			},
+			undefined,
+			'Expected useSystemChain to throw after run',
+		)
+	}
 
-// 	@Each([
-// 		['Alpha', 'Beta', 'Gamma'],
-// 		['Zeta', 'Omega', 'Delta', 'Epsilon', 'Theta'],
-// 		['LonelySystem'],
-// 	])
-// 	@Test
-// 	public useSystem_implicitOrdering(...systemNames: string[]) {
-// 		const executionOrder: string[] = []
-// 		const sched = scheduler()
+	@Test
+	configureSet_throwsAfterRun() {
+		Assert.throws(
+			() => {
+				const sched = scheduler()
+				sched.run()
+				sched.configureSet('update', systemSet('foo'), {})
+			},
+			undefined,
+			'Expected configureSet to throw after run',
+		)
+	}
 
-// 		systemNames.forEach((name) => {
-// 			sched.useSystem(() => executionOrder.push(name), STARTUP)
-// 		})
+	@Test
+	@Each([
+		['Alpha', 'Beta', 'Gamma'],
+		['Zeta', 'Omega', 'Delta', 'Epsilon', 'Theta'],
+		['LonelySystem'],
+	])
+	useSystemChain_ordersImplicitly(...systemNames: string[]) {
+		const executionOrder: string[] = []
+		const sched = scheduler()
+		sched.useSystemChain(
+			'startup',
+			...systemNames.map((name) => () => executionOrder.push(name)),
+		)
+		sched.run()
 
-// 		sched.run()
+		Assert.equal(
+			executionOrder.join(),
+			systemNames.join(),
+			'Expected systems to execute in the exact order they were registered\n' +
+				`Expected: ${systemNames.join()}\n` +
+				`Got: ${executionOrder.join()}`,
+		)
+	}
 
-// 		Assert.equal(
-// 			executionOrder.join(','),
-// 			systemNames.join(','),
-// 			'Expected systems to execute in the exact order they were registered',
-// 		)
-// 	}
+	@Test
+	run_startupOrdering() {
+		const order: string[] = []
+		const sched = scheduler()
+		sched.useSystem('preStartup', () => order.push('preStartup'))
+		sched.useSystem('startup', () => order.push('startup'))
+		sched.useSystem('postStartup', () => order.push('postStartup'))
+		sched.run()
+		Assert.equal(
+			order.join(', '),
+			'preStartup, startup, postStartup',
+			'Schedule group ordering not respected',
+		)
+	}
 
-// 	@Test
-// 	public useSystemWithLabel_assignsCustomLabel() {
-// 		const unnamedSystemFn = () => {}
-// 		const label = 'CustomLabel'
+	@Test
+	run_updateOrdering() {
+		const order: string[] = []
+		const sched = scheduler()
+		sched.useSystem('first', () => order.push('first'))
+		sched.useSystem('preUpdate', () => order.push('preUpdate'))
+		sched.useSystem('update', () => order.push('update'))
+		sched.useSystem('postUpdate', () => order.push('postUpdate'))
+		sched.useSystem('last', () => order.push('last'))
+		sched.run()
+		task.wait(SCHEDULE_SETTLE_DELAY)
+		Assert.true(
+			order.indexOf('first') < order.indexOf('preUpdate') &&
+				order.indexOf('preUpdate') < order.indexOf('update') &&
+				order.indexOf('update') < order.indexOf('postUpdate') &&
+				order.indexOf('postUpdate') < order.indexOf('last'),
+			'Heartbeat group ordering not respected',
+		)
+	}
 
-// 		scheduler().useSystemWithLabel(unnamedSystemFn, UPDATE, label)
+	// ---
+	// Ordering Constraints
+	// ---
 
-// 		const result = query(System).find(
-// 			(_e, sys) => sys.callback === unnamedSystemFn,
-// 		)?.[0]
+	@Test
+	ordering_before_is_respected() {
+		const order: string[] = []
+		const A = () => order.push('A')
+		const B = () => order.push('B')
+		const sched = scheduler()
+		sched.useSystem('startup', A, { before: B })
+		sched.useSystem('startup', B)
+		sched.run()
+		Assert.true(
+			order.indexOf('A') < order.indexOf('B'),
+			'A should run before B',
+		)
+	}
 
-// 		Assert.true(
-// 			result !== undefined,
-// 			'Expected to find the unnamed system entity',
-// 		)
-// 		Assert.equal(
-// 			tostring(result),
-// 			label,
-// 			'Expected system label to match the custom label provided',
-// 		)
-// 	}
+	@Test
+	ordering_after_is_respected() {
+		const order: string[] = []
+		const A = () => order.push('A')
+		const B = () => order.push('B')
+		const sched = scheduler()
+		sched.useSystem('startup', A)
+		sched.useSystem('startup', B, { after: A })
+		sched.run()
+		Assert.true(
+			order.indexOf('A') < order.indexOf('B'),
+			'A should run before B (after)',
+		)
+	}
 
-// 	@Test
-// 	public usePlugin_spawnsPluginEntity() {
-// 		function myTestPlugin() {}
+	@Test
+	ordering_transitive() {
+		const order: string[] = []
+		const A = () => order.push('A')
+		const B = () => order.push('B')
+		const C = () => order.push('C')
+		const sched = scheduler()
+		sched.useSystem('startup', A, { before: B })
+		sched.useSystem('startup', B, { before: C })
+		sched.useSystem('startup', C)
+		sched.run()
+		Assert.true(
+			order.indexOf('A') < order.indexOf('B') &&
+				order.indexOf('B') < order.indexOf('C') &&
+				order.indexOf('A') < order.indexOf('C'),
+			'Transitive ordering failed',
+		)
+	}
 
-// 		scheduler().usePlugin(myTestPlugin)
+	@Test
+	ordering_before_SystemSet_expands() {
+		const order: string[] = []
+		const SetA = systemSet('SetA')
+		const sysA = () => order.push('A')
+		const sysB = () => order.push('B')
+		const sysC = () => order.push('C')
+		const sched = scheduler()
+		sched.configureSet('startup', SetA, {})
+		sched.useSystem('startup', sysA, { before: SetA })
+		sched.useSystem('startup', sysB, { inSet: SetA })
+		sched.useSystem('startup', sysC, { inSet: SetA })
+		sched.run()
+		const idxA = order.indexOf('A')
+		const idxB = order.indexOf('B')
+		const idxC = order.indexOf('C')
+		Assert.true(idxA < idxB && idxA < idxC, 'before(SystemSet) not respected')
+	}
 
-// 		const results = query(Plugin).collect()
-// 		const pluginData = results.find(([, p]) => p.build === myTestPlugin)?.[1]
+	@Test
+	ordering_after_SystemSet_expands() {
+		const order: string[] = []
+		const SetA = systemSet('SetA')
+		const sysA = () => order.push('A')
+		const sysB = () => order.push('B')
+		const sysC = () => order.push('C')
+		const sched = scheduler()
+		sched.configureSet('startup', SetA, {})
+		sched.useSystem('startup', sysA, { after: SetA })
+		sched.useSystem('startup', sysB, { inSet: SetA })
+		sched.useSystem('startup', sysC, { inSet: SetA })
+		sched.run()
+		const idxA = order.indexOf('A')
+		const idxB = order.indexOf('B')
+		const idxC = order.indexOf('C')
+		Assert.true(idxA > idxB && idxA > idxC, 'after(SystemSet) not respected')
+	}
 
-// 		Assert.true(pluginData !== undefined, 'Expected pluginData to be defined')
-// 		Assert.equal(
-// 			pluginData!.built,
-// 			false,
-// 			'Expected plugin to not be built yet',
-// 		)
-// 	}
+	// ---
+	// System Sets
+	// ---
 
-// 	@Test
-// 	public usePlugin_throwsOnAnonymousFunction() {
-// 		Assert.throws(
-// 			() => {
-// 				scheduler().usePlugin(() => {})
-// 			},
-// 			undefined,
-// 			'Expected usePlugin to throw an error when passed an anonymous function',
-// 		)
-// 	}
+	@Test
+	systemSet_inherits_constraints() {
+		const order: string[] = []
+		const SetA = systemSet('SetA')
+		const SetB = systemSet('SetB')
+		const sysA = () => order.push('A')
+		const sysB = () => order.push('B')
+		const sched = scheduler()
+		sched.configureSet('startup', SetA, { before: SetB })
+		sched.configureSet('startup', SetB, {})
+		sched.useSystem('startup', sysA, { inSet: SetA })
+		sched.useSystem('startup', sysB, { inSet: SetB })
+		sched.run()
+		Assert.true(
+			order.indexOf('A') < order.indexOf('B'),
+			'Set ordering not inherited',
+		)
+	}
 
-// 	@Test
-// 	public usePlugin_ignoresDuplicateCallsWithSameArgs() {
-// 		function duplicatePlugin(_s: Scheduler, _a: number) {}
+	@Test
+	useSystem_inSet_inheritsSystemSetConfig() {
+		const sched = scheduler()
 
-// 		const sched = scheduler()
-// 		sched.usePlugin(duplicatePlugin, 42)
-// 		sched.usePlugin(duplicatePlugin, 42)
+		const NetworkSet = systemSet('NetworkSet')
+		const InputSet = systemSet('InputSet')
+		const CombatSet = systemSet('CombatSet')
+		const AudioSet = systemSet('AudioSet')
+		sched.configureSet('startup', NetworkSet, { before: InputSet })
+		sched.configureSet('startup', InputSet, {})
+		sched.configureSet('startup', CombatSet, { before: AudioSet })
+		sched.configureSet('startup', AudioSet, {})
 
-// 		const plugins = query(Plugin)
-// 			.collect()
-// 			.filter(([, p]) => p.build === duplicatePlugin)
+		const executionOrder: string[] = []
+		const fetchNetworkState = () => executionOrder.push('fetchNetworkState')
+		const handlePlayerAttack = () => executionOrder.push('handlePlayerAttack')
+		const playCombatSounds = () => executionOrder.push('playCombatSounds')
 
-// 		Assert.equal(
-// 			plugins.size(),
-// 			1,
-// 			'Expected duplicate plugins with the same arguments to be ignored',
-// 		)
-// 	}
+		sched.useSystem('startup', playCombatSounds, { inSet: [AudioSet] })
+		sched.useSystem('startup', handlePlayerAttack, {
+			inSet: [InputSet, CombatSet],
+		})
+		sched.useSystem('startup', fetchNetworkState, { inSet: [NetworkSet] })
 
-// 	@Test
-// 	public usePlugin_throwsOnDuplicateCallsWithDifferentArgs() {
-// 		function conflictPlugin(_s: Scheduler, _a: number) {}
+		sched.run()
 
-// 		const sched = scheduler()
-// 		sched.usePlugin(conflictPlugin, 1)
+		Assert.equal(
+			executionOrder.join(', '),
+			'fetchNetworkState, handlePlayerAttack, playCombatSounds',
+			'System in multiple sets should inherit ordering from all its sets',
+		)
+	}
 
-// 		Assert.throws(
-// 			() => {
-// 				sched.usePlugin(conflictPlugin, 2)
-// 			},
-// 			undefined,
-// 			'Expected usePlugin to throw an error when passed duplicate plugins with different arguments',
-// 		)
-// 	}
+	@Test
+	runIf_falseSkipsSystem() {
+		let ran = false
+		const sched = scheduler()
+		sched.useSystem('startup', () => (ran = true), { runIf: () => false })
+		sched.run()
+		Assert.false(ran, 'System should be skipped when runIf is false')
+	}
 
-// 	@Test
-// 	public run_buildsRegisteredPlugins() {
-// 		let wasBuilt = false
+	@Test
+	@Each([
+		[true, true, true],
+		[true, false, false],
+		[false, true, false],
+		[false, false, false],
+	])
+	runIf_setAndSystemConditionsAreAnded(
+		setCond: boolean,
+		sysCond: boolean,
+		shouldRun: boolean,
+	) {
+		const sched = scheduler()
+		const CondSet = systemSet('CondSet')
+		let ran = false
 
-// 		function executionTestPlugin() {
-// 			wasBuilt = true
-// 		}
+		sched.configureSet('startup', CondSet, { runIf: () => setCond })
+		sched.useSystem('startup', () => (ran = true), {
+			inSet: CondSet,
+			runIf: () => sysCond,
+		})
 
-// 		scheduler().usePlugin(executionTestPlugin).run()
+		sched.run()
 
-// 		Assert.true(
-// 			wasBuilt,
-// 			'Expected the plugin to be built upon running the scheduler',
-// 		)
-// 	}
+		Assert.equal(
+			ran,
+			shouldRun,
+			`Expected run state to be ${shouldRun} when set condition is ${setCond} and system condition is ${sysCond}`,
+		)
+	}
 
-// 	@Test
-// 	public run_marksSystemsAsScheduled() {
-// 		function runTestSystem() {}
+	@Test
+	runIf_skipDoesNotAlterOrdering() {
+		const order: string[] = []
+		const A = () => order.push('A')
+		const B = () => order.push('B')
+		const C = () => order.push('C')
 
-// 		scheduler().useSystem(runTestSystem, UPDATE).run()
+		const sched = scheduler()
 
-// 		const systemData = query(System).find(
-// 			(_, s) => s.callback === runTestSystem,
-// 		)?.[1]
+		sched.useSystem('startup', A)
+		sched.useSystem('startup', B, { after: A, runIf: () => false })
+		sched.useSystem('startup', C, { after: B })
 
-// 		Assert.true(systemData !== undefined, 'Expected to find the system data')
-// 		Assert.true(
-// 			systemData!.scheduled,
-// 			'Expected the system to be marked as scheduled after running',
-// 		)
-// 	}
+		sched.run()
 
-// 	@Test
-// 	public run_setsChildOfRelationshipForNestedSpawns() {
-// 		function myNestedSystem() {}
+		Assert.equal(
+			order.join(', '),
+			'A, C',
+			'Expected A to run before C, properly bypassing skipped system B',
+		)
+	}
 
-// 		function myParentPlugin(s: Scheduler) {
-// 			s.useSystem(myNestedSystem, UPDATE)
-// 		}
+	@Test
+	run_circularDependencyThrows() {
+		const sched = scheduler()
+		const A = () => {}
+		const B = () => {}
 
-// 		scheduler().usePlugin(myParentPlugin).run()
+		// Should not throw at registration time.
+		sched.useSystem('startup', A, { before: B })
+		sched.useSystem('startup', B, { before: A })
 
-// 		const parent = query(Plugin).find((_, p) => p.build === myParentPlugin)?.[0]
-// 		const child = query(System).find(
-// 			(_, s) => s.callback === myNestedSystem,
-// 		)?.[0]
+		Assert.throws(
+			() => sched.run(),
+			undefined,
+			'Expected circular dependency to throw when run() is called',
+		)
+	}
 
-// 		Assert.true(
-// 			parent !== undefined,
-// 			'Expected to find the parent plugin entity',
-// 		)
-// 		Assert.true(
-// 			child !== undefined,
-// 			'Expected to find the nested child system entity',
-// 		)
-// 		Assert.true(
-// 			child!.has(pair(ChildOf, parent! as EntityHandle)),
-// 			'Expected child system to have a ChildOf relationship with the parent plugin',
-// 		)
-// 	}
+	@Test
+	configureSet_configuresPerSchedule() {
+		const sharedSet = systemSet('sharedSet')
 
-// 	@Test
-// 	public run_loadsStandardPlugins() {
-// 		scheduler().run()
+		const expected = ['startup', 'update', 'preRender']
+		const result = new Set<string>()
+		const preStartupSystem = () => result.add('preStartup')
+		const startupSystem = () => result.add('startup')
+		const preUpdateSystem = () => result.add('preUpdate')
+		const updateSystem = () => result.add('update')
+		const preSimulationSystem = () => result.add('preSimulation')
+		const preRenderSystem = () => result.add('preRender')
 
-// 		const allPlugins = query(Plugin).collect()
-// 		Assert.true(
-// 			allPlugins.size() > 0,
-// 			'Expected standard plugins to be loaded and present',
-// 		)
-// 	}
-// }
+		scheduler()
+			.configureSet('preStartup', sharedSet, { runIf: () => false })
+			.configureSet('preUpdate', sharedSet, { runIf: () => false })
+			.configureSet('preSimulation', sharedSet, { runIf: () => false })
+			.useSystem('preStartup', preStartupSystem, { inSet: sharedSet })
+			.useSystem('startup', startupSystem, { inSet: sharedSet })
+			.useSystem('preUpdate', preUpdateSystem, { inSet: sharedSet })
+			.useSystem('update', updateSystem, { inSet: sharedSet })
+			.useSystem('preSimulation', preSimulationSystem, { inSet: sharedSet })
+			.useSystem('preRender', preRenderSystem, { inSet: sharedSet })
+			.run()
 
-// export = SchedulerTests
+		task.wait(SCHEDULE_SETTLE_DELAY)
+
+		expected.forEach((str) =>
+			Assert.true(result.has(str), `Expected result to contain ${str}`),
+		)
+	}
+
+	@Test
+	configureSet_isNotRequired() {
+		const someSet = systemSet('someSet')
+
+		const result: string[] = []
+		const beforeSystem = () => result.push('before')
+		const inSetSystem1 = () => result.push('inSet1')
+		const inSetSystem2 = () => result.push('inSet2')
+		const afterSystem = () => result.push('after')
+
+		scheduler()
+			.useSystem('startup', beforeSystem, { before: someSet })
+			.useSystem('startup', inSetSystem1, { inSet: someSet })
+			.useSystem('startup', inSetSystem2, { inSet: someSet })
+			.useSystem('startup', afterSystem, { after: someSet })
+			.run()
+
+		Assert.true(
+			result.indexOf('before') < result.indexOf('inSet1') &&
+				result.indexOf('before') < result.indexOf('inSet2') &&
+				result.indexOf('after') > result.indexOf('inSet1') &&
+				result.indexOf('after') > result.indexOf('inSet2'),
+			`Expected 'before' to be before 'inSet1' and 'inSet2', and 'after' to be after both, but got ${result}`,
+		)
+	}
+
+	// TODO! I changed my mind about this: we should only allow this internally,
+	// and throw if it's attempted by the user.
+	@Test
+	configMerging_concatenatesArrayConstraints() {
+		const order: string[] = []
+		const sysA = () => order.push('A')
+		const sysB = () => order.push('B')
+		const sysC = () => order.push('C')
+		const targetSys = () => order.push('Target')
+
+		const sched = scheduler()
+
+		sched.useSystem('startup', sysA)
+		sched.useSystem('startup', sysB)
+		sched.useSystem('startup', sysC)
+
+		sched.useSystem('startup', targetSys, { after: sysA })
+		sched.useSystem('startup', targetSys, { after: sysB })
+		sched.useSystem('startup', targetSys, { before: sysC })
+
+		sched.run()
+
+		const targetIdx = order.indexOf('Target')
+		Assert.true(
+			targetIdx > order.indexOf('A') &&
+				targetIdx > order.indexOf('B') &&
+				targetIdx < order.indexOf('C'),
+			'Expected re-scheduled system to merge its before/after dependencies',
+		)
+	}
+
+	@Test
+	run_danglingDependencyThrows() {
+		const sched = scheduler()
+
+		function someSystem() {}
+		function danglingSystem() {} // Defined but never scheduled.
+
+		// Should not throw at registration time.
+		sched.useSystem('startup', someSystem, { before: danglingSystem })
+
+		Assert.throws(
+			() => sched.run(),
+			undefined,
+			'Expected a dangling dependency reference (unscheduled system) to throw on run()',
+		)
+	}
+
+	// TODO! Plugins should be built before the scheduler is run.
+
+	// TODO! useSystem/useSystemChain/configureSet's configs should work as intended.
+}
+
+export = SchedulerTests
