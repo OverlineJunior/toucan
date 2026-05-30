@@ -52,3 +52,17 @@ export function cloneMap<K, V>(map: ReadonlyMap<K, V>): Map<K, V> {
 	}
 	return clone
 }
+
+export function flatMap<T extends defined, U extends defined>(
+	array: T[],
+	fn: (item: T) => U[],
+): U[] {
+	const result: U[] = []
+	array.forEach((item) => fn(item).forEach((v) => result.push(v)))
+	return result
+}
+
+export function getOrInit<K, V>(map: Map<K, V>, key: K, init: () => V): V {
+	if (!map.has(key)) map.set(key, init())
+	return map.get(key)!
+}
