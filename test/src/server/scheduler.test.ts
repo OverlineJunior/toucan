@@ -472,6 +472,24 @@ class SchedulerTests {
 		)
 	}
 
+	@Test
+	useSystem_circularDependencyWithSetThrowsOnRun() {
+		const SetS = systemSet('SetS')
+
+		const A = () => {}
+		const B = () => {}
+
+		const sched = scheduler()
+			.useSystem('startup', A, { before: SetS })
+			.useSystem('startup', B, { inSet: SetS, before: A })
+
+		Assert.throws(
+			() => sched.run(),
+			undefined,
+			'Expected cross-level circular dependency (System -> Set -> member System -> System) to throw on run()',
+		)
+	}
+
 	// TODO! Plugins should be built before the scheduler is run.
 
 	// TODO! useSystem/useSystemChain/configureSet's configs should work as intended.
