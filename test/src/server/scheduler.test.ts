@@ -218,6 +218,49 @@ class SchedulerTests {
 	}
 
 	@Test
+	useSystemChain_before_respectsImplicidWithExplicitOrdering() {
+		const order: string[] = []
+		const external = () => order.push('external')
+		const a = () => order.push('a')
+		const b = () => order.push('b')
+		const c = () => order.push('c')
+
+		scheduler()
+			.useSystem('startup', external)
+			.useSystemChain('startup', [a, { before: external }], b, c)
+			.run()
+
+		const [extIdx, aIdx, bIdx, cIdx] = [
+			order.indexOf('external'),
+			order.indexOf('a'),
+			order.indexOf('b'),
+			order.indexOf('c'),
+		]
+
+		Assert.true(
+			aIdx < extIdx && aIdx < bIdx && bIdx < cIdx,
+			`Expected 'a' to come before 'b' and 'external',  got: '${order.join(' -> ')}'`,
+		)
+	}
+
+	@Test
+	useSystemChain_runIf_skipDoesNotAlterImplicitOrdering() {
+		const order: string[] = []
+		const a = () => order.push('a')
+		const b = () => order.push('b')
+		const c = () => order.push('c')
+
+		scheduler()
+			.useSystemChain('startup', a, [b, { runIf: () => false }], c)
+			.run()
+
+		Assert.true(
+			order.indexOf('a') < order.indexOf('c'),
+			"Expected 'b' to be skipped while implicit ordering still places 'a' before 'c'",
+		)
+	}
+
+	@Test
 	useSystem_inSet_inheritsConstraints() {
 		const order: string[] = []
 		const SetA = systemSet('SetA')
