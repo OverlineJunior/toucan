@@ -178,7 +178,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Reduces the entities that match the query to a single value using the provided
 	 * `reducer` function and `initialValue`.
 	 */
-	reduce<const R>(
+	reduce<R>(
 		reducer: (
 			accumulator: R,
 			entity: Handle,
