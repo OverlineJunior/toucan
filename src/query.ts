@@ -10,7 +10,7 @@ import {
 	Wildcard,
 } from './handle'
 import type { Pair } from './pair'
-import type { System } from './scheduler'
+import type { SystemFn } from './scheduler'
 import type { ZeroUpToEight } from './util'
 import { getAllEntityIds, world } from './world'
 
@@ -250,7 +250,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	bind(
 		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
-	): System<[]> {
+	): SystemFn<[]> {
 		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
 
 		return () => {

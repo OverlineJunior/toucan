@@ -1,13 +1,13 @@
 import type { Scheduler } from './scheduler'
 import type { SystemSet } from './systemSet'
 
-export type System<Args extends unknown[] = unknown[]> = (...args: Args) => void
+export type SystemFn<Args extends unknown[] = unknown[]> = (...args: Args) => void
 
 export type RunCondition = () => boolean
 
 export interface SystemConfig {
-	before?: System | SystemSet | (System | SystemSet)[]
-	after?: System | SystemSet | (System | SystemSet)[]
+	before?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
+	after?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
 	inSet?: SystemSet | SystemSet[]
 	runIf?: RunCondition | RunCondition[]
 }

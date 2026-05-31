@@ -535,7 +535,11 @@ class SchedulerTests {
 
 	// TODO! Plugins should be built before the scheduler is run.
 
-	// TODO! useSystem/useSystemChain/configureSet's configs should work as intended.
+	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
+
+	// TODO! Every system should have `pair(InSchedule, scheduleEntity)`.
+
+	// TODO! Calling `scheduler()` more than once should throw an error.
 }
 
 export = SchedulerTests

@@ -1,22 +1,16 @@
+import { component, type EntityHandle, entity } from '../handle'
+import { pair } from '../pair'
+import { query } from '../query'
 import { flatMap, getOrInit } from '../util'
 import {
 	type AddEdgeResult,
 	DirectedAcyclicGraph,
 } from './directedAcyclicGraph'
 import { isSystemSet, type SetConfig, type SystemSet } from './systemSet'
-import type { RunCondition, System, SystemConfig } from './types'
+import type { RunCondition, Schedules, SystemConfig, SystemFn } from './types'
 
-// While a system config is a more user-readable format, a system descriptor
+// While `SetConfig` is a more user-readable format, `SetDescriptor`
 // is a more implementation-specific format for the scheduler to use.
-export interface SystemDescriptor {
-	system: System
-	before: (System | SystemSet)[]
-	after: (System | SystemSet)[]
-	inSets: SystemSet[]
-	runIf: RunCondition[]
-}
-
-// Same as SystemDescriptor.
 export interface SetDescriptor {
 	before: SystemSet[]
 	after: SystemSet[]
@@ -24,15 +18,28 @@ export interface SetDescriptor {
 }
 
 interface ResolvedSystem {
-	system: System
+	systemFn: SystemFn
 	runIf: RunCondition[]
 }
 
-function getSystemName(system: System): string {
+export const System = component<{
+	fn: SystemFn
+	schedule: Schedules
+	before: (SystemFn | SystemSet)[]
+	after: (SystemFn | SystemSet)[]
+	runIfs: RunCondition[]
+	// System sets are ephemeral information for the scheduler - they all get reduced into systems at runtime.
+	/** @internal */
+	_inSets: SystemSet[]
+}>('System')
+
+export const InSchedule = component('InSchedule')
+
+function getSystemName(system: SystemFn): string {
 	return debug.info(system, 'n')[0] || 'Unlabelled System'
 }
 
-function assertAddEdgeResult(res: AddEdgeResult<System>): void {
+function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 	if (res.ok) return
 	if (res.reason === 'cycle') {
 		const cycleStr = res.path.map(getSystemName).join(' -> ')
@@ -51,8 +58,8 @@ function assertAddEdgeResult(res: AddEdgeResult<System>): void {
 }
 
 function normalizeOrderingItems(
-	value?: System | SystemSet | (System | SystemSet)[],
-): (System | SystemSet)[] {
+	value?: SystemFn | SystemSet | (SystemFn | SystemSet)[],
+): (SystemFn | SystemSet)[] {
 	if (value === undefined) return []
 	if (typeIs(value, 'function') || isSystemSet(value)) return [value]
 	return value
@@ -71,25 +78,48 @@ function normalizeConditions(
 }
 
 export class Schedule {
-	private readonly systemDescriptors = new Map<System, SystemDescriptor>()
+	public readonly name: Schedules
+	private readonly entity: EntityHandle
 	private readonly setDescriptors = new Map<SystemSet, SetDescriptor>()
 	private sortedCache?: ResolvedSystem[]
 
-	constructor(public readonly name: string) {}
+	constructor(name: Schedules) {
+		this.name = name
+		this.entity = entity(`${name}Schedule`)
+	}
 
-	useSystem(system: System, config?: SystemConfig): this {
-		this.sortedCache = undefined
-		const desc = getOrInit(this.systemDescriptors, system, () => ({
-			system,
-			before: [],
-			after: [],
-			inSets: [],
-			runIf: [],
-		}))
-		normalizeOrderingItems(config?.before).forEach((v) => desc.before.push(v))
-		normalizeOrderingItems(config?.after).forEach((v) => desc.after.push(v))
-		normalizeSetItems(config?.inSet).forEach((v) => desc.inSets.push(v))
-		normalizeConditions(config?.runIf).forEach((v) => desc.runIf.push(v))
+	useSystem(systemFn: SystemFn, config?: SystemConfig): this {
+		const normalizedBefore = normalizeOrderingItems(config?.before)
+		const normalizedAfter = normalizeOrderingItems(config?.after)
+		const normalizedRunIfs = normalizeConditions(config?.runIf)
+		const normalizedInSets = normalizeSetItems(config?.inSet)
+
+		const [prevSysEntity, prevSysData] = query(System).find(
+			(_e, sys) => sys.fn === systemFn,
+		) ?? [undefined, undefined]
+
+		if (prevSysEntity === undefined) {
+			entity(getSystemName(systemFn))
+				.set(System, {
+					fn: systemFn,
+					schedule: this.name,
+					before: normalizedBefore,
+					after: normalizedAfter,
+					runIfs: normalizedRunIfs,
+					_inSets: normalizedInSets,
+				})
+				.set(pair(InSchedule, this.entity))
+		} else {
+			prevSysEntity.set(System, {
+				fn: systemFn,
+				schedule: this.name,
+				before: [...prevSysData.before, ...normalizedBefore],
+				after: [...prevSysData.after, ...normalizedAfter],
+				runIfs: [...prevSysData.runIfs, ...normalizedRunIfs],
+				_inSets: [...prevSysData._inSets, ...normalizedInSets],
+			})
+		}
+
 		return this
 	}
 
@@ -106,7 +136,7 @@ export class Schedule {
 		return this
 	}
 
-	useSystemChain(...systems: (System | [System, SystemConfig])[]): this {
+	useSystemChain(...systems: (SystemFn | [SystemFn, SystemConfig])[]): this {
 		for (let i = 0; i <= systems.size() - 2; i++) {
 			const a = systems[i]
 			const b = systems[i + 1]
@@ -139,19 +169,21 @@ export class Schedule {
 		if (this.sortedCache !== undefined) return this.sortedCache
 
 		// Step 1: Group systems by their set membership.
-		const systemsInSet = new Map<SystemSet, System[]>()
-		this.systemDescriptors.forEach((desc) => {
-			desc.inSets.forEach((set) =>
-				getOrInit(systemsInSet, set, () => []).push(desc.system),
+		const systemsInSet = new Map<SystemSet, SystemFn[]>()
+		query(System, pair(InSchedule, this.entity)).forEach((_e, sys) => {
+			sys._inSets.forEach((set) =>
+				getOrInit(systemsInSet, set, () => []).push(sys.fn),
 			)
 		})
 
 		// Step 2: Create a fresh DAG and add all registered systems as nodes.
-		const graph = new DirectedAcyclicGraph<System>()
-		this.systemDescriptors.forEach((_, system) => graph.tryAddNode(system))
+		const graph = new DirectedAcyclicGraph<SystemFn>()
+		query(System, pair(InSchedule, this.entity)).forEach((_e, sys) =>
+			graph.tryAddNode(sys.fn),
+		)
 
 		// Expands a mixed target list into concrete systems.
-		const resolveTargets = (targets: (System | SystemSet)[]): System[] =>
+		const resolveTargets = (targets: (SystemFn | SystemSet)[]): SystemFn[] =>
 			flatMap(targets, (target) =>
 				typeIs(target, 'function')
 					? [target]
@@ -159,12 +191,12 @@ export class Schedule {
 			)
 
 		// Step 3: Add system-level ordering edges.
-		this.systemDescriptors.forEach((desc) => {
-			resolveTargets(desc.before).forEach((t) => {
-				assertAddEdgeResult(graph.addEdge(desc.system, t))
+		query(System, pair(InSchedule, this.entity)).forEach((_e, sys) => {
+			resolveTargets(sys.before).forEach((t) => {
+				assertAddEdgeResult(graph.addEdge(sys.fn, t))
 			})
-			resolveTargets(desc.after).forEach((t) =>
-				assertAddEdgeResult(graph.addEdge(t, desc.system)),
+			resolveTargets(sys.after).forEach((t) =>
+				assertAddEdgeResult(graph.addEdge(t, sys.fn)),
 			)
 		})
 
@@ -184,13 +216,13 @@ export class Schedule {
 
 		// Steps 5-6: Topological sort, then merge each system's own run conditions
 		// with those inherited from every set it belongs to.
-		this.sortedCache = graph.sorted().map((system) => {
-			const desc = this.systemDescriptors.get(system)
+		this.sortedCache = graph.sorted().map((systemFn) => {
+			const [_e, system] = query(System).find((_e, s) => s.fn === systemFn)!
 			const setRunIfs = flatMap(
-				desc?.inSets ?? [],
+				system._inSets,
 				(set) => this.setDescriptors.get(set)?.runIf ?? [],
 			)
-			return { system, runIf: [...(desc?.runIf ?? []), ...setRunIfs] }
+			return { systemFn, runIf: [...system.runIfs, ...setRunIfs] }
 		})
 
 		return this.sortedCache

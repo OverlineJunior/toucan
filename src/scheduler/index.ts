@@ -1,3 +1,4 @@
+export { System } from './schedule'
 export { type Scheduler, scheduler } from './scheduler'
 
 export {
@@ -11,6 +12,6 @@ export type {
 	Plugin,
 	RunCondition,
 	Schedules,
-	System,
 	SystemConfig,
+	SystemFn,
 } from './types'

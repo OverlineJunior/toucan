@@ -16,7 +16,6 @@ export {
 	type ResourceHandle,
 	resolveId,
 	resource,
-	System,
 	Wildcard,
 } from './handle'
 
@@ -27,6 +26,7 @@ export { type Query, query } from './query'
 export {
 	type Scheduler,
 	type Schedules,
+	System,
 	type SystemSet,
 	scheduler,
 	systemSet,

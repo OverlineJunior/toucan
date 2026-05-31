@@ -1,7 +1,7 @@
 import { RunService } from '@rbxts/services'
 import { Schedule } from './schedule'
 import type { SetConfig, SystemSet } from './systemSet'
-import type { Schedules, System, SystemConfig } from './types'
+import type { Schedules, SystemConfig, SystemFn } from './types'
 
 export class Scheduler {
 	private readonly scheduleMap = new Map<Schedules, Schedule>([
@@ -25,18 +25,22 @@ export class Scheduler {
 	])
 	private running = false
 
-	useSystem(schedule: Schedules, system: System, config?: SystemConfig): this {
+	useSystem(
+		schedule: Schedules,
+		systemFn: SystemFn,
+		config?: SystemConfig,
+	): this {
 		this.assertNotRunning('useSystem')
-		this.scheduleMap.get(schedule)!.useSystem(system, config)
+		this.scheduleMap.get(schedule)!.useSystem(systemFn, config)
 		return this
 	}
 
 	useSystemChain(
 		schedule: Schedules,
-		...systems: (System | [System, SystemConfig])[]
+		...systemFns: (SystemFn | [SystemFn, SystemConfig])[]
 	): this {
 		this.assertNotRunning('useSystemChain')
-		this.scheduleMap.get(schedule)!.useSystemChain(...systems)
+		this.scheduleMap.get(schedule)!.useSystemChain(...systemFns)
 		return this
 	}
 
@@ -47,12 +51,12 @@ export class Scheduler {
 	}
 
 	run() {
-        this.assertNotRunning('run')
-        this.running = true
+		this.assertNotRunning('run')
+		this.running = true
 
-        this.runSchedule('preStartup')
-        this.runSchedule('startup')
-        this.runSchedule('postStartup')
+		this.runSchedule('preStartup')
+		this.runSchedule('startup')
+		this.runSchedule('postStartup')
 
 		RunService.Heartbeat.Connect((_dt) => {
 			this.runSchedule('first')
@@ -60,25 +64,27 @@ export class Scheduler {
 			this.runSchedule('update')
 			this.runSchedule('postUpdate')
 			this.runSchedule('last')
-        })
+		})
 
-        RunService.PreRender.Connect((_dt) => this.runSchedule('preRender'))
-        RunService.PreAnimation.Connect((_dt) => this.runSchedule('preAnimation'))
-        RunService.PreSimulation.Connect((_dt) => this.runSchedule('preSimulation'))
-        RunService.PostSimulation.Connect((_dt) => this.runSchedule('postSimulation'))
+		RunService.PreRender.Connect((_dt) => this.runSchedule('preRender'))
+		RunService.PreAnimation.Connect((_dt) => this.runSchedule('preAnimation'))
+		RunService.PreSimulation.Connect((_dt) => this.runSchedule('preSimulation'))
+		RunService.PostSimulation.Connect((_dt) =>
+			this.runSchedule('postSimulation'),
+		)
 	}
 
 	private runSchedule(schedule: Schedules): void {
 		this.scheduleMap
 			.get(schedule)!
 			.getSortedSystems()
-			.forEach(({ system, runIf }) => {
-				if (runIf.every((cond) => cond())) this.runSystem(system)
+			.forEach(({ systemFn, runIf }) => {
+				if (runIf.every((cond) => cond())) this.runSystem(systemFn)
 			})
 	}
 
-	private runSystem(system: System): void {
-		system()
+	private runSystem(systemFn: SystemFn): void {
+		systemFn()
 	}
 
 	private assertNotRunning(methodName: string): void {
@@ -86,13 +92,7 @@ export class Scheduler {
 			!this.running,
 			`${methodName} cannot be called when the scheduler is already running`,
 		)
-    }
-
-    debug(): void {
-        const sorted = this.scheduleMap.get('startup')!.getSortedSystems()
-        warn('sorted')
-        warn(sorted.map(({ system }) => debug.info(system, 'n')[0]!).join(' -> '))
-    }
+	}
 }
 
 export function scheduler(): Scheduler {
