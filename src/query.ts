@@ -162,7 +162,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * ⚠️ This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
-	map<R extends defined>(
+	map<const R extends defined>(
 		mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R,
 	): R[] {
 		const results: R[] = []
@@ -178,7 +178,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Reduces the entities that match the query to a single value using the provided
 	 * `reducer` function and `initialValue`.
 	 */
-	reduce<R>(
+	reduce<const R>(
 		reducer: (
 			accumulator: R,
 			entity: Handle,
