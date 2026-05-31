@@ -613,7 +613,6 @@ class SchedulerTests {
 		])
 
 		scheduleMap.forEach((scheds, kind) => {
-			warn(kind, scheds)
 			Assert.false(
 				scheds.isEmpty(),
 				`Expected an schedule entity to be spawned for '${kind}'`,
