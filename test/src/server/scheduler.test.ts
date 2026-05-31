@@ -1,14 +1,19 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import { Each } from '@rbxts/lunit/out/lib/decorator'
 import {
+	type EntityHandle,
 	External,
 	Internal,
 	scheduler as newScheduler,
+	pair,
 	query,
+	Schedule,
 	type Schedules,
+	System,
 	systemSet,
 	Wildcard,
 } from '@rbxts/toucan'
+import { InSchedule } from '../../../out/scheduler/schedule'
 
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
@@ -466,7 +471,7 @@ class SchedulerTests {
 	// and throw if it's attempted by the user.
 	@Test
 	useSystem_config_multipleCallsMergeConfig() {
-        const order: string[] = []
+		const order: string[] = []
 
 		const sysA = () => order.push('a')
 		const sysB = () => order.push('b')
@@ -560,11 +565,92 @@ class SchedulerTests {
 		)
 	}
 
+	@Test
+	useSystem_spawnsSystemEntity() {
+		const systemFn = () => {}
+
+		scheduler.useSystem('startup', systemFn)
+
+		Assert.true(
+			query(System).find((_e, sys) => sys.fn === systemFn) !== undefined,
+			'Expected useSystem to spawn a system entity',
+		)
+	}
+
+	@Test
+	useSystem_entityLabelIsInferred() {
+		function weirdlyNamedSystem() {}
+
+		scheduler.useSystem('startup', weirdlyNamedSystem)
+
+		Assert.true(
+			query(System).find((e) => tostring(e) === 'weirdlyNamedSystem') !==
+				undefined,
+			'Expected useSystem to infer the entity label from the function name',
+		)
+	}
+
+	@Test
+	scheduler_spawnsScheduleEntities() {
+		const querySchedules = (kind: Schedules) =>
+			query(Schedule)
+				.filter((_e, sch) => sch.kind === kind)
+				.map((_e, s) => s)
+
+		const scheduleMap = new Map([
+			['preStartup', querySchedules('preStartup')],
+			['startup', querySchedules('startup')],
+			['postStartup', querySchedules('postStartup')],
+			['first', querySchedules('first')],
+			['preUpdate', querySchedules('preUpdate')],
+			['update', querySchedules('update')],
+			['postUpdate', querySchedules('postUpdate')],
+			['last', querySchedules('last')],
+			['preRender', querySchedules('preRender')],
+			['preAnimation', querySchedules('preAnimation')],
+			['preSimulation', querySchedules('preSimulation')],
+			['postSimulation', querySchedules('postSimulation')],
+		])
+
+		scheduleMap.forEach((scheds, kind) => {
+			warn(kind, scheds)
+			Assert.false(
+				scheds.isEmpty(),
+				`Expected an schedule entity to be spawned for '${kind}'`,
+			)
+			Assert.equal(
+				scheds.size(),
+				1,
+				`Expected exactly one schedule entity to be spawned for '${kind}'`,
+			)
+		})
+	}
+
+	@Test
+	useSystem_spawnsEntityInSpecifiedSchedule() {
+		const systemFn = () => {}
+
+		scheduler.useSystem('startup', systemFn)
+
+		const [systemEntity] = query(System).find((_e, sys) => sys.fn === systemFn)!
+		const [startupEntity] = query(Schedule).find(
+			(_e, sch) => sch.kind === 'startup',
+		)!
+
+		Assert.true(
+			systemEntity.has(pair(InSchedule, Wildcard)),
+			'Expected system entity to have an InSchedule relationship',
+		)
+
+		Assert.true(
+			systemEntity.has(pair(InSchedule, startupEntity as EntityHandle)),
+			'Expected system entity to be in the startup schedule specifically',
+		)
+	}
+
 	// TODO! Plugins should be built before the scheduler is run.
 
 	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
-
-	// TODO! Every system should have `pair(InSchedule, scheduleEntity)`.
 }
 
 export = SchedulerTests
