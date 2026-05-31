@@ -3,15 +3,17 @@ import { Each } from '@rbxts/lunit/out/lib/decorator'
 import {
 	External,
 	Internal,
+	scheduler as newScheduler,
 	query,
 	type Schedules,
-	scheduler,
 	systemSet,
 	Wildcard,
 } from '@rbxts/toucan'
 
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
+
+let scheduler = newScheduler()
 
 class SchedulerTests {
 	@BeforeEach
@@ -20,17 +22,21 @@ class SchedulerTests {
 			.filter((e) => !e.has(Internal) && !e.has(External))
 			.collect() // We collect due to iterator invalidation; see issue #2.
 			.forEach(([e]) => e.despawn())
+
+		;(scheduler as unknown as { _despawn(): void })._despawn()
+		scheduler = newScheduler()
 	}
 
 	@Test
 	useSystem_startupSchedule_runsOnce() {
 		const scheds: Schedules[] = ['preStartup', 'startup', 'postStartup']
+
 		let counter = 0
-		const sched = scheduler()
 		scheds.forEach((s) => {
-			sched.useSystem(s, () => counter++)
+			scheduler.useSystem(s, () => counter++)
 		})
-		sched.run()
+
+		scheduler.run()
 
 		Assert.equal(
 			counter,
@@ -48,11 +54,11 @@ class SchedulerTests {
 			'postUpdate',
 			'last',
 		]
-		let counter = 0
 
-		const sched = scheduler()
-		scheds.forEach((s) => sched.useSystem(s, () => counter++))
-		sched.run()
+		let counter = 0
+		scheds.forEach((s) => scheduler.useSystem(s, () => counter++))
+
+		scheduler.run()
 
 		task.wait(SCHEDULE_SETTLE_DELAY)
 
@@ -67,9 +73,8 @@ class SchedulerTests {
 	useSystem_throwsAfterRun() {
 		Assert.throws(
 			() => {
-				const sched = scheduler()
-				sched.run()
-				sched.useSystem('update', () => {})
+				scheduler.run()
+				scheduler.useSystem('update', () => {})
 			},
 			undefined,
 			'Expected useSystem to throw after run',
@@ -80,9 +85,8 @@ class SchedulerTests {
 	useSystemChain_throwsAfterRun() {
 		Assert.throws(
 			() => {
-				const sched = scheduler()
-				sched.run()
-				sched.useSystemChain('update', () => {})
+				scheduler.run()
+				scheduler.useSystemChain('update', () => {})
 			},
 			undefined,
 			'Expected useSystemChain to throw after run',
@@ -93,9 +97,8 @@ class SchedulerTests {
 	configureSet_throwsAfterRun() {
 		Assert.throws(
 			() => {
-				const sched = scheduler()
-				sched.run()
-				sched.configureSet('update', systemSet('foo'), {})
+				scheduler.run()
+				scheduler.configureSet('update', systemSet('foo'), {})
 			},
 			undefined,
 			'Expected configureSet to throw after run',
@@ -111,7 +114,7 @@ class SchedulerTests {
 	useSystemChain_ordersImplicitly(...systemNames: string[]) {
 		const executionOrder: string[] = []
 
-		scheduler()
+		scheduler
 			.useSystemChain(
 				'startup',
 				...systemNames.map((name) => () => executionOrder.push(name)),
@@ -131,7 +134,7 @@ class SchedulerTests {
 	useSystem_startupSchedule_runsInOrder() {
 		const order: string[] = []
 
-		scheduler()
+		scheduler
 			.useSystem('preStartup', () => order.push('preStartup'))
 			.useSystem('startup', () => order.push('startup'))
 			.useSystem('postStartup', () => order.push('postStartup'))
@@ -148,7 +151,7 @@ class SchedulerTests {
 	useSystem_updateSchedule_runsInOrder() {
 		const order: string[] = []
 
-		scheduler()
+		scheduler
 			.useSystem('first', () => order.push('first'))
 			.useSystem('preUpdate', () => order.push('preUpdate'))
 			.useSystem('update', () => order.push('update'))
@@ -173,7 +176,7 @@ class SchedulerTests {
 		const A = () => order.push('A')
 		const B = () => order.push('B')
 
-		scheduler()
+		scheduler
 			.useSystem('startup', A, { before: B })
 			.useSystem('startup', B)
 			.run()
@@ -190,7 +193,7 @@ class SchedulerTests {
 		const A = () => order.push('A')
 		const B = () => order.push('B')
 
-		scheduler()
+		scheduler
 			.useSystem('startup', A)
 			.useSystem('startup', B, { after: A })
 			.run()
@@ -201,18 +204,21 @@ class SchedulerTests {
 	@Test
 	useSystem_orderingIsTransitive() {
 		const order: string[] = []
-		const A = () => order.push('A')
-		const B = () => order.push('B')
-		const C = () => order.push('C')
-		const sched = scheduler()
-		sched.useSystem('startup', A, { before: B })
-		sched.useSystem('startup', B, { before: C })
-		sched.useSystem('startup', C)
-		sched.run()
+
+		const a = () => order.push('a')
+		const b = () => order.push('b')
+		const c = () => order.push('c')
+
+		scheduler
+			.useSystem('startup', a, { before: b })
+			.useSystem('startup', b, { before: c })
+			.useSystem('startup', c)
+			.run()
+
 		Assert.true(
-			order.indexOf('A') < order.indexOf('B') &&
-				order.indexOf('B') < order.indexOf('C') &&
-				order.indexOf('A') < order.indexOf('C'),
+			order.indexOf('a') < order.indexOf('b') &&
+				order.indexOf('b') < order.indexOf('c') &&
+				order.indexOf('a') < order.indexOf('c'),
 			'Transitive ordering failed',
 		)
 	}
@@ -220,12 +226,13 @@ class SchedulerTests {
 	@Test
 	useSystemChain_before_respectsImplicidWithExplicitOrdering() {
 		const order: string[] = []
+
 		const external = () => order.push('external')
 		const a = () => order.push('a')
 		const b = () => order.push('b')
 		const c = () => order.push('c')
 
-		scheduler()
+		scheduler
 			.useSystem('startup', external)
 			.useSystemChain('startup', [a, { before: external }], b, c)
 			.run()
@@ -246,13 +253,12 @@ class SchedulerTests {
 	@Test
 	useSystemChain_runIf_skipDoesNotAlterImplicitOrdering() {
 		const order: string[] = []
+
 		const a = () => order.push('a')
 		const b = () => order.push('b')
 		const c = () => order.push('c')
 
-		scheduler()
-			.useSystemChain('startup', a, [b, { runIf: () => false }], c)
-			.run()
+		scheduler.useSystemChain('startup', a, [b, { runIf: () => false }], c).run()
 
 		Assert.true(
 			order.indexOf('a') < order.indexOf('c'),
@@ -263,50 +269,53 @@ class SchedulerTests {
 	@Test
 	useSystem_inSet_inheritsConstraints() {
 		const order: string[] = []
-		const SetA = systemSet('SetA')
-		const SetB = systemSet('SetB')
-		const sysA = () => order.push('A')
-		const sysB = () => order.push('B')
-		const sched = scheduler()
-		sched.configureSet('startup', SetA, { before: SetB })
-		sched.configureSet('startup', SetB, {})
-		sched.useSystem('startup', sysA, { inSet: SetA })
-		sched.useSystem('startup', sysB, { inSet: SetB })
-		sched.run()
+
+		const setA = systemSet('setA')
+		const setB = systemSet('setB')
+
+		const sysA = () => order.push('a')
+		const sysB = () => order.push('b')
+
+		scheduler
+			.configureSet('startup', setA, { before: setB })
+			.configureSet('startup', setB, {})
+			.useSystem('startup', sysA, { inSet: setA })
+			.useSystem('startup', sysB, { inSet: setB })
+			.run()
+
 		Assert.true(
-			order.indexOf('A') < order.indexOf('B'),
+			order.indexOf('a') < order.indexOf('b'),
 			'Set ordering not inherited',
 		)
 	}
 
 	@Test
 	useSystem_inSet_inheritsSystemSetConfig() {
-		const sched = scheduler()
+		const order: string[] = []
 
-		const NetworkSet = systemSet('NetworkSet')
-		const InputSet = systemSet('InputSet')
-		const CombatSet = systemSet('CombatSet')
-		const AudioSet = systemSet('AudioSet')
-		sched.configureSet('startup', NetworkSet, { before: InputSet })
-		sched.configureSet('startup', InputSet, {})
-		sched.configureSet('startup', CombatSet, { before: AudioSet })
-		sched.configureSet('startup', AudioSet, {})
+		const network = systemSet('network')
+		const input = systemSet('input')
+		const combat = systemSet('combat')
+		const audio = systemSet('audio')
 
-		const executionOrder: string[] = []
-		const fetchNetworkState = () => executionOrder.push('fetchNetworkState')
-		const handlePlayerAttack = () => executionOrder.push('handlePlayerAttack')
-		const playCombatSounds = () => executionOrder.push('playCombatSounds')
+		const fetchNetworkState = () => order.push('fetchNetworkState')
+		const handlePlayerAttack = () => order.push('handlePlayerAttack')
+		const playCombatSounds = () => order.push('playCombatSounds')
 
-		sched.useSystem('startup', playCombatSounds, { inSet: [AudioSet] })
-		sched.useSystem('startup', handlePlayerAttack, {
-			inSet: [InputSet, CombatSet],
-		})
-		sched.useSystem('startup', fetchNetworkState, { inSet: [NetworkSet] })
-
-		sched.run()
+		scheduler
+			.configureSet('startup', network, { before: input })
+			.configureSet('startup', input, {})
+			.configureSet('startup', combat, { before: audio })
+			.configureSet('startup', audio, {})
+			.useSystem('startup', playCombatSounds, { inSet: [audio] })
+			.useSystem('startup', handlePlayerAttack, {
+				inSet: [input, combat],
+			})
+			.useSystem('startup', fetchNetworkState, { inSet: [network] })
+			.run()
 
 		Assert.equal(
-			executionOrder.join(', '),
+			order.join(', '),
 			'fetchNetworkState, handlePlayerAttack, playCombatSounds',
 			'System in multiple sets should inherit ordering from all its sets',
 		)
@@ -316,7 +325,7 @@ class SchedulerTests {
 	useSystem_runIf_falseSkipsSystem() {
 		let ran = false
 
-		scheduler()
+		scheduler
 			.useSystem('startup', () => (ran = true), { runIf: () => false })
 			.run()
 
@@ -335,17 +344,17 @@ class SchedulerTests {
 		sysCond: boolean,
 		shouldRun: boolean,
 	) {
-		const sched = scheduler()
-		const CondSet = systemSet('CondSet')
 		let ran = false
 
-		sched.configureSet('startup', CondSet, { runIf: () => setCond })
-		sched.useSystem('startup', () => (ran = true), {
-			inSet: CondSet,
-			runIf: () => sysCond,
-		})
+		const condSet = systemSet('condSet')
 
-		sched.run()
+		scheduler
+			.configureSet('startup', condSet, { runIf: () => setCond })
+			.useSystem('startup', () => (ran = true), {
+				inSet: condSet,
+				runIf: () => sysCond,
+			})
+			.run()
 
 		Assert.equal(
 			ran,
@@ -357,36 +366,34 @@ class SchedulerTests {
 	@Test
 	useSystem_runIf_skipDoesNotAlterOrdering() {
 		const order: string[] = []
-		const A = () => order.push('A')
-		const B = () => order.push('B')
-		const C = () => order.push('C')
+		const a = () => order.push('a')
+		const b = () => order.push('b')
+		const c = () => order.push('c')
 
-		const sched = scheduler()
-
-		sched.useSystem('startup', A)
-		sched.useSystem('startup', B, { after: A, runIf: () => false })
-		sched.useSystem('startup', C, { after: B })
-
-		sched.run()
+		scheduler
+			.useSystem('startup', a)
+			.useSystem('startup', b, { after: a, runIf: () => false })
+			.useSystem('startup', c, { after: b })
+			.run()
 
 		Assert.true(
-			order.indexOf('A') < order.indexOf('C'),
-			'Expected A to run before C, properly bypassing skipped system B',
+			order.indexOf('a') < order.indexOf('c'),
+			"Expected 'a' to run before 'c', properly bypassing skipped system 'b'",
 		)
 	}
 
 	@Test
 	useSystem_circularDependencyThrowsOnRun() {
-		const sched = scheduler()
-		const A = () => {}
-		const B = () => {}
+		const a = () => {}
+		const b = () => {}
 
 		// Should not throw at registration time.
-		sched.useSystem('startup', A, { before: B })
-		sched.useSystem('startup', B, { before: A })
+		scheduler
+			.useSystem('startup', a, { before: b })
+			.useSystem('startup', b, { before: a })
 
 		Assert.throws(
-			() => sched.run(),
+			() => scheduler.run(),
 			undefined,
 			'Expected circular dependency to throw when run() is called',
 		)
@@ -404,7 +411,7 @@ class SchedulerTests {
 		const preSimulationSystem = () => result.add('preSimulation')
 		const preRenderSystem = () => result.add('preRender')
 
-		scheduler()
+		scheduler
 			.configureSet('preStartup', sharedSet, { runIf: () => false })
 			.configureSet('preUpdate', sharedSet, { runIf: () => false })
 			.configureSet('preSimulation', sharedSet, { runIf: () => false })
@@ -439,7 +446,7 @@ class SchedulerTests {
 		const inSetSystem2 = () => result.push('inSet2')
 		const afterSystem = () => result.push('after')
 
-		scheduler()
+		scheduler
 			.useSystem('startup', beforeSystem, { before: someSet })
 			.useSystem('startup', inSetSystem1, { inSet: someSet })
 			.useSystem('startup', inSetSystem2, { inSet: someSet })
@@ -459,13 +466,14 @@ class SchedulerTests {
 	// and throw if it's attempted by the user.
 	@Test
 	useSystem_config_multipleCallsMergeConfig() {
-		const order: string[] = []
-		const sysA = () => order.push('A')
-		const sysB = () => order.push('B')
-		const sysC = () => order.push('C')
-		const targetSys = () => order.push('Target')
+        const order: string[] = []
 
-		scheduler()
+		const sysA = () => order.push('a')
+		const sysB = () => order.push('b')
+		const sysC = () => order.push('c')
+		const targetSys = () => order.push('target')
+
+		scheduler
 			.useSystem('startup', sysA)
 			.useSystem('startup', sysB)
 			.useSystem('startup', sysC)
@@ -474,11 +482,11 @@ class SchedulerTests {
 			.useSystem('startup', targetSys, { before: sysC })
 			.run()
 
-		const targetIdx = order.indexOf('Target')
+		const targetIdx = order.indexOf('target')
 		Assert.true(
-			targetIdx > order.indexOf('A') &&
-				targetIdx > order.indexOf('B') &&
-				targetIdx < order.indexOf('C'),
+			targetIdx > order.indexOf('a') &&
+				targetIdx > order.indexOf('b') &&
+				targetIdx < order.indexOf('c'),
 			'Expected re-scheduled system to merge its before/after dependencies',
 		)
 	}
@@ -488,12 +496,11 @@ class SchedulerTests {
 		function someSystem() {}
 		function danglingSystem() {} // Defined but never scheduled.
 
-		const sched = scheduler()
-			// Should not throw at registration time.
-			.useSystem('startup', someSystem, { before: danglingSystem })
+		// Should not throw at registration time.
+		scheduler.useSystem('startup', someSystem, { before: danglingSystem })
 
 		Assert.throws(
-			() => sched.run(),
+			() => scheduler.run(),
 			undefined,
 			"Expected a dangling dependency reference in 'before' to throw on run()",
 		)
@@ -504,12 +511,11 @@ class SchedulerTests {
 		function someSystem() {}
 		function danglingSystem() {} // Defined but never scheduled.
 
-		const sched = scheduler()
-			// Should not throw at registration time.
-			.useSystem('startup', someSystem, { after: danglingSystem })
+		// Should not throw at registration time.
+		scheduler.useSystem('startup', someSystem, { after: danglingSystem })
 
 		Assert.throws(
-			() => sched.run(),
+			() => scheduler.run(),
 			undefined,
 			"Expected a dangling dependency reference in 'after' to throw on run()",
 		)
@@ -517,19 +523,40 @@ class SchedulerTests {
 
 	@Test
 	useSystem_circularDependencyWithSetThrowsOnRun() {
-		const SetS = systemSet('SetS')
+		const setS = systemSet('setS')
 
-		const A = () => {}
-		const B = () => {}
+		const a = () => {}
+		const b = () => {}
 
-		const sched = scheduler()
-			.useSystem('startup', A, { before: SetS })
-			.useSystem('startup', B, { inSet: SetS, before: A })
+		scheduler
+			.useSystem('startup', a, { before: setS })
+			.useSystem('startup', b, { inSet: setS, before: a })
 
 		Assert.throws(
-			() => sched.run(),
+			() => scheduler.run(),
 			undefined,
-			'Expected cross-level circular dependency (System -> Set -> member System -> System) to throw on run()',
+			'Expected cross-level circular dependency (system -> set -> member system -> system) to throw on run()',
+		)
+	}
+
+	@Test
+	scheduler_instantiatingTwiceThrows() {
+		Assert.throws(
+			() => newScheduler(),
+			undefined,
+			'Expected instantiating the scheduler twice to throw an error',
+		)
+	}
+
+	@Test
+	run_callingTwiceThrows() {
+		Assert.throws(
+			() => {
+				scheduler.run()
+				scheduler.run()
+			},
+			undefined,
+			'Expected calling run() twice to throw an error',
 		)
 	}
 
@@ -538,8 +565,6 @@ class SchedulerTests {
 	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
 
 	// TODO! Every system should have `pair(InSchedule, scheduleEntity)`.
-
-	// TODO! Calling `scheduler()` more than once should throw an error.
 }
 
 export = SchedulerTests

@@ -1,4 +1,4 @@
-export { System } from './schedule'
+export { ScheduleComponent, System } from './schedule'
 export { type Scheduler, scheduler } from './scheduler'
 
 export {

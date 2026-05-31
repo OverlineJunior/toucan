@@ -33,6 +33,8 @@ export const System = component<{
 	_inSets: SystemSet[]
 }>('System')
 
+export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
+
 export const InSchedule = component('InSchedule')
 
 function getSystemName(system: SystemFn): string {
@@ -85,7 +87,9 @@ export class Schedule {
 
 	constructor(name: Schedules) {
 		this.name = name
-		this.entity = entity(`${name}Schedule`)
+		this.entity = entity(`${name}Schedule`).set(ScheduleComponent, {
+			kind: name,
+		})
 	}
 
 	useSystem(systemFn: SystemFn, config?: SystemConfig): this {

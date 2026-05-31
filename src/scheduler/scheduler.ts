@@ -1,7 +1,11 @@
 import { RunService } from '@rbxts/services'
-import { Schedule } from './schedule'
+import { System } from '../handle'
+import { query } from '../query'
+import { Schedule, ScheduleComponent } from './schedule'
 import type { SetConfig, SystemSet } from './systemSet'
 import type { Schedules, SystemConfig, SystemFn } from './types'
+
+let schedulerAlreadyCreated = false
 
 export class Scheduler {
 	private readonly scheduleMap = new Map<Schedules, Schedule>([
@@ -23,7 +27,16 @@ export class Scheduler {
 		['preSimulation', new Schedule('preSimulation')],
 		['postSimulation', new Schedule('postSimulation')],
 	])
+	private readonly connections: RBXScriptConnection[] = []
 	private running = false
+
+	constructor() {
+		if (schedulerAlreadyCreated) {
+			error('There can only be one scheduler instance')
+		}
+
+		schedulerAlreadyCreated = true
+	}
 
 	useSystem(
 		schedule: Schedules,
@@ -58,7 +71,7 @@ export class Scheduler {
 		this.runSchedule('startup')
 		this.runSchedule('postStartup')
 
-		RunService.Heartbeat.Connect((_dt) => {
+		const c1 = RunService.Heartbeat.Connect((_dt) => {
 			this.runSchedule('first')
 			this.runSchedule('preUpdate')
 			this.runSchedule('update')
@@ -66,12 +79,29 @@ export class Scheduler {
 			this.runSchedule('last')
 		})
 
-		RunService.PreRender.Connect((_dt) => this.runSchedule('preRender'))
-		RunService.PreAnimation.Connect((_dt) => this.runSchedule('preAnimation'))
-		RunService.PreSimulation.Connect((_dt) => this.runSchedule('preSimulation'))
-		RunService.PostSimulation.Connect((_dt) =>
+		const c2 = RunService.PreRender.Connect((_dt) =>
+			this.runSchedule('preRender'),
+		)
+		const c3 = RunService.PreAnimation.Connect((_dt) =>
+			this.runSchedule('preAnimation'),
+		)
+		const c4 = RunService.PreSimulation.Connect((_dt) =>
+			this.runSchedule('preSimulation'),
+		)
+		const c5 = RunService.PostSimulation.Connect((_dt) =>
 			this.runSchedule('postSimulation'),
 		)
+
+		this.connections.push(c1, c2, c3, c4, c5)
+	}
+
+	// Scheduler isn't allowed to be instantiated more than once, but our test suite needs to be able to reset it.
+	/** @internal */
+    _despawn() {
+        schedulerAlreadyCreated = false
+		this.connections.forEach((c) => c.Disconnect())
+		query(System).forEach((e) => e.despawn())
+		query(ScheduleComponent).forEach((e) => e.despawn())
 	}
 
 	private runSchedule(schedule: Schedules): void {

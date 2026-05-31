@@ -24,6 +24,7 @@ export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
 
 export {
+	ScheduleComponent as Schedule,
 	type Scheduler,
 	type Schedules,
 	System,
