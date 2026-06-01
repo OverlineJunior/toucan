@@ -1,3 +1,5 @@
+/** @internal */
+export { _simulateExternal } from './environment'
 export {
 	ChildOf,
 	Component,
@@ -18,11 +20,8 @@ export {
 	resource,
 	Wildcard,
 } from './handle'
-
 export { type Pair, pair } from './pair'
-
 export { type Query, query } from './query'
-
 export {
 	ScheduleComponent as Schedule,
 	type Scheduler,

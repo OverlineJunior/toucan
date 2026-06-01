@@ -1,5 +1,6 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-import { Each } from '@rbxts/lunit/out/lib/decorator'
+import { Each, Only } from '@rbxts/lunit/out/lib/decorator'
+import * as Toucan from '@rbxts/toucan'
 import {
 	type EntityHandle,
 	External,
@@ -18,6 +19,10 @@ import { InSchedule } from '../../../out/scheduler/schedule'
 
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
+
+const _simulateExternal = (
+	Toucan as unknown as { _simulateExternal: (callback: () => void) => void }
+)._simulateExternal
 
 let scheduler = newScheduler()
 
@@ -726,6 +731,31 @@ class SchedulerTests {
 			'Expected usePlugin to throw when a user tries to overwrite the same user plugin',
 		)
 	}
+
+	@Test
+	usePlugin_externalOverwritingExternalPluginWithSameArgsDoesNotThrow() {
+		function somePlugin(_s: Scheduler, _n: number) {}
+
+		Assert.doesNotThrow(() =>
+			_simulateExternal(() =>
+				scheduler.usePlugin(somePlugin, 1).usePlugin(somePlugin, 1).run(),
+			),
+		)
+	}
+
+	@Test
+	usePlugin_externalOverwritingExternalPluginWithDifferentArgsThrows() {
+		function somePlugin(_s: Scheduler, _n: number) {}
+
+		Assert.throws(
+			() =>
+				_simulateExternal(() =>
+					scheduler.usePlugin(somePlugin, 1).usePlugin(somePlugin, 2).run(),
+				),
+			undefined,
+			'Expected usePlugin to throw when an external tries to overwrite the same external plugin with different arguments',
+		)
+    }
 
 	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
 }

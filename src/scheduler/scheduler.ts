@@ -1,4 +1,5 @@
 import { RunService } from '@rbxts/services'
+import { isExternal, isInternal } from '../environment'
 import {
 	ChildOf,
 	component,
@@ -12,7 +13,7 @@ import {
 } from '../handle'
 import { pair } from '../pair'
 import { query } from '../query'
-import { deepEqual, isExternal, isInternal, joinUnknown } from '../util'
+import { deepEqual, joinUnknown } from '../util'
 import { Schedule, ScheduleComponent } from './schedule'
 import type { SetConfig, SystemSet } from './systemSet'
 import type { Schedules, SystemConfig, SystemFn } from './types'
@@ -180,7 +181,7 @@ export class Scheduler {
 	_despawn() {
 		schedulerAlreadyCreated = false
 		this.connections.forEach((c) => c.Disconnect())
-        query(System).forEach((e) => e.despawn())
+		query(System).forEach((e) => e.despawn())
 		query(Plugin).forEach((e) => e.despawn())
 		query(ScheduleComponent).forEach((e) => e.despawn())
 	}
