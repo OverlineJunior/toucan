@@ -8,6 +8,7 @@ import {
 	pair,
 	query,
 	Schedule,
+	type Scheduler,
 	type Schedules,
 	System,
 	systemSet,
@@ -647,7 +648,84 @@ class SchedulerTests {
 		)
 	}
 
-	// TODO! Plugins should be built before the scheduler is run.
+	@Test
+	run_buildsPluginsBeforeSchedulingSystems() {
+		const order: string[] = []
+
+		function somePlugin(scheduler: Scheduler) {
+			order.push('plugin')
+			scheduler.useSystem('preStartup', () => order.push('pluginSystem'))
+		}
+
+		scheduler
+			.useSystem('preStartup', () => order.push('system'))
+			// We use plugin after system to make sure call order doesn't matter.
+			.usePlugin(somePlugin)
+			.run()
+
+		Assert.true(
+			order[0] === 'plugin' &&
+				order.includes('pluginSystem') &&
+				order.includes('system'),
+			'Expected plugin to be built before scheduling systems',
+		)
+	}
+
+	@Test
+	usePlugin_fowardsArguments() {
+		const someObject = { foo: 'bar' }
+		const expectedArgs: unknown[] = ['arg1', undefined, 2, someObject]
+		const actualArgs: unknown[] = []
+
+		function somePlugin(_s: Scheduler, ...args: unknown[]) {
+			actualArgs[0] = args[0]
+			actualArgs[1] = args[1]
+			actualArgs[2] = args[2]
+			actualArgs[3] = args[3]
+		}
+
+		scheduler.usePlugin(somePlugin, 'arg1', undefined, 2, someObject).run()
+
+		Assert.true(
+			actualArgs.size() === expectedArgs.size() &&
+				(actualArgs as defined[]).every((arg, i) => arg === expectedArgs[i]),
+			`Expected plugin to forward ${expectedArgs[0]}, ${expectedArgs[1]}, ${expectedArgs[2]}, ${expectedArgs[3]}` +
+				`, got ${actualArgs[0]}, ${actualArgs[1]}, ${actualArgs[2]}, ${actualArgs[3]}`,
+		)
+	}
+
+	@Test
+	usePlugin_nestedPluginsCorrectlyScheduleSystems() {
+		const order: string[] = []
+
+		function childPlugin(scheduler: Scheduler) {
+			scheduler.useSystem('postStartup', () => order.push('child'))
+		}
+
+		function parentPlugin(scheduler: Scheduler) {
+			scheduler
+				.usePlugin(childPlugin)
+				.useSystem('startup', () => order.push('parent'))
+		}
+
+		scheduler.usePlugin(parentPlugin).run()
+
+		Assert.true(
+			order[0] === 'parent' && order[1] === 'child',
+			'Expected parent and child plugins to both schedule systems in the correct order',
+		)
+	}
+
+	@Test
+	usePlugin_userOverwritingUserPluginThrows() {
+		function somePlugin(_s: Scheduler) {}
+
+		Assert.throws(
+			() => scheduler.usePlugin(somePlugin).usePlugin(somePlugin).run(),
+			undefined,
+			'Expected usePlugin to throw when a user tries to overwrite the same user plugin',
+		)
+	}
 
 	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
 }

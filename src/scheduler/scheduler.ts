@@ -1,11 +1,54 @@
 import { RunService } from '@rbxts/services'
-import { System } from '../handle'
+import {
+	ChildOf,
+	component,
+	type EntityHandle,
+	External,
+	entity,
+	type Handle,
+	type InferValue,
+	Internal,
+	System,
+} from '../handle'
+import { pair } from '../pair'
 import { query } from '../query'
+import { deepEqual, isExternal, isInternal, joinUnknown } from '../util'
 import { Schedule, ScheduleComponent } from './schedule'
 import type { SetConfig, SystemSet } from './systemSet'
 import type { Schedules, SystemConfig, SystemFn } from './types'
 
+export type PluginFn<Args extends unknown[] = unknown[]> = (
+	scheduler: Scheduler,
+	...args: Args
+) => void
+
+export const Plugin = component<{
+	fn: PluginFn
+	args: unknown[]
+	built: boolean
+}>('Plugin')
+
 let schedulerAlreadyCreated = false
+
+function findParentPlugin(): EntityHandle | undefined {
+	// Traverses the call stack to find the first function matching the given callback.
+	function hasFnInCallStack(fn: Callback): boolean {
+		let depth = 2
+		while (true) {
+			const f = debug.info(depth, 'f')[0]
+			if (f === undefined) {
+				return false
+			} else if (f === fn) {
+				return true
+			}
+			depth++
+		}
+	}
+
+	return query(Plugin).find((_, p) => hasFnInCallStack(p.fn))?.[0] as
+		| EntityHandle
+		| undefined
+}
 
 export class Scheduler {
 	private readonly scheduleMap = new Map<Schedules, Schedule>([
@@ -63,8 +106,45 @@ export class Scheduler {
 		return this
 	}
 
+	usePlugin<Args extends unknown[]>(
+		pluginFn: PluginFn<Args>,
+		...args: Args
+	): this {
+		this.assertNotRunning('usePlugin')
+
+		const label = debug.info(pluginFn, 'n')[0]!
+		if (label === '') {
+			error(
+				'Failed to register plugin because its function has no name\n\n' +
+					"Tip: find your plugin's anonymous function and replace it with a named function",
+			)
+		}
+
+		const pluginEntity = entity(label).set(Plugin, {
+			fn: pluginFn as PluginFn,
+			args,
+			built: false,
+		})
+
+		if (isInternal(2)) {
+			pluginEntity.set(Internal)
+		} else if (isExternal(2)) {
+			pluginEntity.set(External)
+		}
+
+		const parentPlugin = findParentPlugin()
+		if (parentPlugin) {
+			pluginEntity.set(pair(ChildOf, parentPlugin))
+		}
+
+		return this
+	}
+
 	run() {
 		this.assertNotRunning('run')
+
+		this.buildPlugins()
+
 		this.running = true
 
 		this.runSchedule('preStartup')
@@ -97,10 +177,11 @@ export class Scheduler {
 
 	// Scheduler isn't allowed to be instantiated more than once, but our test suite needs to be able to reset it.
 	/** @internal */
-    _despawn() {
-        schedulerAlreadyCreated = false
+	_despawn() {
+		schedulerAlreadyCreated = false
 		this.connections.forEach((c) => c.Disconnect())
-		query(System).forEach((e) => e.despawn())
+        query(System).forEach((e) => e.despawn())
+		query(Plugin).forEach((e) => e.despawn())
 		query(ScheduleComponent).forEach((e) => e.despawn())
 	}
 
@@ -115,6 +196,96 @@ export class Scheduler {
 
 	private runSystem(systemFn: SystemFn): void {
 		systemFn()
+	}
+
+	private buildPlugins(): void {
+		let pendingPlugins = query(Plugin)
+			.collect()
+			.filter(([, p]) => !p.built)
+
+		const sortUserFirst = (a: Handle, b: Handle) => {
+			const isAExternal = a.has(External)
+			const isBExternal = b.has(External)
+			return isAExternal === isBExternal ? false : !isAExternal
+		}
+
+		const shouldBuild = (
+			_incomingEnt: Handle,
+			_incomingData: InferValue<typeof Plugin>,
+		): boolean => {
+			const _existing = query(Plugin)
+				.collect()
+				.find(([, p]) => p.built === true && p.fn === _incomingData.fn)
+			if (!_existing) return true
+
+			const [existingEnt, existingData] = _existing
+			// From here on, we know incoming is a duplicate.
+			const [duplicateEnt, duplicateData] = [_incomingEnt, _incomingData]
+
+			const existingOrigin = existingEnt.has(External)
+				? 'external'
+				: existingEnt.has(Internal)
+					? 'internal'
+					: 'user'
+			if (existingOrigin === 'internal') {
+				error(`Internal plugin duplication found - this should never happen`)
+			}
+			const duplicateOrigin = duplicateEnt.has(External) ? 'external' : 'user'
+
+			// user <- user: should error, as the user likely forgot they've added the same plugin already.
+			// user <- external: should skip external's registration, as user registration takes precedence.
+			// external <- user: should never happen, as user plugins are built first.
+			// external <- external:
+			//      if arguments are the same: should skip, as the shared plugin would be built the same way by both external plugins.
+			//      if arguments differ: should error, as the user didn't register the plugin themselves in order to resolve the conflict.
+			if (existingOrigin === 'user' && duplicateOrigin === 'user') {
+				error(
+					`User plugin '${existingEnt}' has already been registered\n\n` +
+						`Tip: ensure '${duplicateEnt}' is only registered once`,
+				)
+			} else if (existingOrigin === 'user' && duplicateOrigin === 'external') {
+				return false
+			} else if (existingOrigin === 'external' && duplicateOrigin === 'user') {
+				error(
+					`User plugin '${duplicateEnt}' being built after external plugin should never happen, as user plugins are meant to be built first`,
+				)
+			} else if (
+				existingOrigin === 'external' &&
+				duplicateOrigin === 'external'
+			) {
+				if (deepEqual(existingData.args, duplicateData.args)) return false
+
+				const args1 = joinUnknown(existingData.args)
+				const args2 = joinUnknown(duplicateData.args)
+				error(
+					`Two libraries are registering the same plugin '${existingEnt}' with different arguments (${args1} vs ${args2})\n\n` +
+						`Tip: this conflict can be resolved by registering the plugin yourself, ensuring a sane set of arguments are provided`,
+				)
+			}
+
+			error('Unreachable')
+		}
+
+		const buildPlugin = (e: Handle, p: InferValue<typeof Plugin>) => {
+			if (!shouldBuild(e, p)) {
+				e.despawn()
+				return
+			}
+
+			p.fn(this, ...p.args)
+			p.built = true
+		}
+
+		// We use a while loop to ensure that if a plugin registers another plugin, the child plugin is also fully built during this exact step.
+		while (!pendingPlugins.isEmpty()) {
+			pendingPlugins
+				.sort(([p1], [p2]) => sortUserFirst(p1, p2))
+				.forEach(([e, p]) => buildPlugin(e, p))
+
+			pendingPlugins = query(Plugin)
+				.collect()
+				.filter(([, p]) => !p.built)
+		}
 	}
 
 	private assertNotRunning(methodName: string): void {

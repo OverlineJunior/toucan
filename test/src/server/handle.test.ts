@@ -569,7 +569,9 @@ class EntityTests {
 				'Expected all internal entities to have the Persistent component',
 			)
 		})
-	}
+    }
+
+    // TODO! There cannot be entities with both Internal and External components at the same time.
 }
 
 export = EntityTests
