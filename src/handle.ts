@@ -10,6 +10,7 @@ import {
 	type Pair,
 	pair,
 } from './pair'
+import { getActivePluginEntity } from './scheduler/pluginContext'
 import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
 import { getAllComponentIdsIn, world } from './world'
 
@@ -91,38 +92,37 @@ export function resolveId(
 	}
 }
 
-
 let simulatingExternal = false
 /** @internal */
 export function _simulateExternal(callback: () => void): void {
-    simulatingExternal = true
-    try {
-        callback()
-    } finally {
-        simulatingExternal = false
+	simulatingExternal = true
+	try {
+		callback()
+	} finally {
+		simulatingExternal = false
 	}
 }
 function hasExternalCaller(): boolean {
-    if (simulatingExternal) return true
-    
-    let level = 1
+	if (simulatingExternal) return true
+
+	let level = 1
 
 	while (true) {
-        const callerPath = debug.info(level, 's')[0]
-        if (callerPath === undefined) break
+		const callerPath = debug.info(level, 's')[0]
+		if (callerPath === undefined) break
 
-        const isInPackage = callerPath.match('node_modules')[0] !== undefined
-        if (isInPackage) {
-            const isToucan =
-                callerPath.match('%.toucan%.')[0] !== undefined ||
-                string.match(callerPath, '%.toucan$')[0] !== undefined
-            if (!isToucan) return true
-        } else {
-            return false
-        }
+		const isInPackage = callerPath.match('node_modules')[0] !== undefined
+		if (isInPackage) {
+			const isToucan =
+				callerPath.match('%.toucan%.')[0] !== undefined ||
+				string.match(callerPath, '%.toucan$')[0] !== undefined
+			if (!isToucan) return true
+		} else {
+			return false
+		}
 
-        level++
-    }
+		level++
+	}
 
 	return false
 }
@@ -534,9 +534,16 @@ export class EntityHandle extends Handle {
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
 	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
+
 	if (hasExternalCaller()) {
 		handle.set(External)
 	}
+
+	const activePlugin = getActivePluginEntity()
+	if (activePlugin !== undefined) {
+		handle.set(pair(AddedByPlugin, activePlugin))
+	}
+
 	return handle
 }
 
@@ -581,13 +588,10 @@ export function component<Value = undefined>(
 	)
 }
 
-function setupComponent<C extends ComponentHandle>(
-	comp: C,
-	label: string,
-): C {
-    comp.set(Component).set(Label, label)
-    if (hasExternalCaller()) {
-        comp.set(External)
+function setupComponent<C extends ComponentHandle>(comp: C, label: string): C {
+	comp.set(Component).set(Label, label)
+	if (hasExternalCaller()) {
+		comp.set(External)
 	}
 	return comp
 }
@@ -796,8 +800,13 @@ export const Resource = bootstrapBuiltinComponent(
 	'Resource',
 )
 
+export const AddedByPlugin = bootstrapBuiltinComponent(
+	new ComponentHandle<undefined>(world.component()),
+	'AddedByPlugin',
+)
+
 bootstrappedComponents.forEach(([comp, label]) => {
-    setupComponent(comp, label)
-    comp.set(Internal)
-    comp.set(Persistent)
+	setupComponent(comp, label)
+	comp.set(Internal)
+	comp.set(Persistent)
 })

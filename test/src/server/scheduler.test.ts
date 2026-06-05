@@ -2,11 +2,14 @@ import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import { Each } from '@rbxts/lunit/out/lib/decorator'
 import * as Toucan from '@rbxts/toucan'
 import {
+	AddedByPlugin,
 	ChildOf,
 	type EntityHandle,
 	External,
+	entity,
 	Internal,
 	scheduler as newScheduler,
+	Plugin,
 	pair,
 	query,
 	Schedule,
@@ -754,7 +757,61 @@ class SchedulerTests {
 		)
 	}
 
-	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
+	@Test
+	entity_addedByPluginHasRelationship() {
+		function someSystem() {}
+
+		function childPlugin(s: Scheduler) {
+			s.useSystem('startup', someSystem)
+		}
+
+		function parentPlugin(s: Scheduler) {
+			entity('addedByPlugin')
+			s.usePlugin(childPlugin)
+		}
+
+		scheduler.usePlugin(parentPlugin).run()
+
+		const spawnedEntity = query(Wildcard)
+			.filter((e) => tostring(e) === 'addedByPlugin')
+			.collect()[0][0]
+
+		const [systemEntity] = query(System).find(
+			(_, sys) => sys.fn === someSystem,
+		)!
+
+		const [childPluginEntity] = query(Plugin).find(
+			(_, p) => p.fn === childPlugin,
+		)!
+
+		const [parentPluginEntity] = query(Plugin).find(
+			(_, p) => p.fn === parentPlugin,
+		)!
+
+		Assert.true(
+			spawnedEntity.has(
+				pair(AddedByPlugin, parentPluginEntity as EntityHandle),
+			),
+			"Expected spawned entity to have a 'pair(AddedByPlugin, parentPluginEntity)' relationship",
+		)
+
+		Assert.true(
+			childPluginEntity.has(
+				pair(AddedByPlugin, parentPluginEntity as EntityHandle),
+			),
+			"Expected child plugin entity to have a 'pair(AddedByPlugin, parentPluginEntity)' relationship",
+		)
+
+		Assert.true(
+			systemEntity.has(pair(AddedByPlugin, childPluginEntity as EntityHandle)),
+			"Expected system entity to have a 'pair(AddedByPlugin, childPluginEntity)' relationship",
+		)
+
+		Assert.false(
+			parentPluginEntity.has(pair(AddedByPlugin, Wildcard)),
+			"Expected parent plugin entity to not have a 'pair(AddedByPlugin, Wildcard)' relationship",
+        )
+	}
 }
 
 export = SchedulerTests

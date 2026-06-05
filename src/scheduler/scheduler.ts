@@ -13,6 +13,7 @@ import {
 import { pair } from '../pair'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
+import { setActivePluginEntity } from './pluginContext'
 import { Schedule, ScheduleComponent, System } from './schedule'
 import type { SetConfig, SystemConfig, SystemFn, SystemSet } from './system'
 
@@ -281,8 +282,14 @@ export class Scheduler {
 				return
 			}
 
-			p.fn(this, ...p.args)
-			p.built = true
+			setActivePluginEntity(e as EntityHandle)
+			// We use a try-finally block to ensure the active plugin entity is always cleared, even if the plugin throws an error.
+			try {
+				p.fn(this, ...p.args)
+			} finally {
+				setActivePluginEntity(undefined)
+				p.built = true
+			}
 		}
 
 		// We use a while loop to ensure that if a plugin registers another plugin, the child plugin is also fully built during this exact step.
