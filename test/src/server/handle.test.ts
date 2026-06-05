@@ -570,8 +570,6 @@ class EntityTests {
 			)
 		})
     }
-
-    // TODO! There cannot be entities with both Internal and External components at the same time.
 }
 
 export = EntityTests
