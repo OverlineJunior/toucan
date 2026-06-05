@@ -23,7 +23,6 @@ export {
 export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
 export {
-	InSchedule,
 	Plugin,
 	ScheduleComponent as Schedule,
 	type Scheduler,

@@ -1,4 +1,4 @@
-export { InSchedule, ScheduleComponent, System } from './schedule'
+export { ScheduleComponent, System } from './schedule'
 export { Plugin, type Scheduler, Schedules, scheduler } from './scheduler'
 
 export {

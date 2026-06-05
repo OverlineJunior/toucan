@@ -2,6 +2,7 @@ import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import { Each } from '@rbxts/lunit/out/lib/decorator'
 import * as Toucan from '@rbxts/toucan'
 import {
+	ChildOf,
 	type EntityHandle,
 	External,
 	Internal,
@@ -15,7 +16,6 @@ import {
 	systemSet,
 	Wildcard,
 } from '@rbxts/toucan'
-import { InSchedule } from '../../../out/scheduler/schedule'
 
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
@@ -645,13 +645,8 @@ class SchedulerTests {
 		)!
 
 		Assert.true(
-			systemEntity.has(pair(InSchedule, Wildcard)),
-			'Expected system entity to have an InSchedule relationship',
-		)
-
-		Assert.true(
-			systemEntity.has(pair(InSchedule, startupEntity as EntityHandle)),
-			'Expected system entity to be in the startup schedule specifically',
+			systemEntity.has(pair(ChildOf, startupEntity as EntityHandle)),
+			'Expected system entity to be a child of the startup schedule',
 		)
 	}
 

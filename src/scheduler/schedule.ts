@@ -1,4 +1,5 @@
 import {
+	ChildOf,
 	component,
 	type EntityHandle,
 	entity,
@@ -59,8 +60,6 @@ export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
 	.set(Internal)
 	.set(Persistent)
 
-export const InSchedule = component('InSchedule').set(Internal).set(Persistent)
-
 function getSystemName(system: SystemFn): string {
 	return debug.info(system, 'n')[0] || 'Unlabelled System'
 }
@@ -97,9 +96,9 @@ export class Schedule {
 			.set(Persistent)
 	}
 
-    useSystem(systemFn: SystemFn, config?: SystemConfig): this {
-        this.sortedCache = undefined
-        
+	useSystem(systemFn: SystemFn, config?: SystemConfig): this {
+		this.sortedCache = undefined
+
 		const existing = query(System).find((_e, sys) => sys.fn === systemFn)
 		if (existing !== undefined) {
 			error(
@@ -117,7 +116,7 @@ export class Schedule {
 				runIfs,
 				_inSets: inSets,
 			})
-			.set(pair(InSchedule, this.entity))
+			.set(pair(ChildOf, this.entity))
 
 		return this
 	}
@@ -172,7 +171,7 @@ export class Schedule {
 
 		// Step 1: Group systems by their set membership.
 		const systemsInSet = new Map<SystemSet, SystemFn[]>()
-		query(System, pair(InSchedule, this.entity)).forEach((_e, sys) => {
+		query(System, pair(ChildOf, this.entity)).forEach((_e, sys) => {
 			sys._inSets.forEach((set) =>
 				getOrInit(systemsInSet, set, () => []).push(sys.fn),
 			)
@@ -180,7 +179,7 @@ export class Schedule {
 
 		// Step 2: Create a fresh DAG and add all registered systems as nodes.
 		const graph = new DirectedAcyclicGraph<SystemFn>()
-		query(System, pair(InSchedule, this.entity)).forEach((_e, sys) =>
+		query(System, pair(ChildOf, this.entity)).forEach((_e, sys) =>
 			graph.tryAddNode(sys.fn),
 		)
 
@@ -193,7 +192,7 @@ export class Schedule {
 			)
 
 		// Step 3: Add system-level ordering edges.
-		query(System, pair(InSchedule, this.entity)).forEach((_e, sys) => {
+		query(System, pair(ChildOf, this.entity)).forEach((_e, sys) => {
 			resolveTargets(sys.before).forEach((t) => {
 				assertAddEdgeResult(graph.addEdge(sys.fn, t))
 			})
