@@ -15,54 +15,26 @@ import {
 } from './directedAcyclicGraph'
 import type { Schedules } from './scheduler'
 import {
+	getSystemName,
 	type NormalizedSetConfig,
 	normalizeSetConfig,
 	normalizeSystemConfig,
 	type RunCondition,
 	type SetConfig,
+	System,
+	type SystemConfig,
 	type SystemFn,
 	type SystemSet,
 } from './system'
-
-export interface SystemConfig {
-	before?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
-	after?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
-	inSet?: SystemSet | SystemSet[]
-	runIf?: RunCondition | RunCondition[]
-}
-
-export interface NormalizedSystemConfig {
-	before: (SystemSet | SystemFn)[]
-	after: (SystemSet | SystemFn)[]
-	inSets: SystemSet[]
-	runIfs: RunCondition[]
-}
 
 interface ResolvedSystem {
 	systemFn: SystemFn
 	runIf: RunCondition[]
 }
 
-export const System = component<{
-	fn: SystemFn
-	schedule: Schedules
-	before: (SystemFn | SystemSet)[]
-	after: (SystemFn | SystemSet)[]
-	runIfs: RunCondition[]
-	// System sets are ephemeral information for the scheduler - they all get reduced into systems at runtime.
-	/** @internal */
-	_inSets: SystemSet[]
-}>('System')
-	.set(Internal)
-	.set(Persistent)
-
 export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
 	.set(Internal)
 	.set(Persistent)
-
-function getSystemName(system: SystemFn): string {
-	return debug.info(system, 'n')[0] || 'Unlabelled System'
-}
 
 function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 	if (res.ok) return

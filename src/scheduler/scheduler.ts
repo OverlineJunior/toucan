@@ -14,8 +14,8 @@ import { pair } from '../pair'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
 import { setActivePluginEntity } from './pluginContext'
-import { Schedule, ScheduleComponent, System } from './schedule'
-import type { SetConfig, SystemConfig, SystemFn, SystemSet } from './system'
+import { Schedule, ScheduleComponent } from './schedule'
+import { System, type SetConfig, type SystemConfig, type SystemFn, type SystemSet } from './system'
 
 export type PluginFn<Args extends unknown[] = unknown[]> = (
 	scheduler: Scheduler,
