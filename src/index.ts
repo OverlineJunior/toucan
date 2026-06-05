@@ -17,6 +17,8 @@ export {
 	type EntityHandle,
 	entity,
 	type Handle,
+	type InferValue,
+	type InferValues,
 	type RawId,
 	type ResourceHandle,
 	resolveId,
