@@ -487,6 +487,24 @@ class SchedulerTests {
 	}
 
 	@Test
+	configureSet_duplicateThrows() {
+		const someSet = systemSet('someSet')
+
+		scheduler.configureSet('startup', someSet, { before: [] })
+
+		Assert.throws(
+			() => scheduler.configureSet('startup', someSet, { before: [] }),
+			undefined,
+			'Expected duplicate set configuration to throw',
+		)
+
+		Assert.doesNotThrow(
+			() => scheduler.configureSet('postStartup', someSet, { before: [] }),
+			'Expected duplicate set configuration on different schedules to not throw',
+		)
+	}
+
+	@Test
 	useSystem_before_danglingDependencyThrowsOnRun() {
 		function someSystem() {}
 		function danglingSystem() {} // Defined but never scheduled.

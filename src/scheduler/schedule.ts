@@ -97,7 +97,9 @@ export class Schedule {
 			.set(Persistent)
 	}
 
-	useSystem(systemFn: SystemFn, config?: SystemConfig): this {
+    useSystem(systemFn: SystemFn, config?: SystemConfig): this {
+        this.sortedCache = undefined
+        
 		const existing = query(System).find((_e, sys) => sys.fn === systemFn)
 		if (existing !== undefined) {
 			error(
@@ -123,16 +125,15 @@ export class Schedule {
 	configureSet(set: SystemSet, config: SetConfig): this {
 		this.sortedCache = undefined
 
-		const entry = getOrInit(this.setConfigs, set, () => ({
-			before: [],
-			after: [],
-			runIf: [],
-		}))
+		const existing = this.setConfigs.get(set)
+		if (existing !== undefined) {
+			error(
+				`Set '${set.name}' has already been configured in schedule '${this.name}'`,
+			)
+		}
 
-		const normalized = normalizeSetConfig(config)
-		normalized.before.forEach((v) => entry.before.push(v))
-		normalized.after.forEach((v) => entry.after.push(v))
-		normalized.runIf.forEach((v) => entry.runIf.push(v))
+		const { before, after, runIf } = normalizeSetConfig(config)
+		this.setConfigs.set(set, { before, after, runIf })
 
 		return this
 	}
