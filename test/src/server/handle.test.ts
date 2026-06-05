@@ -1,27 +1,20 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import {
-	ChildOf,
-	Component,
+	Builtin,
 	component,
-	External,
 	entity,
-	Internal,
-	Label,
-	Persistent,
 	pair,
 	query,
 	type RawId,
-	Resource,
 	resolveId,
 	resource,
-	Wildcard,
 } from '@rbxts/toucan'
 
 class EntityTests {
 	@BeforeEach
 	public reset() {
-		query(Wildcard)
-			.filter((e) => !e.has(Internal) && !e.has(External))
+		query(Builtin.Wildcard)
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
 			.collect() // We collect due to iterator invalidation; see issue #2.
 			.forEach(([e]) => e.despawn())
 	}
@@ -55,14 +48,14 @@ class EntityTests {
 	@Test
 	public parent_returnsAssignedParent() {
 		const parent = entity('Parent')
-		const child = entity('Child').set(pair(ChildOf, parent))
+		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
 		Assert.equal(
 			child.parent(),
 			parent,
 			'Expected parent() to return the entity assigned via ChildOf',
 		)
 		Assert.equal(
-			child.targetOf(ChildOf),
+			child.targetOf(Builtin.ChildOf),
 			parent,
 			'Expected targetOf(ChildOf) to return the parent entity',
 		)
@@ -71,7 +64,7 @@ class EntityTests {
 	@Test
 	public children_returnsAssignedChildEntity() {
 		const parent = entity('Parent')
-		const child = entity('Child').set(pair(ChildOf, parent))
+		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
 
 		const children = parent.children()
 		Assert.equal(
@@ -89,7 +82,7 @@ class EntityTests {
 	@Test
 	public relationships_includesAssignedChildOfPair() {
 		const parent = entity('Parent')
-		const child = entity('Child').set(pair(ChildOf, parent))
+		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
 
 		const relationships = child.relationships()
 		Assert.equal(
@@ -99,7 +92,7 @@ class EntityTests {
 		)
 		Assert.equal(
 			relationships[0].relation,
-			ChildOf,
+			Builtin.ChildOf,
 			'Expected the relationship relation to be ChildOf',
 		)
 		Assert.equal(
@@ -140,11 +133,11 @@ class EntityTests {
 	public remove_throwsErrorWhenComponentIsPersistent() {
 		const e = entity()
 		Assert.true(
-			e.has(Label),
+			e.has(Builtin.Label),
 			'Expected entity to have persistent Label component',
 		)
 		Assert.throws(
-			() => e.remove(Label),
+			() => e.remove(Builtin.Label),
 			undefined,
 			'Expected remove(Label) to throw because it is persistent',
 		)
@@ -170,12 +163,12 @@ class EntityTests {
 	public clear_doesNotRemovePersistentComponents() {
 		const e = entity()
 		Assert.true(
-			e.has(Label),
+			e.has(Builtin.Label),
 			'Expected persistent Label component to be present',
 		)
 		e.clear()
 		Assert.true(
-			e.has(Label),
+			e.has(Builtin.Label),
 			'Expected persistent Label component to remain after clear',
 		)
 	}
@@ -191,7 +184,7 @@ class EntityTests {
 		)
 		Assert.equal(
 			comps[0],
-			Label,
+			Builtin.Label,
 			'Expected the only component to be the Label component',
 		)
 	}
@@ -206,7 +199,7 @@ class EntityTests {
 			'Expected component name to match',
 		)
 		Assert.true(
-			C.has(Component),
+			C.has(Builtin.Component),
 			'Expected the entity to have the internal Component tag',
 		)
 	}
@@ -371,8 +364,8 @@ class EntityTests {
 	@Test
 	public children_returnsAllAssignedChildEntities() {
 		const parent = entity('Parent')
-		const child1 = entity('Child1').set(pair(ChildOf, parent))
-		const child2 = entity('Child2').set(pair(ChildOf, parent))
+		const child1 = entity('Child1').set(pair(Builtin.ChildOf, parent))
+		const child2 = entity('Child2').set(pair(Builtin.ChildOf, parent))
 		const children = parent.children()
 		Assert.equal(
 			children.size(),
@@ -399,7 +392,7 @@ class EntityTests {
 			'Expected resource name to match the label provided',
 		)
 		Assert.true(
-			GameState.has(Resource),
+			GameState.has(Builtin.Resource),
 			'Expected the resource entity to have the Resource tag',
 		)
 	}
@@ -499,7 +492,7 @@ class EntityTests {
 		)
 		Assert.equal(
 			comps[0],
-			Label,
+			Builtin.Label,
 			'Expected the only component returned to be Label',
 		)
 	}
@@ -539,7 +532,7 @@ class EntityTests {
 			after,
 			'Expected component count to remain unchanged for an empty entity',
 		)
-		Assert.true(e.has(Label), 'Expected Label to still be present')
+		Assert.true(e.has(Builtin.Label), 'Expected Label to still be present')
 	}
 
 	@Test
@@ -563,13 +556,13 @@ class EntityTests {
 
 	@Test
 	public internals_arePersistent() {
-		query(Internal).forEach((e) => {
+		query(Builtin.Internal).forEach((e) => {
 			Assert.true(
-				e.has(Persistent),
+				e.has(Builtin.Persistent),
 				'Expected all internal entities to have the Persistent component',
 			)
 		})
-    }
+	}
 }
 
 export = EntityTests

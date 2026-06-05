@@ -1,20 +1,11 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-import {
-	component,
-	External,
-	entity,
-	Internal,
-	Label,
-	pair,
-	query,
-	Wildcard,
-} from '@rbxts/toucan'
+import { Builtin, component, entity, pair, query } from '@rbxts/toucan'
 
 class QueryTests {
 	@BeforeEach
 	public reset() {
-		query(Wildcard)
-			.filter((e) => !e.has(Internal) && !e.has(External))
+		query(Builtin.Wildcard)
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
 			.collect() // We collect due to iterator invalidation; see issue #2.
 			.forEach(([e]) => e.despawn())
 	}
@@ -234,8 +225,8 @@ class QueryTests {
 		const alice = entity('Alice')
 		const bob = entity('Bob')
 
-		const results = query(Wildcard)
-			.filter((e) => !e.has(Internal) && !e.has(External))
+		const results = query(Builtin.Wildcard)
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
 			.collect()
 
 		Assert.equal(
@@ -259,7 +250,7 @@ class QueryTests {
 		const e = entity('Alice')
 
 		let called = false
-		const unsubscribe = query(Label).onAdded(
+		const unsubscribe = query(Builtin.Label).onAdded(
 			Health,
 			(entity, _label, health) => {
 				called = true
@@ -284,7 +275,7 @@ class QueryTests {
 		const e = entity('Alice').set(Health, 10)
 
 		let called = false
-		const unsubscribe = query(Label).onChanged(
+		const unsubscribe = query(Builtin.Label).onChanged(
 			Health,
 			(entity, _label, newHealth, oldHealth) => {
 				called = true
@@ -314,7 +305,7 @@ class QueryTests {
 		const e = entity('Alice').set(Health, 10)
 
 		let called = false
-		const unsubscribe = query(Label).onRemoved(
+		const unsubscribe = query(Builtin.Label).onRemoved(
 			Health,
 			(entity, _label, oldHealth, despawned) => {
 				called = true

@@ -2,22 +2,15 @@ import { Assert, BeforeEach, Test } from '@rbxts/lunit'
 import { Each } from '@rbxts/lunit/out/lib/decorator'
 import * as Toucan from '@rbxts/toucan'
 import {
-	AddedByPlugin,
-	ChildOf,
+	Builtin,
 	type EntityHandle,
-	External,
 	entity,
-	Internal,
 	scheduler as newScheduler,
-	Plugin,
 	pair,
 	query,
-	Schedule,
 	type Scheduler,
 	type Schedules,
-	System,
 	systemSet,
-	Wildcard,
 } from '@rbxts/toucan'
 
 // This is enough time for all of the RunService schedules to run at least once.
@@ -32,8 +25,8 @@ let scheduler = newScheduler()
 class SchedulerTests {
 	@BeforeEach
 	reset() {
-		query(Wildcard)
-			.filter((e) => !e.has(Internal) && !e.has(External))
+		query(Builtin.Wildcard)
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
 			.collect() // We collect due to iterator invalidation; see issue #2.
 			.forEach(([e]) => e.despawn())
 
@@ -583,7 +576,8 @@ class SchedulerTests {
 		scheduler.useSystem('startup', systemFn)
 
 		Assert.true(
-			query(System).find((_e, sys) => sys.fn === systemFn) !== undefined,
+			query(Builtin.System).find((_e, sys) => sys.fn === systemFn) !==
+				undefined,
 			'Expected useSystem to spawn a system entity',
 		)
 	}
@@ -595,8 +589,9 @@ class SchedulerTests {
 		scheduler.useSystem('startup', weirdlyNamedSystem)
 
 		Assert.true(
-			query(System).find((e) => tostring(e) === 'weirdlyNamedSystem') !==
-				undefined,
+			query(Builtin.System).find(
+				(e) => tostring(e) === 'weirdlyNamedSystem',
+			) !== undefined,
 			'Expected useSystem to infer the entity label from the function name',
 		)
 	}
@@ -604,7 +599,7 @@ class SchedulerTests {
 	@Test
 	scheduler_spawnsScheduleEntities() {
 		const querySchedules = (kind: Schedules) =>
-			query(Schedule)
+			query(Builtin.Schedule)
 				.filter((_e, sch) => sch.kind === kind)
 				.map((_e, s) => s)
 
@@ -642,13 +637,15 @@ class SchedulerTests {
 
 		scheduler.useSystem('startup', systemFn)
 
-		const [systemEntity] = query(System).find((_e, sys) => sys.fn === systemFn)!
-		const [startupEntity] = query(Schedule).find(
+		const [systemEntity] = query(Builtin.System).find(
+			(_e, sys) => sys.fn === systemFn,
+		)!
+		const [startupEntity] = query(Builtin.Schedule).find(
 			(_e, sch) => sch.kind === 'startup',
 		)!
 
 		Assert.true(
-			systemEntity.has(pair(ChildOf, startupEntity as EntityHandle)),
+			systemEntity.has(pair(Builtin.ChildOf, startupEntity as EntityHandle)),
 			'Expected system entity to be a child of the startup schedule',
 		)
 	}
@@ -772,45 +769,47 @@ class SchedulerTests {
 
 		scheduler.usePlugin(parentPlugin).run()
 
-		const spawnedEntity = query(Wildcard)
+		const spawnedEntity = query(Builtin.Wildcard)
 			.filter((e) => tostring(e) === 'addedByPlugin')
 			.collect()[0][0]
 
-		const [systemEntity] = query(System).find(
+		const [systemEntity] = query(Builtin.System).find(
 			(_, sys) => sys.fn === someSystem,
 		)!
 
-		const [childPluginEntity] = query(Plugin).find(
+		const [childPluginEntity] = query(Builtin.Plugin).find(
 			(_, p) => p.fn === childPlugin,
 		)!
 
-		const [parentPluginEntity] = query(Plugin).find(
+		const [parentPluginEntity] = query(Builtin.Plugin).find(
 			(_, p) => p.fn === parentPlugin,
 		)!
 
 		Assert.true(
 			spawnedEntity.has(
-				pair(AddedByPlugin, parentPluginEntity as EntityHandle),
+				pair(Builtin.AddedByPlugin, parentPluginEntity as EntityHandle),
 			),
 			"Expected spawned entity to have a 'pair(AddedByPlugin, parentPluginEntity)' relationship",
 		)
 
 		Assert.true(
 			childPluginEntity.has(
-				pair(AddedByPlugin, parentPluginEntity as EntityHandle),
+				pair(Builtin.AddedByPlugin, parentPluginEntity as EntityHandle),
 			),
 			"Expected child plugin entity to have a 'pair(AddedByPlugin, parentPluginEntity)' relationship",
 		)
 
 		Assert.true(
-			systemEntity.has(pair(AddedByPlugin, childPluginEntity as EntityHandle)),
+			systemEntity.has(
+				pair(Builtin.AddedByPlugin, childPluginEntity as EntityHandle),
+			),
 			"Expected system entity to have a 'pair(AddedByPlugin, childPluginEntity)' relationship",
 		)
 
 		Assert.false(
-			parentPluginEntity.has(pair(AddedByPlugin, Wildcard)),
+			parentPluginEntity.has(pair(Builtin.AddedByPlugin, Builtin.Wildcard)),
 			"Expected parent plugin entity to not have a 'pair(AddedByPlugin, Wildcard)' relationship",
-        )
+		)
 	}
 }
 
