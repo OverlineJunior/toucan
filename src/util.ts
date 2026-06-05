@@ -68,9 +68,26 @@ export function getOrInit<K, V>(map: Map<K, V>, key: K, init: () => V): V {
 }
 
 export function joinUnknown(args: unknown[], separator = ', '): string {
-    const parts: string[] = [];
-    for (const arg of args) {
-        parts.push(tostring(arg));
-    }
-    return parts.join(separator);
+	const parts: string[] = []
+	for (const arg of args) {
+		parts.push(tostring(arg))
+	}
+	return parts.join(separator)
+}
+
+/**
+ * Edge case: if `value` is an empty table, it will be treated as an array.
+ */
+export function isArray(value: unknown): value is unknown[] {
+	if (!typeIs(value, 'table')) return false
+	for (const [key] of pairs(value as Record<string | number, unknown>)) {
+		if (!typeIs(key, 'number')) return false
+	}
+	return true
+}
+
+export function normalizeToArray<T>(value?: T | T[]): T[] {
+	if (value === undefined) return []
+	if (isArray(value)) return value as T[]
+	return [value as T]
 }

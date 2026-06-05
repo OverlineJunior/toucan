@@ -7,20 +7,34 @@ import {
 } from '../handle'
 import { pair } from '../pair'
 import { query } from '../query'
-import { flatMap, getOrInit } from '../util'
+import { flatMap, getOrInit, normalizeToArray } from '../util'
 import {
 	type AddEdgeResult,
 	DirectedAcyclicGraph,
 } from './directedAcyclicGraph'
-import { isSystemSet, type SetConfig, type SystemSet } from './systemSet'
-import type { RunCondition, Schedules, SystemConfig, SystemFn } from './types'
+import type { Schedules } from './scheduler'
+import {
+	type NormalizedSetConfig,
+	normalizeSetConfig,
+	normalizeSystemConfig,
+	type RunCondition,
+	type SetConfig,
+	type SystemFn,
+	type SystemSet,
+} from './system'
 
-// While `SetConfig` is a more user-readable format, `SetDescriptor`
-// is a more implementation-specific format for the scheduler to use.
-export interface SetDescriptor {
-	before: SystemSet[]
-	after: SystemSet[]
-	runIf: RunCondition[]
+export interface SystemConfig {
+	before?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
+	after?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
+	inSet?: SystemSet | SystemSet[]
+	runIf?: RunCondition | RunCondition[]
+}
+
+export interface NormalizedSystemConfig {
+	before: (SystemSet | SystemFn)[]
+	after: (SystemSet | SystemFn)[]
+	inSets: SystemSet[]
+	runIfs: RunCondition[]
 }
 
 interface ResolvedSystem {
@@ -69,30 +83,10 @@ function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 	}
 }
 
-function normalizeOrderingItems(
-	value?: SystemFn | SystemSet | (SystemFn | SystemSet)[],
-): (SystemFn | SystemSet)[] {
-	if (value === undefined) return []
-	if (typeIs(value, 'function') || isSystemSet(value)) return [value]
-	return value
-}
-function normalizeSetItems(value?: SystemSet | SystemSet[]): SystemSet[] {
-	if (value === undefined) return []
-	if (isSystemSet(value)) return [value]
-	return value
-}
-function normalizeConditions(
-	value?: RunCondition | RunCondition[],
-): RunCondition[] {
-	if (value === undefined) return []
-	if (typeIs(value, 'function')) return [value]
-	return value
-}
-
 export class Schedule {
 	public readonly name: Schedules
 	private readonly entity: EntityHandle
-	private readonly setDescriptors = new Map<SystemSet, SetDescriptor>()
+	private readonly setConfigs = new Map<SystemSet, NormalizedSetConfig>()
 	private sortedCache?: ResolvedSystem[]
 
 	constructor(name: Schedules) {
@@ -104,50 +98,42 @@ export class Schedule {
 	}
 
 	useSystem(systemFn: SystemFn, config?: SystemConfig): this {
-		const normalizedBefore = normalizeOrderingItems(config?.before)
-		const normalizedAfter = normalizeOrderingItems(config?.after)
-		const normalizedRunIfs = normalizeConditions(config?.runIf)
-		const normalizedInSets = normalizeSetItems(config?.inSet)
+		const existing = query(System).find((_e, sys) => sys.fn === systemFn)
+		if (existing !== undefined) {
+			error(
+				`System '${getSystemName(systemFn)}' has already registered in schedule '${this.name}'`,
+			)
+		}
 
-		const [prevSysEntity, prevSysData] = query(System).find(
-			(_e, sys) => sys.fn === systemFn,
-		) ?? [undefined, undefined]
-
-		if (prevSysEntity === undefined) {
-			entity(getSystemName(systemFn))
-				.set(System, {
-					fn: systemFn,
-					schedule: this.name,
-					before: normalizedBefore,
-					after: normalizedAfter,
-					runIfs: normalizedRunIfs,
-					_inSets: normalizedInSets,
-				})
-				.set(pair(InSchedule, this.entity))
-		} else {
-			prevSysEntity.set(System, {
+		const { before, after, runIfs, inSets } = normalizeSystemConfig(config)
+		entity(getSystemName(systemFn))
+			.set(System, {
 				fn: systemFn,
 				schedule: this.name,
-				before: [...prevSysData.before, ...normalizedBefore],
-				after: [...prevSysData.after, ...normalizedAfter],
-				runIfs: [...prevSysData.runIfs, ...normalizedRunIfs],
-				_inSets: [...prevSysData._inSets, ...normalizedInSets],
+				before,
+				after,
+				runIfs,
+				_inSets: inSets,
 			})
-		}
+			.set(pair(InSchedule, this.entity))
 
 		return this
 	}
 
 	configureSet(set: SystemSet, config: SetConfig): this {
 		this.sortedCache = undefined
-		const desc = getOrInit(this.setDescriptors, set, () => ({
+
+		const entry = getOrInit(this.setConfigs, set, () => ({
 			before: [],
 			after: [],
 			runIf: [],
 		}))
-		normalizeSetItems(config.before).forEach((v) => desc.before.push(v))
-		normalizeSetItems(config.after).forEach((v) => desc.after.push(v))
-		normalizeConditions(config.runIf).forEach((v) => desc.runIf.push(v))
+
+		const normalized = normalizeSetConfig(config)
+		normalized.before.forEach((v) => entry.before.push(v))
+		normalized.after.forEach((v) => entry.after.push(v))
+		normalized.runIf.forEach((v) => entry.runIf.push(v))
+
 		return this
 	}
 
@@ -163,7 +149,7 @@ export class Schedule {
 			} else {
 				this.useSystem(a[0], {
 					...a[1],
-					before: [bSys, ...normalizeOrderingItems(a[1].before)],
+					before: [bSys, ...normalizeToArray(a[1].before)],
 				})
 			}
 		}
@@ -224,7 +210,7 @@ export class Schedule {
 		}
 
 		// Step 4: Expand set-level ordering into system-to-system edges.
-		this.setDescriptors.forEach((desc, thisSet) => {
+		this.setConfigs.forEach((desc, thisSet) => {
 			desc.before.forEach((befSet) => addEdgesBetweenSets(thisSet, befSet))
 			desc.after.forEach((aftSet) => addEdgesBetweenSets(aftSet, thisSet))
 		})
@@ -235,7 +221,7 @@ export class Schedule {
 			const [_e, system] = query(System).find((_e, s) => s.fn === systemFn)!
 			const setRunIfs = flatMap(
 				system._inSets,
-				(set) => this.setDescriptors.get(set)?.runIf ?? [],
+				(set) => this.setConfigs.get(set)?.runIf ?? [],
 			)
 			return { systemFn, runIf: [...system.runIfs, ...setRunIfs] }
 		})

@@ -1,17 +1,12 @@
-export { ScheduleComponent, System, InSchedule } from './schedule'
-export { type Scheduler, scheduler } from './scheduler'
+export { InSchedule, ScheduleComponent, System } from './schedule'
+export { Plugin, type Scheduler, Schedules, scheduler } from './scheduler'
 
 export {
 	isSystemSet,
-	type SetConfig,
-	type SystemSet,
-    systemSet,
-} from './systemSet'
-
-export type {
-	Plugin,
 	RunCondition,
-	Schedules,
+	type SetConfig,
 	SystemConfig,
 	SystemFn,
-} from './types'
+	type SystemSet,
+	systemSet,
+} from './system'

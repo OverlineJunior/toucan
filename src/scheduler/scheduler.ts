@@ -14,13 +14,26 @@ import { pair } from '../pair'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
 import { Schedule, ScheduleComponent, System } from './schedule'
-import type { SetConfig, SystemSet } from './systemSet'
-import type { Schedules, SystemConfig, SystemFn } from './types'
+import type { SetConfig, SystemConfig, SystemFn, SystemSet } from './system'
 
 export type PluginFn<Args extends unknown[] = unknown[]> = (
 	scheduler: Scheduler,
 	...args: Args
 ) => void
+
+export type StartupSchedules = 'preStartup' | 'startup' | 'postStartup'
+export type UpdateSchedules =
+	| 'first'
+	| 'preUpdate'
+	| 'update'
+	| 'postUpdate'
+	| 'last'
+export type RunServiceSchedules =
+	| 'preRender'
+	| 'preAnimation'
+	| 'preSimulation'
+	| 'postSimulation'
+export type Schedules = StartupSchedules | UpdateSchedules | RunServiceSchedules
 
 export const Plugin = component<{
 	fn: PluginFn

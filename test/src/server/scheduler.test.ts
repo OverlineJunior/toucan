@@ -1,5 +1,5 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-import { Each, Only } from '@rbxts/lunit/out/lib/decorator'
+import { Each } from '@rbxts/lunit/out/lib/decorator'
 import * as Toucan from '@rbxts/toucan'
 import {
 	type EntityHandle,
@@ -473,32 +473,16 @@ class SchedulerTests {
 		)
 	}
 
-	// TODO! I changed my mind about this: we should only allow this internally,
-	// and throw if it's attempted by the user.
 	@Test
-	useSystem_config_multipleCallsMergeConfig() {
-		const order: string[] = []
+	useSystem_duplicateThrows() {
+		function someSystem() {}
 
-		const sysA = () => order.push('a')
-		const sysB = () => order.push('b')
-		const sysC = () => order.push('c')
-		const targetSys = () => order.push('target')
+		scheduler.useSystem('startup', someSystem)
 
-		scheduler
-			.useSystem('startup', sysA)
-			.useSystem('startup', sysB)
-			.useSystem('startup', sysC)
-			.useSystem('startup', targetSys, { after: sysA })
-			.useSystem('startup', targetSys, { after: sysB })
-			.useSystem('startup', targetSys, { before: sysC })
-			.run()
-
-		const targetIdx = order.indexOf('target')
-		Assert.true(
-			targetIdx > order.indexOf('a') &&
-				targetIdx > order.indexOf('b') &&
-				targetIdx < order.indexOf('c'),
-			'Expected re-scheduled system to merge its before/after dependencies',
+		Assert.throws(
+			() => scheduler.useSystem('startup', someSystem),
+			undefined,
+			'Expected duplicate system registration to throw',
 		)
 	}
 
@@ -755,7 +739,7 @@ class SchedulerTests {
 			undefined,
 			'Expected usePlugin to throw when an external tries to overwrite the same external plugin with different arguments',
 		)
-    }
+	}
 
 	// TODO! Systems and plugins added by plugins should be given `pair(ChildOf, parentPlugin)`.
 }
