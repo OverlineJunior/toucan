@@ -1,11 +1,11 @@
-export { ScheduleComponent, System } from './schedule'
+export { ScheduleComponent, System, InSchedule } from './schedule'
 export { type Scheduler, scheduler } from './scheduler'
 
 export {
 	isSystemSet,
 	type SetConfig,
 	type SystemSet,
-	systemSet,
+    systemSet,
 } from './systemSet'
 
 export type {

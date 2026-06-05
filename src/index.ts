@@ -1,5 +1,6 @@
 /** @internal */
-export { _simulateExternal } from './environment'
+// biome-ignore assist/source/organizeImports: keep separate for @internal annotation
+export { _simulateExternal } from './handle'
 export {
 	ChildOf,
 	Component,
@@ -12,7 +13,6 @@ export {
 	Internal,
 	Label,
 	Persistent,
-	Plugin,
 	type RawId,
 	Resource,
 	type ResourceHandle,
@@ -23,6 +23,8 @@ export {
 export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
 export {
+	InSchedule,
+	Plugin,
 	ScheduleComponent as Schedule,
 	type Scheduler,
 	type Schedules,

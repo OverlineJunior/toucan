@@ -1,4 +1,10 @@
-import { component, type EntityHandle, entity } from '../handle'
+import {
+	component,
+	type EntityHandle,
+	entity,
+	Internal,
+	Persistent,
+} from '../handle'
 import { pair } from '../pair'
 import { query } from '../query'
 import { flatMap, getOrInit } from '../util'
@@ -32,10 +38,14 @@ export const System = component<{
 	/** @internal */
 	_inSets: SystemSet[]
 }>('System')
+	.set(Internal)
+	.set(Persistent)
 
 export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
+	.set(Internal)
+	.set(Persistent)
 
-export const InSchedule = component('InSchedule')
+export const InSchedule = component('InSchedule').set(Internal).set(Persistent)
 
 function getSystemName(system: SystemFn): string {
 	return debug.info(system, 'n')[0] || 'Unlabelled System'
@@ -87,9 +97,10 @@ export class Schedule {
 
 	constructor(name: Schedules) {
 		this.name = name
-		this.entity = entity(`${name}Schedule`).set(ScheduleComponent, {
-			kind: name,
-		})
+		this.entity = entity(`${name}Schedule`)
+			.set(ScheduleComponent, { kind: name })
+			.set(Internal)
+			.set(Persistent)
 	}
 
 	useSystem(systemFn: SystemFn, config?: SystemConfig): this {

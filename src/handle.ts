@@ -3,7 +3,6 @@ import {
 	type Entity as JecsEntity,
 	Wildcard as JecsWildcard,
 } from '@rbxts/jecs'
-import type { Phase } from '@rbxts/planck'
 import {
 	getPairRelationFromId,
 	getPairTargetFromId,
@@ -11,7 +10,6 @@ import {
 	type Pair,
 	pair,
 } from './pair'
-import type { Plugin as PluginBuildFn } from './scheduler'
 import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
 import { getAllComponentIdsIn, world } from './world'
 
@@ -93,40 +91,40 @@ export function resolveId(
 	}
 }
 
-/**
- * Returns `true` if the caller script is internal to Toucan (i.e. belongs to the Toucan package).
- * Must be called from a function directly invoked by the caller script.
- */
-function isInternal(): boolean {
-	const callerScriptPath = debug.info(2, 's')[0]
-	return callerScriptPath.match('node_modules.*toucan')[0] !== undefined
-}
 
-/**
- * Returns `true` if the caller script is external to Toucan (i.e. belongs to a package other than Toucan).
- * Must be called from a function directly invoked by the caller script.
- */
-function isExternal(): boolean {
-	const callerScriptPath = debug.info(2, 's')[0]
-	return (
-		callerScriptPath.match('node_modules')[0] !== undefined && !isInternal()
-	)
-}
-
-export function applyOriginComponent<T extends Handle>(
-	handle: T,
-	isInternal: boolean,
-	isExternal: boolean,
-) {
-	if (isInternal) {
-		handle.set(Internal)
-		// We assume every internal component should be persistent, since they should not be messed with by the user.
-		handle.set(Persistent)
-	} else if (isExternal) {
-		handle.set(External)
+let simulatingExternal = false
+/** @internal */
+export function _simulateExternal(callback: () => void): void {
+    simulatingExternal = true
+    try {
+        callback()
+    } finally {
+        simulatingExternal = false
 	}
+}
+function hasExternalCaller(): boolean {
+    if (simulatingExternal) return true
+    
+    let level = 1
 
-	return handle
+	while (true) {
+        const callerPath = debug.info(level, 's')[0]
+        if (callerPath === undefined) break
+
+        const isInPackage = callerPath.match('node_modules')[0] !== undefined
+        if (isInPackage) {
+            const isToucan =
+                callerPath.match('%.toucan%.')[0] !== undefined ||
+                string.match(callerPath, '%.toucan$')[0] !== undefined
+            if (!isToucan) return true
+        } else {
+            return false
+        }
+
+        level++
+    }
+
+	return false
 }
 
 // -----------------------------------------------------------------------------
@@ -500,6 +498,8 @@ export abstract class Handle {
 	// 	error('Not implemented')
 	// }
 
+	// TODO! Throw when attempting to despawn an entity with `Persistent`.
+	// ! Check if there are other methods that need this treatment.
 	/**
 	 * Completely deletes this entity from the world.
 	 */
@@ -534,7 +534,10 @@ export class EntityHandle extends Handle {
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
 	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
-	return applyOriginComponent(handle, isInternal(), isExternal())
+	if (hasExternalCaller()) {
+		handle.set(External)
+	}
+	return handle
 }
 
 // -----------------------------------------------------------------------------
@@ -575,19 +578,18 @@ export function component<Value = undefined>(
 	return setupComponent(
 		new ComponentHandle<Value>(rawId),
 		label ?? `Component #${rawId}`,
-		isInternal(),
-		isExternal(),
 	)
 }
 
 function setupComponent<C extends ComponentHandle>(
 	comp: C,
 	label: string,
-	isInternal: boolean,
-	isExternal: boolean,
 ): C {
-	comp.set(Component).set(Label, label)
-	return applyOriginComponent(comp, isInternal, isExternal)
+    comp.set(Component).set(Label, label)
+    if (hasExternalCaller()) {
+        comp.set(External)
+	}
+	return comp
 }
 
 // -----------------------------------------------------------------------------
@@ -667,7 +669,10 @@ export function resource<Value extends NonNullable<unknown>>(
 	const handle = new ResourceHandle<Value>(rawId)
 		.set(Resource)
 		.set(Label, label ?? `Resource #${rawId}`)
-	return applyOriginComponent(handle, isInternal(), isExternal())
+	if (hasExternalCaller()) {
+		handle.set(External)
+	}
+	return handle
 }
 
 // -----------------------------------------------------------------------------
@@ -791,37 +796,8 @@ export const Resource = bootstrapBuiltinComponent(
 	'Resource',
 )
 
-/**
- * Built-in component used to distinguish entities that represent systems.
- *
- * @group Built-in Entities
- */
-export const System = bootstrapBuiltinComponent(
-	new ComponentHandle<{
-		callback: (...args: defined[]) => void
-		phase: Phase
-		args: defined[]
-		scheduled: boolean
-		registrationIndex: number
-		lastDeltaTime: number
-	}>(world.component()),
-	'System',
-)
-
-/**
- * Built-in component used to distinguish entities that represent plugins.
- *
- * @group Built-in Entities
- */
-export const Plugin = bootstrapBuiltinComponent(
-	new ComponentHandle<{
-		build: PluginBuildFn<defined[]>
-		built: boolean
-		args: defined[]
-	}>(world.component()),
-	'Plugin',
-)
-
-bootstrappedComponents.forEach(([comp, label]) =>
-	setupComponent(comp, label, true, false),
-)
+bootstrappedComponents.forEach(([comp, label]) => {
+    setupComponent(comp, label)
+    comp.set(Internal)
+    comp.set(Persistent)
+})

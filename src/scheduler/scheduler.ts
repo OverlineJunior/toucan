@@ -1,5 +1,4 @@
 import { RunService } from '@rbxts/services'
-import { isExternal, isInternal } from '../environment'
 import {
 	ChildOf,
 	component,
@@ -9,12 +8,12 @@ import {
 	type Handle,
 	type InferValue,
 	Internal,
-	System,
+	Persistent,
 } from '../handle'
 import { pair } from '../pair'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
-import { Schedule, ScheduleComponent } from './schedule'
+import { Schedule, ScheduleComponent, System } from './schedule'
 import type { SetConfig, SystemSet } from './systemSet'
 import type { Schedules, SystemConfig, SystemFn } from './types'
 
@@ -28,6 +27,8 @@ export const Plugin = component<{
 	args: unknown[]
 	built: boolean
 }>('Plugin')
+	.set(Internal)
+	.set(Persistent)
 
 let schedulerAlreadyCreated = false
 
@@ -126,12 +127,6 @@ export class Scheduler {
 			args,
 			built: false,
 		})
-
-		if (isInternal(2)) {
-			pluginEntity.set(Internal)
-		} else if (isExternal(2)) {
-			pluginEntity.set(External)
-		}
 
 		const parentPlugin = findParentPlugin()
 		if (parentPlugin) {
