@@ -15,14 +15,24 @@ import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
 import { getAllComponentIdsIn, world } from './world'
 
 /**
- * The raw Jecs ID type.
+ * A numerical entity identifier used internally.
  *
- * @group Core ECS
+ * @group Core
  */
 export type RawId = JecsEntity
 
+/**
+ * Extracts the value type from a component/resource/pair type.
+ *
+ * @group Types
+ */
 export type InferValue<T> = T extends { [VALUE_SYMBOL]: infer V } ? V : never
 
+/**
+ * Extracts the value types from a tuple of component/resource/pair types.
+ *
+ * @group Types
+ */
 export type InferValues<Ts> = { [K in keyof Ts]: InferValue<Ts[K]> }
 
 type GetComponentValues<Args extends unknown[]> = WrapLuaTuple<
@@ -71,7 +81,7 @@ export const entityHistory = new EntityHistory()
 /**
  * Returns the appropriate handle for `rawId`, or `undefined` if it does not exist in the world.
  *
- * @group Core ECS
+ * @group Core
  */
 export function resolveId(
 	rawId: RawId,
@@ -132,12 +142,11 @@ function hasExternalCaller(): boolean {
 // -----------------------------------------------------------------------------
 
 /**
- * The base class that represents any kind of entity, may it be a simple entity,
- * a component, or any other variation.
+ * A generic handle that represents any special kind of entity, such as a component or a resource.
  *
- * Although the type means Typescript doesn't know the exact entity variation,
- * it is known at runtime. Because of this, one that knows the exact variation
- * can simply type cast it, like so:
+ * Although the type means Typescript doesn't know the exact kind of entity,
+ * it is known at runtime. Because of this, if you already know the kind, you
+ * can simply type cast it:
  * ```ts
  * const Person = component()
  * const bob = entity().set(Person)
@@ -149,18 +158,18 @@ function hasExternalCaller(): boolean {
  * })
  * ```
  *
- * @group Core ECS
+ * @group Types
  */
 export abstract class Handle {
 	constructor(
 		/**
-		 * The numeric ID underlying this handle.
+		 * A numerical entity identifier used internally.
 		 *
-		 * Meant to be used when one cannot use the higher-level abstractions
-		 * provided by Toucan, such as storing an entity's ID in an
+		 * Useful when you cannot pass the entire handle to something, but can pass
+		 * its numerical ID instead. For example, storing an entity's ID in an
 		 * instance's attribute, which cannot hold complex data structures.
 		 *
-		 * In order to get back the high-level handle from an ID, use the
+		 * In order to get back the appropriate handle from an ID, use the
 		 * `resolveId` function.
 		 */
 		public readonly id: RawId,
@@ -301,8 +310,8 @@ export abstract class Handle {
 
 		if (world.has(targetId, Persistent.id)) {
 			error(
-				`Cannot remove component ${componentOrPair} from entity ${this} because it is persistent.\n` +
-					`In order to know if a component is persistent, you can check if it has the Persistent component itself.`,
+				`Cannot remove component '${componentOrPair}' from entity '${this}' because it is marked as persistent\n\n` +
+					`Tip: check if the component has the 'Persistent' component itself, or, in extreme cases, remove it first`,
 			)
 		}
 
@@ -323,9 +332,9 @@ export abstract class Handle {
 			.filter((c) => !world.has(c.id, Persistent.id))
 			.forEach((c) => this.remove(c))
 
-        this.relationships()
-            .filter((p) => !world.has(getPairRelationFromId(p.id), Persistent.id))
-            .forEach((p) => this.remove(p))
+		this.relationships()
+			.filter((p) => !world.has(getPairRelationFromId(p.id), Persistent.id))
+			.forEach((p) => this.remove(p))
 
 		entityHistory.clearComponents(this.id)
 		return this
@@ -419,7 +428,7 @@ export abstract class Handle {
 	}
 
 	/**
-	 * Returns `true` if this entity exists.
+	 * Returns `true` if this entity exists in the world.
 	 */
 	exists(): boolean {
 		return world.contains(this.id)
@@ -511,11 +520,14 @@ export abstract class Handle {
 
 	/**
 	 * Completely deletes this entity from the world.
+	 * 
+	 * Throws an error if the entity is marked as persistent.
 	 */
 	despawn(): void {
 		if (this.has(Persistent)) {
 			error(
-				`Cannot despawn entity '${this}' because it is marked as persistent`,
+                `Cannot despawn entity '${this}' because it is marked as persistent\n\n` +
+                `Tip: check if the entity has the 'Persistent' component, or, in extreme cases, remove it first`
 			)
 		}
 
@@ -530,10 +542,8 @@ export abstract class Handle {
 
 /**
  * A handle for entities spawned with `entity()`.
- *
- * Currently, it has no unique methods, so it only serves as a marker.
- *
- * @group Core ECS
+ * 
+ * @group Types
  */
 export class EntityHandle extends Handle {
 	protected declare readonly __brand: 'entity'
@@ -542,9 +552,9 @@ export class EntityHandle extends Handle {
 /**
  * Spawns a new, empty entity and returns it.
  *
- * Additionally, a `label` can be provided for easier identification during debugging.
+ * Additionally, a `label` can be provided for easier identification.
  *
- * @group Core ECS
+ * @group Core
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
@@ -569,9 +579,7 @@ export function entity(label?: string): EntityHandle {
 /**
  * A handle for components spawned with `component()`.
  *
- * Currently, it has no unique methods, so it only serves as a marker.
- *
- * @group Core ECS
+ * @group Types
  */
 export class ComponentHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
@@ -580,7 +588,7 @@ export class ComponentHandle<Value = unknown> extends Handle {
 /**
  * Creates a new component.
  *
- * Additionally, a `label` can be provided for easier identification during debugging.
+ * Additionally, a `label` can be provided for easier identification.
  *
  * @example
  * ```ts
@@ -591,7 +599,7 @@ export class ComponentHandle<Value = unknown> extends Handle {
  * const IsAlive = component()
  * ```
  *
- * @group Core ECS
+ * @group Core
  */
 export function component<Value = undefined>(
 	label?: string,
@@ -618,7 +626,7 @@ function setupComponent<C extends ComponentHandle>(comp: C, label: string): C {
 /**
  * A handle for resources spawned with `resource()`.
  *
- * @group Core ECS
+ * @group Types
  */
 export class ResourceHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
@@ -657,12 +665,12 @@ export class ResourceHandle<Value = unknown> extends Handle {
 }
 
 /**
- * Creates a new resource with the given initial `value`.
+ * Spawns a resource with the given initial `value`.
  *
  * Resources exist independently of entities (and cannot be attached to them).
  * They are useful to represent global state, such as game state, settings and so on.
  *
- * Additionally, a `label` can be provided for easier identification during debugging.
+ * Additionally, a `label` can be provided for easier identification.
  *
  * @example
  * ```ts
@@ -676,7 +684,7 @@ export class ResourceHandle<Value = unknown> extends Handle {
  * }
  * ```
  *
- * @group Core ECS
+ * @group Core
  */
 export function resource<Value extends NonNullable<unknown>>(
 	value: Value,
@@ -709,11 +717,11 @@ function bootstrapBuiltinComponent<C extends ComponentHandle>(
 }
 
 /**
- * Built-in component used to mark components that cannot be removed by any means.
- *
- * Given to every internal component, since they are essential for Toucan's functionality and shouldn't be messed with by the user.
- *
- * @group Built-in Entities
+ * Built-in component used to...
+ * 1. Mark entities that cannot be despawned by any means;
+ * 2. Mark components that cannot be removed by any means.
+ * 
+ * @group Built-ins
  */
 export const Persistent = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
@@ -723,7 +731,7 @@ export const Persistent = bootstrapBuiltinComponent(
 /**
  * Built-in component used to distinguish entities created internally by Toucan.
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const Internal = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
@@ -731,9 +739,9 @@ export const Internal = bootstrapBuiltinComponent(
 )
 
 /**
- * Built-in component used to distinguish entities created externally by packages.
+ * Built-in component used to distinguish entities created by external packages.
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const External = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
@@ -741,9 +749,9 @@ export const External = bootstrapBuiltinComponent(
 )
 
 /**
- * Built-in component used to assign human-readable labels to entities.
+ * Built-in component used by Toucan to assign human-readable labels to entities.
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const Label = bootstrapBuiltinComponent(
 	new ComponentHandle<string>(world.component()),
@@ -753,7 +761,7 @@ export const Label = bootstrapBuiltinComponent(
 /**
  * Built-in component used to distinguish entities that represent components.
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const Component = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
@@ -779,7 +787,7 @@ export const Component = bootstrapBuiltinComponent(
  * })
  * ```
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const Wildcard = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(JecsWildcard),
@@ -798,7 +806,7 @@ export const Wildcard = bootstrapBuiltinComponent(
  * assert(bob.parent() === alice)
  * ```
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const ChildOf = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(JecsChildOf),
@@ -808,7 +816,7 @@ export const ChildOf = bootstrapBuiltinComponent(
 /**
  * Built-in component used to distinguish entities that represent resources.
  *
- * @group Built-in Entities
+ * @group Built-ins
  */
 export const Resource = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
