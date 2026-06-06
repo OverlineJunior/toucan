@@ -498,8 +498,6 @@ export abstract class Handle {
 	// 	error('Not implemented')
 	// }
 
-	// TODO! Throw when attempting to despawn an entity with `Persistent`.
-	// ! Check if there are other methods that need this treatment.
 	/**
 	 * Completely deletes this entity from the world.
 	 */
