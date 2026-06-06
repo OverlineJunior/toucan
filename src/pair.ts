@@ -39,12 +39,18 @@ export function getPairTargetFromId(pairId: RawId): RawId {
 /**
  * A special handle for relationship pairs created with `pair()`.
  *
- * @group Core ECS
+ * @group Types
  */
 export class Pair<Value = unknown> {
 	declare [VALUE_SYMBOL]: Value
 
-	public readonly relation: Handle
+	/**
+	 * The relation entity of this pair.
+	 */
+    public readonly relation: Handle
+	/**
+	 * The target entity of this pair.
+	 */
 	public readonly target: Handle
 	/** @internal */
 	public readonly id: RawId
@@ -58,22 +64,24 @@ export class Pair<Value = unknown> {
 		mt.__eq = (a, b) => a.id === b.id
 	}
 
+	/**
+	 * Returns a string representation of this pair.
+	 */
 	toString() {
 		return `Pair #${this.id}`
 	}
 }
 
 /**
- * Creates a relationship _pair_ `relation → target` (e.g.: `Likes → Bob`),
- * where both `relation` and `target` can be either _entities_ or _components_.
- * Pairs can be assigned to any _id_, forming something like `Alice → Likes → Bob`.
+ * Creates a relationship pair `relation -> target` (e.g.: `Likes -> Bob`),
+ * where both `relation` and `target` can be either regular entities or components.
+ * Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
  *
- * Like _components_, _pairs_ can be associated to values. The value type of a
- * _pair_ is determined by its `relation` and `target` arguments:
- *
- * - If `relation` is a _component_ with a value, then the _pair_ takes the same value type;
- * - Else if `target` is a _component_ with a value, then the _pair_ takes the same value type;
- * - Otherwise, the _pair_ is a _tag pair_ and does not hold a value.
+ * Like components, pairs can be associated with values. The value type of a
+ * pair is determined by its `relation` and `target` arguments:
+ * - If `relation` is a component with a value, then the pair takes the same value type;
+ * - Else if `target` is a component with a value, then the pair takes the same value type;
+ * - Otherwise, the pair is a tag pair and does not hold a value.
  *
  * @example
  * ```ts
@@ -100,7 +108,7 @@ export class Pair<Value = unknown> {
  *     .set(pair(End, Position), new Vector3(10, 0, 0))
  * ```
  *
- * @group Core ECS
+ * @group Core
  */
 export function pair<R>(
 	relation: ComponentHandle<R>,
