@@ -4,25 +4,23 @@
 
 ![Version](https://img.shields.io/badge/status-alpha-orange) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/badge/docs-starlight-blueviolet)](https://overlinejunior.github.io/toucan/)
 
-**Toucan** is an opinionated [Entity Component System](https://github.com/SanderMertens/ecs-faq) framework for Roblox-TS based on [Jecs](https://github.com/Ukendio/jecs) and [Planck](https://github.com/YetAnotherClown/planck), favoring developer experience over raw performance.
+**Toucan** is an opinionated [Entity Component System](https://github.com/SanderMertens/ecs-faq) framework for Roblox-TS inspired by Rust's [Bevy](https://bevy.org/), favoring developer experience over raw performance.
 
-It was created as a way to remove the need to glue together different ECS libraries and allowing the developer to start working on their actual game as soon as possible.
-
-[Documentation](https://overlinejunior.github.io/toucan/)
+Currently, it is in alpha stage and is not yet ready for production. The [documentation](https://overlinejunior.github.io/toucan/) is still being worked on.
 
 ## Features
 
-- **Fluent API:** entity handles provide chainable methods that abstract away the process of imperatively manipulating entities;
+- **Fluent API:** chain methods directly on entity handles to spawn, add, remove, or modify components in a single expression, without the verbosity of step-by-step imperative manipulation;
 
-- **Advanced Queries:** query entities whose component just changed, filter it, map it to something useful, you name it;
+- **Expressive Queries:** easily query over all entities, entities that have changed, or entities that relate to each other. Then, chain query results to filter, map, or reduce them further;
 
-- **Plugins:** enables better organization of components and systems by grouping them together, which in turn also allows for third-party plugins that are easy to integrate;
+- **Plugins:** components and systems are better organized when grouped together within a plugin, which in turn also allows for third-party plugins that are easy to integrate;
 
-- **Phases:** systems are assigned to predefined phases in order to resolve dependencies between them with less coupling;
+- **Standard Schedules:** systems are assigned to predefined schedules that are based on Roblox's [standard update loop](https://create.roblox.com/docs/reference/engine/classes/RunService), allowing you to easily decide when and how often to run each system;
 
-- **Hooks:** built-in topologically aware functions, such as `useDeltaTime` and `useThrottledMemo`;
+- **System Sets:** systems can be grouped together into sets, allowing them to share a single configuration and run together as a unit. This also allows you to define your game's own custom pipeline, such as `Setup -> Physics -> Rendering`;
 
-- **Everything is an Entity:** components, resources, systems and plugins are also entities, allowing you to assign them metadata and inspect them.
+- **Everything is an Entity:** components, systems, plugins, resources, schedules, you name it — everything is an entity, meaning they can all be inspected and edited at runtime.
 
 ## Example
 
