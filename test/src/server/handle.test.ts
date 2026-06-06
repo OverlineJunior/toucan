@@ -3,6 +3,7 @@ import {
 	Builtin,
 	component,
 	entity,
+	type Handle,
 	pair,
 	query,
 	type RawId,
@@ -13,10 +14,15 @@ import {
 class EntityTests {
 	@BeforeEach
 	public reset() {
+        const forceDespawn = (e: Handle) => {
+            e.remove(Builtin.Persistent)
+            e.despawn()
+		}
+
 		query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.Persistent))
+			.filter((e) => !e.has(Builtin.Internal))
 			.collect() // We collect due to iterator invalidation; see issue #2.
-			.forEach(([e]) => e.despawn())
+			.forEach(([e]) => forceDespawn(e))
 	}
 
 	@Test
@@ -140,6 +146,20 @@ class EntityTests {
 			() => e.remove(Builtin.Label),
 			undefined,
 			'Expected remove(Label) to throw because it is persistent',
+		)
+	}
+
+	@Test
+	public remove_throwsErrorWhenPairIsPersistent() {
+		const Likes = component('Likes').set(Builtin.Persistent)
+
+		const bob = entity('bob')
+		const alice = entity('alice').set(pair(Likes, bob))
+
+		Assert.throws(
+			() => alice.remove(pair(Likes, bob)),
+			undefined,
+			'Expected remove(pair(Likes, bob)) to throw because it is persistent',
 		)
 	}
 
@@ -556,7 +576,7 @@ class EntityTests {
 
 	@Test
 	public despawn_throwsOnPersistentEntity() {
-        const scheduleEntity = query(Builtin.Schedule).find(() => true)![0]
+		const scheduleEntity = query(Builtin.Schedule).find(() => true)![0]
 		Assert.throws(
 			() => scheduleEntity.despawn(),
 			undefined,

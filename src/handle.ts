@@ -293,8 +293,12 @@ export abstract class Handle {
 	 *
 	 * Throws an error if trying to remove a component with the `Persistent` component (i.e. built-in components).
 	 */
-	remove(componentOrPair: ComponentHandle | Pair): this {
-		if (world.has(componentOrPair.id, Persistent.id)) {
+    remove(componentOrPair: ComponentHandle | Pair): this {
+        const targetId = isPair(componentOrPair.id) 
+            ? getPairRelationFromId(componentOrPair.id) 
+            : componentOrPair.id
+        
+		if (world.has(targetId, Persistent.id)) {
 			error(
 				`Cannot remove component ${componentOrPair} from entity ${this} because it is persistent.\n` +
 					`In order to know if a component is persistent, you can check if it has the Persistent component itself.`,
@@ -811,6 +815,8 @@ export const AddedByPlugin = bootstrapBuiltinComponent(
 
 bootstrappedComponents.forEach(([comp, label]) => {
 	setupComponent(comp, label)
-	comp.set(Internal)
-	if (comp !== Persistent) comp.set(Persistent)
+    comp.set(Internal)
+
+    const compsWithoutPersistent: ComponentHandle[] = [ChildOf, Persistent]
+	if (!compsWithoutPersistent.includes(comp)) comp.set(Persistent)
 })
