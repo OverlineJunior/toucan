@@ -22,28 +22,9 @@ export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [
 type DisconnectFn = () => void
 
 /**
- * Created with {@link query}, it represents a set of criteria used to filter and iterate over entities based on their components.
- *
- * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
- * excluding specific components) and offer various ways to consume the matching entities. You can
- * iterate over them (`forEach`, `map`), listen to their lifecycle events (`onAdded`, `onChanged`),
- * or bind them directly into optimized system callbacks (`bind`).
- *
- * @example
- * ```ts
- * // 1. Define the query.
- * const healthyMovers = query(Health, Position)
- *     .with(Velocity)
- *     .without(Stunned)
- *     .filter((_entity, health, _position) => health > 0)
- *
- * // 2. Consume the query.
- * healthyMovers.forEach((entity, health, position) => {
- *     print(`Entity ${entity.id} is moving with ${health}hp at ${position}!`)
- * })
- * ```
- *
- * @group Core ECS
+ * The type for queries created with {@link query}.
+ * 
+ * @group Types
  */
 export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	private readonly requiredIds: RawId[]
@@ -223,7 +204,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 *
 	 * #### Cons:
 	 * - Cannot be passed optional arguments by `Scheduler.useSystem()`.
-	 * - Cannot easily infer a label from function name, requiring it to be manually given by `Scheduler.useSystem()`.
+	 * - Cannot easily infer a label from function name, requiring it to be manually given by `Scheduler.useLabeledSystem()`.
 	 *
 	 * @example
 	 * ```ts
@@ -232,7 +213,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * })
 	 *
 	 * scheduler()
-	 *     .useSystem(greetPeople, UPDATE, [], 'greetPeople')
+	 *     .useLabeledSystem('update', 'greetPeople', greetPeople)
 	 *     .run()
 	 *
 	 * // Equivalent to...
@@ -244,7 +225,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * }
 	 *
 	 * scheduler()
-	 *     .useSystem(greetPeople, UPDATE)
+	 *     .useSystem('update', greetPeople)
 	 *     .run()
 	 * ```
 	 */
@@ -497,6 +478,31 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
  * ```
  *
  * @group Core ECS
+ */
+
+/**
+ * Creates a query, which represents a set of criteria used to filter and iterate over entities based on their components.
+ *
+ * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
+ * excluding specific components) and offer various ways to consume the matching entities. You can
+ * iterate over them (`forEach`, `map`), listen to their lifecycle events (`onAdded`, `onChanged`),
+ * or bind them directly into optimized system callbacks (`bind`).
+ *
+ * @example
+ * ```ts
+ * // 1. Define the query.
+ * const healthyMovers = query(Health, Position)
+ *     .with(Velocity)
+ *     .without(Stunned)
+ *     .filter((_entity, health, _position) => health > 0)
+ *
+ * // 2. Consume the query.
+ * healthyMovers.forEach((entity, health, position) => {
+ *     print(`Entity ${entity.id} is moving with ${health}hp at ${position}!`)
+ * })
+ * ```
+ *
+ * @group Core
  */
 export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(
 	...components: Cs
