@@ -23,14 +23,14 @@ export interface NormalizedSystemConfig {
 }
 
 export interface SetConfig {
-	before?: SystemSet | SystemSet[]
-	after?: SystemSet | SystemSet[]
+	before?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
+	after?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
 	runIf?: RunCondition | RunCondition[]
 }
 
 export interface NormalizedSetConfig {
-	before: SystemSet[]
-	after: SystemSet[]
+	before: (SystemFn | SystemSet)[]
+	after: (SystemFn | SystemSet)[]
 	runIf: RunCondition[]
 }
 

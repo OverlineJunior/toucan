@@ -173,18 +173,21 @@ export class Schedule {
 			)
 		})
 
-		const addEdgesBetweenSets = (fromSet: SystemSet, toSet: SystemSet) => {
-			const from = systemsInSet.get(fromSet) ?? []
-			const to = systemsInSet.get(toSet) ?? []
-			from.forEach((a) =>
-				to.forEach((b) => assertAddEdgeResult(graph.addEdge(a, b))),
-			)
-		}
-
 		// Step 4: Expand set-level ordering into system-to-system edges.
-		this.setConfigs.forEach((desc, thisSet) => {
-			desc.before.forEach((befSet) => addEdgesBetweenSets(thisSet, befSet))
-			desc.after.forEach((aftSet) => addEdgesBetweenSets(aftSet, thisSet))
+		this.setConfigs.forEach((cfg, thisSet) => {
+			const setMembers = systemsInSet.get(thisSet) ?? []
+
+			resolveTargets(cfg.before).forEach((toSystem) =>
+				setMembers.forEach((fromSystem) =>
+					assertAddEdgeResult(graph.addEdge(fromSystem, toSystem)),
+				),
+			)
+
+			resolveTargets(cfg.after).forEach((afterSystem) =>
+				setMembers.forEach((fromSystem) =>
+					assertAddEdgeResult(graph.addEdge(afterSystem, fromSystem)),
+				),
+			)
 		})
 
 		// Steps 5-6: Topological sort, then merge each system's own run conditions

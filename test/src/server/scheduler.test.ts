@@ -811,6 +811,111 @@ class SchedulerTests {
 			"Expected parent plugin entity to not have a 'pair(AddedByPlugin, Wildcard)' relationship",
 		)
 	}
+
+	@Test
+	configureSet_beforeAndAfter_systemFn_isRespected() {
+		const order: string[] = []
+		const someSet = systemSet('someSet')
+
+		const before = () => order.push('before')
+		const inSet = () => order.push('inSet')
+		const after = () => order.push('after')
+
+		scheduler
+			.configureSet('startup', someSet, { after: before, before: after })
+			.useSystem('startup', before)
+			.useSystem('startup', inSet, { inSet: someSet })
+			.useSystem('startup', after)
+			.run()
+
+		Assert.true(
+			order.indexOf('before') < order.indexOf('inSet') &&
+				order.indexOf('inSet') < order.indexOf('after'),
+			"Expected set to respect 'after' and 'before' SystemFn constraints",
+		)
+	}
+
+	@Test
+	configureSet_before_systemFn_appliesToAllSetMembers() {
+		const order: string[] = []
+		const someSet = systemSet('someSet')
+
+		const inSet1 = () => order.push('inSet1')
+		const inSet2 = () => order.push('inSet2')
+		const afterSystem = () => order.push('after')
+
+		scheduler
+			.configureSet('startup', someSet, { before: afterSystem })
+			.useSystem('startup', inSet1, { inSet: someSet })
+			.useSystem('startup', inSet2, { inSet: someSet })
+			.useSystem('startup', afterSystem)
+			.run()
+
+		Assert.true(
+			order.indexOf('inSet1') < order.indexOf('after') &&
+				order.indexOf('inSet2') < order.indexOf('after'),
+			"Expected every set member to run before the standalone system specified in 'before'",
+		)
+	}
+
+	@Test
+	configureSet_before_mixedSystemFnAndSetTargets_isRespected() {
+		const order: string[] = []
+		const setA = systemSet('setA')
+		const setB = systemSet('setB')
+
+		const inSetA = () => order.push('inSetA')
+		const inSetB = () => order.push('inSetB')
+		const standalone = () => order.push('standalone')
+
+		scheduler
+			.configureSet('startup', setA, { before: [setB, standalone] })
+			.useSystem('startup', inSetA, { inSet: setA })
+			.useSystem('startup', inSetB, { inSet: setB })
+			.useSystem('startup', standalone)
+			.run()
+
+		Assert.true(
+			order.indexOf('inSetA') < order.indexOf('inSetB') &&
+				order.indexOf('inSetA') < order.indexOf('standalone'),
+			"Expected set members to run before both a SystemSet and a standalone SystemFn specified in 'before'",
+		)
+	}
+
+	@Test
+	configureSet_before_danglingSystemFnThrowsOnRun() {
+		const someSet = systemSet('someSet')
+		function unscheduledSystem() {}
+
+		scheduler
+			.configureSet('startup', someSet, { before: unscheduledSystem })
+			.useSystem('startup', () => {}, { inSet: someSet })
+
+		Assert.throws(
+			() => scheduler.run(),
+			undefined,
+			"Expected a dangling SystemFn reference in a set's 'before' to throw on run()",
+		)
+	}
+
+	@Test
+	configureSet_circularDependencyWithSystemFnThrowsOnRun() {
+		const someSet = systemSet('someSet')
+
+		const a = () => {}
+		const b = () => {}
+
+		scheduler
+			.useSystem('startup', a, { before: someSet })
+			.useSystem('startup', b, { inSet: someSet })
+			.configureSet('startup', someSet, { before: a })
+
+		Assert.throws(
+			() => scheduler.run(),
+			undefined,
+			'Expected a circular dependency between a set and a standalone system to throw on run()',
+		)
+	}
 }
 
 export = SchedulerTests
