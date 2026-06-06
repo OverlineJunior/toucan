@@ -14,9 +14,9 @@ import {
 class EntityTests {
 	@BeforeEach
 	public reset() {
-        const forceDespawn = (e: Handle) => {
-            e.remove(Builtin.Persistent)
-            e.despawn()
+		const forceDespawn = (e: Handle) => {
+			e.remove(Builtin.Persistent)
+			e.despawn()
 		}
 
 		query(Builtin.Wildcard)
@@ -164,32 +164,47 @@ class EntityTests {
 	}
 
 	@Test
-	public clear_removesAllComponents() {
+	public clear_removesAllComponentsAndPairs() {
 		const C1 = component()
 		const C2 = component()
-		const e = entity().set(C1).set(C2)
-		Assert.true(
-			e.has(C1, C2),
-			'Expected entity to have both components before clearing',
-		)
+		const p1 = pair(C1, C2)
+		const p2 = pair(C2, C1)
+
+		const e = entity().set(C1).set(C2).set(p1).set(p2)
 		e.clear()
+
 		Assert.false(
 			e.has(C1) || e.has(C2),
 			'Expected all non-persistent components to be removed after clear',
 		)
+
+		Assert.false(
+			e.has(p1) || e.has(p2),
+			'Expected all non-persistent pairs to be removed after clear',
+		)
 	}
 
 	@Test
-	public clear_doesNotRemovePersistentComponents() {
-		const e = entity()
+	public clear_doesNotRemovePersistentComponentsAndPairs() {
+        const Handsome = component('Handsome').set(Builtin.Persistent)
+		const Funny = component('Funny').set(Builtin.Persistent)
+        const Is = component('Is').set(Builtin.Persistent)
+        const IsNot = component('IsNot').set(Builtin.Persistent)
+
+        const p1 = pair(Is, Handsome)
+        const p2 = pair(IsNot, Funny)
+
+		const bob = entity('bob').set(Handsome).set(Funny).set(p1).set(p2)
+		bob.clear()
+
 		Assert.true(
-			e.has(Builtin.Label),
-			'Expected persistent Label component to be present',
-		)
-		e.clear()
+			bob.has(Handsome) && bob.has(Funny),
+			'Expected persistent components to remain after clear',
+        )
+
 		Assert.true(
-			e.has(Builtin.Label),
-			'Expected persistent Label component to remain after clear',
+			bob.has(p1) && bob.has(p2),
+			'Expected persistent pairs to remain after clear',
 		)
 	}
 

@@ -291,13 +291,14 @@ export abstract class Handle {
 	/**
 	 * Removes a component or relationship pair from this entity.
 	 *
-	 * Throws an error if trying to remove a component with the `Persistent` component (i.e. built-in components).
+	 * Throws an error if trying to remove a component or relationship pair
+	 * with the `Persistent` component (i.e. most built-in components).
 	 */
-    remove(componentOrPair: ComponentHandle | Pair): this {
-        const targetId = isPair(componentOrPair.id) 
-            ? getPairRelationFromId(componentOrPair.id) 
-            : componentOrPair.id
-        
+	remove(componentOrPair: ComponentHandle | Pair): this {
+		const targetId = isPair(componentOrPair.id)
+			? getPairRelationFromId(componentOrPair.id)
+			: componentOrPair.id
+
 		if (world.has(targetId, Persistent.id)) {
 			error(
 				`Cannot remove component ${componentOrPair} from entity ${this} because it is persistent.\n` +
@@ -311,14 +312,20 @@ export abstract class Handle {
 	}
 
 	/**
-	 * Clears all components and relationship pairs from this entity, but does not despawn the entity.
+	 * Clears all components and relationship pairs from this entity,
+	 * but does not despawn the entity.
 	 *
-	 * Components with the `Persistent` component (i.e. built-in components) will not removed.
+	 * Components and relationship pairs with the `Persistent` component
+	 * (i.e. most built-in components) will not be removed.
 	 */
 	clear(): this {
 		this.components()
 			.filter((c) => !world.has(c.id, Persistent.id))
 			.forEach((c) => this.remove(c))
+
+        this.relationships()
+            .filter((p) => !world.has(getPairRelationFromId(p.id), Persistent.id))
+            .forEach((p) => this.remove(p))
 
 		entityHistory.clearComponents(this.id)
 		return this
@@ -815,8 +822,8 @@ export const AddedByPlugin = bootstrapBuiltinComponent(
 
 bootstrappedComponents.forEach(([comp, label]) => {
 	setupComponent(comp, label)
-    comp.set(Internal)
+	comp.set(Internal)
 
-    const compsWithoutPersistent: ComponentHandle[] = [ChildOf, Persistent]
+	const compsWithoutPersistent: ComponentHandle[] = [ChildOf, Persistent]
 	if (!compsWithoutPersistent.includes(comp)) comp.set(Persistent)
 })
