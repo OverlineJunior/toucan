@@ -49,7 +49,6 @@
 	},
 	"dependencies": {
 		"@rbxts/jecs": "^0.10.4",
-		"@rbxts/planck": "^0.3.0-alpha.1",
 		"@rbxts/services": "^1.6.0"
 	}
 }

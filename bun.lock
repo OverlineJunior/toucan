@@ -6,7 +6,6 @@
       "name": "@rbxts/toucan",
       "dependencies": {
         "@rbxts/jecs": "^0.10.4",
-        "@rbxts/planck": "^0.3.0-alpha.1",
         "@rbxts/services": "^1.6.0",
       },
       "devDependencies": {
@@ -41,8 +40,6 @@
     "@rbxts/compiler-types": ["@rbxts/compiler-types@3.0.0-types.0", "", {}, "sha512-VGOHJPoL7+56NTatMGqQj3K7xWuzEV+aP4QD5vZiHu+bcff3kiTmtoadaF6NkJrmwfFAvbsd4Dg764ZjWNceag=="],
 
     "@rbxts/jecs": ["@rbxts/jecs@0.10.4", "", {}, "sha512-VSuBrRiRpel/95t16yaGp8Lf5Kd1FdO3uL4UgC/kbldiWw+9YAVeEtZUdxH9LYWqQzgRk2jlDQAgq9WK5bJHyQ=="],
-
-    "@rbxts/planck": ["@rbxts/planck@0.3.0-rc.2", "", {}, "sha512-ElaTIFJw/N6eh6jCUsSflNh7vPAUKiShr7Yf3b338ayROVdMxXdjmFy8deRpqPALPfd3MQNOJektPzMZEGS6vA=="],
 
     "@rbxts/services": ["@rbxts/services@1.6.0", "", {}, "sha512-YH02E1/tGHeMXB0Mam8qPdAZa2fjQWdylEscSL4Zn0RIaQeByYImA2qUsXM3nBdhcyKHDwltzSznDKyCGfFEWA=="],
 
