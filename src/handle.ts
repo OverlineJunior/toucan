@@ -504,6 +504,12 @@ export abstract class Handle {
 	 * Completely deletes this entity from the world.
 	 */
 	despawn(): void {
+		if (this.has(Persistent)) {
+			error(
+				`Cannot despawn entity '${this}' because it is marked as persistent`,
+			)
+		}
+
 		world.delete(this.id)
 		entityHistory.deleteEntity(this.id)
 	}
@@ -808,5 +814,5 @@ export const AddedByPlugin = bootstrapBuiltinComponent(
 bootstrappedComponents.forEach(([comp, label]) => {
 	setupComponent(comp, label)
 	comp.set(Internal)
-	comp.set(Persistent)
+	if (comp !== Persistent) comp.set(Persistent)
 })

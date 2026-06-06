@@ -189,10 +189,15 @@ export class Scheduler {
 	/** @internal */
 	_despawn() {
 		schedulerAlreadyCreated = false
-		this.connections.forEach((c) => c.Disconnect())
-		query(System).forEach((e) => e.despawn())
-		query(Plugin).forEach((e) => e.despawn())
-		query(ScheduleComponent).forEach((e) => e.despawn())
+        this.connections.forEach((c) => c.Disconnect())
+
+        const forceDespawn = (e: Handle) => {
+            e.remove(Persistent)
+            e.despawn()
+        }
+		query(System).forEach(forceDespawn)
+		query(Plugin).forEach(forceDespawn)
+		query(ScheduleComponent).forEach(forceDespawn)
 	}
 
 	private runSchedule(schedule: Schedules): void {

@@ -5,7 +5,7 @@ class QueryTests {
 	@BeforeEach
 	public reset() {
 		query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.Persistent))
 			.collect() // We collect due to iterator invalidation; see issue #2.
 			.forEach(([e]) => e.despawn())
 	}

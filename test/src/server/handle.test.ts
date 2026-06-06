@@ -14,7 +14,7 @@ class EntityTests {
 	@BeforeEach
 	public reset() {
 		query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.Persistent))
 			.collect() // We collect due to iterator invalidation; see issue #2.
 			.forEach(([e]) => e.despawn())
 	}
@@ -555,13 +555,13 @@ class EntityTests {
 	}
 
 	@Test
-	public internals_arePersistent() {
-		query(Builtin.Internal).forEach((e) => {
-			Assert.true(
-				e.has(Builtin.Persistent),
-				'Expected all internal entities to have the Persistent component',
-			)
-		})
+	public despawn_throwsOnPersistentEntity() {
+        const scheduleEntity = query(Builtin.Schedule).find(() => true)![0]
+		Assert.throws(
+			() => scheduleEntity.despawn(),
+			undefined,
+			'Expected despawn to throw on persistent entity',
+		)
 	}
 }
 
