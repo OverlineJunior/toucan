@@ -23,23 +23,40 @@ import {
 	type SystemSet,
 } from './system'
 
+/**
+ * A function that represents a plugin.
+ *
+ * @group Types
+ */
 export type PluginFn<Args extends unknown[] = unknown[]> = (
 	scheduler: Scheduler,
 	...args: Args
 ) => void
 
+/**
+ * @group Types
+ */
 export type StartupSchedules = 'preStartup' | 'startup' | 'postStartup'
+/**
+ * @group Types
+ */
 export type UpdateSchedules =
 	| 'first'
 	| 'preUpdate'
 	| 'update'
 	| 'postUpdate'
 	| 'last'
+/**
+ * @group Types
+ */
 export type RunServiceSchedules =
 	| 'preRender'
 	| 'preAnimation'
 	| 'preSimulation'
 	| 'postSimulation'
+/**
+ * @group Types
+ */
 export type Schedules = StartupSchedules | UpdateSchedules | RunServiceSchedules
 
 /**

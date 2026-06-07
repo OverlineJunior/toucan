@@ -17,7 +17,7 @@ import { getAllComponentIdsIn, world } from './world'
 /**
  * A numerical entity identifier used internally.
  *
- * @group Core
+ * @group Types
  */
 export type RawId = JecsEntity
 

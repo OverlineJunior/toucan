@@ -2,6 +2,11 @@ import { component, Internal, Persistent } from '../handle'
 import { normalizeToArray } from '../util'
 import type { Schedules } from './scheduler'
 
+/**
+ * A function that represents a system.
+ * 
+ * @group Types
+ */
 export type SystemFn<Args extends unknown[] = unknown[]> = (
 	...args: Args
 ) => void

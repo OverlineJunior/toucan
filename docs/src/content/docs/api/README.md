@@ -5,64 +5,39 @@ prev: false
 title: "@rbxts/toucan"
 ---
 
-## Interfaces
+## Variables
 
-- [Phase](/toucan/api/interfaces/phase/)
-- [Pipeline](/toucan/api/interfaces/pipeline/)
+- [Builtin](/toucan/api/variables/builtin/)
 
-## Built-in Entities
+## Core
 
-- [ChildOf](/toucan/api/built-in_entities/childof/)
-- [Component](/toucan/api/built-in_entities/component/)
-- [External](/toucan/api/built-in_entities/external/)
-- [Internal](/toucan/api/built-in_entities/internal/)
-- [Label](/toucan/api/built-in_entities/label/)
-- [Persistent](/toucan/api/built-in_entities/persistent/)
-- [Plugin](/toucan/api/built-in_entities/plugin/)
-- [Resource](/toucan/api/built-in_entities/resource/)
-- [System](/toucan/api/built-in_entities/system/)
-- [Wildcard](/toucan/api/built-in_entities/wildcard/)
+- [component](/toucan/api/core/component/)
+- [entity](/toucan/api/core/entity/)
+- [pair](/toucan/api/core/pair/)
+- [query](/toucan/api/core/query/)
+- [resolveId](/toucan/api/core/resolveid/)
+- [resource](/toucan/api/core/resource/)
+- [scheduler](/toucan/api/core/scheduler/)
+- [systemSet](/toucan/api/core/systemset/)
 
-## Built-in Phases
+## Types
 
-- [ABSOLUTE\_FIRST](/toucan/api/built-in_phases/absolute_first/)
-- [ABSOLUTE\_LAST](/toucan/api/built-in_phases/absolute_last/)
-- [FIRST](/toucan/api/built-in_phases/first/)
-- [LAST](/toucan/api/built-in_phases/last/)
-- [POST\_SIMULATION](/toucan/api/built-in_phases/post_simulation/)
-- [POST\_STARTUP](/toucan/api/built-in_phases/post_startup/)
-- [POST\_UPDATE](/toucan/api/built-in_phases/post_update/)
-- [PRE\_ANIMATION](/toucan/api/built-in_phases/pre_animation/)
-- [PRE\_RENDER](/toucan/api/built-in_phases/pre_render/)
-- [PRE\_SIMULATION](/toucan/api/built-in_phases/pre_simulation/)
-- [PRE\_STARTUP](/toucan/api/built-in_phases/pre_startup/)
-- [PRE\_UPDATE](/toucan/api/built-in_phases/pre_update/)
-- [STARTUP](/toucan/api/built-in_phases/startup/)
-- [STARTUP\_PIPELINE](/toucan/api/built-in_phases/startup_pipeline/)
-- [UPDATE](/toucan/api/built-in_phases/update/)
-- [UPDATE\_PIPELINE](/toucan/api/built-in_phases/update_pipeline/)
-
-## Core ECS
-
-- [ComponentHandle](/toucan/api/core_ecs/componenthandle/)
-- [EntityHandle](/toucan/api/core_ecs/entityhandle/)
-- [Handle](/toucan/api/core_ecs/handle/)
-- [Pair](/toucan/api/core_ecs/pair/)
-- [Query](/toucan/api/core_ecs/query/)
-- [ResourceHandle](/toucan/api/core_ecs/resourcehandle/)
-- [Scheduler](/toucan/api/core_ecs/scheduler/)
-- [RawId](/toucan/api/core_ecs/rawid/)
-- [component](/toucan/api/core_ecs/component/)
-- [entity](/toucan/api/core_ecs/entity/)
-- [pair](/toucan/api/core_ecs/pair-1/)
-- [query](/toucan/api/core_ecs/query-1/)
-- [resolveId](/toucan/api/core_ecs/resolveid/)
-- [resource](/toucan/api/core_ecs/resource/)
-- [scheduler](/toucan/api/core_ecs/scheduler-1/)
-
-## Hooks
-
-- [useDeltaTime](/toucan/api/hooks/usedeltatime/)
-- [useHookState](/toucan/api/hooks/usehookstate/)
-- [useThrottle](/toucan/api/hooks/usethrottle/)
-- [useThrottledMemo](/toucan/api/hooks/usethrottledmemo/)
+- [ComponentHandle](/toucan/api/types/componenthandle/)
+- [EntityHandle](/toucan/api/types/entityhandle/)
+- [Handle](/toucan/api/types/handle/)
+- [Pair](/toucan/api/types/pair/)
+- [Query](/toucan/api/types/query/)
+- [ResourceHandle](/toucan/api/types/resourcehandle/)
+- [Scheduler](/toucan/api/types/scheduler/)
+- [SetConfig](/toucan/api/types/setconfig/)
+- [SystemConfig](/toucan/api/types/systemconfig/)
+- [SystemSet](/toucan/api/types/systemset/)
+- [InferValue](/toucan/api/types/infervalue/)
+- [InferValues](/toucan/api/types/infervalues/)
+- [PluginFn](/toucan/api/types/pluginfn/)
+- [RawId](/toucan/api/types/rawid/)
+- [RunServiceSchedules](/toucan/api/types/runserviceschedules/)
+- [Schedules](/toucan/api/types/schedules/)
+- [StartupSchedules](/toucan/api/types/startupschedules/)
+- [SystemFn](/toucan/api/types/systemfn/)
+- [UpdateSchedules](/toucan/api/types/updateschedules/)

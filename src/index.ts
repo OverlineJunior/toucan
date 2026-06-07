@@ -28,14 +28,17 @@ export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
 export {
 	type PluginFn,
+	type RunServiceSchedules,
 	type Scheduler,
 	type Schedules,
 	type SetConfig,
+	type StartupSchedules,
 	type SystemConfig,
 	type SystemFn,
 	type SystemSet,
 	scheduler,
 	systemSet,
+	type UpdateSchedules,
 } from './scheduler'
 export const Builtin = {
 	ChildOf,

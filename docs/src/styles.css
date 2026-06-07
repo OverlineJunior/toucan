@@ -193,3 +193,9 @@ THEME
 
 	--sl-color-backdrop-overlay: hsla(45, 10%, 36%, 0.66);
 }
+
+a[href="/toucan/api/variables/builtin/"] {
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+    color: var(--sl-color-white);
+}
