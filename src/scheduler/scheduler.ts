@@ -15,7 +15,13 @@ import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
 import { setActivePluginEntity } from './pluginContext'
 import { Schedule, ScheduleComponent } from './schedule'
-import { System, type SetConfig, type SystemConfig, type SystemFn, type SystemSet } from './system'
+import {
+	type SetConfig,
+	System,
+	type SystemConfig,
+	type SystemFn,
+	type SystemSet,
+} from './system'
 
 export type PluginFn<Args extends unknown[] = unknown[]> = (
 	scheduler: Scheduler,
@@ -36,6 +42,11 @@ export type RunServiceSchedules =
 	| 'postSimulation'
 export type Schedules = StartupSchedules | UpdateSchedules | RunServiceSchedules
 
+/**
+ * Built-in component used to distinguish entities that represent plugins.
+ *
+ * @group Built-ins
+ */
 export const Plugin = component<{
 	fn: PluginFn
 	args: unknown[]
@@ -66,6 +77,11 @@ function findParentPlugin(): EntityHandle | undefined {
 		| undefined
 }
 
+/**
+ * The type for the scheduler created with {@link scheduler}.
+ *
+ * @group Types
+ */
 export class Scheduler {
 	private readonly scheduleMap = new Map<Schedules, Schedule>([
 		// Startup schedules.
@@ -97,6 +113,29 @@ export class Scheduler {
 		schedulerAlreadyCreated = true
 	}
 
+	/**
+	 * Schedules a system to run in the specified `schedule` with the provided arguments.
+	 *
+	 * Optionally, a `SystemConfig` can be passed to configure the system, such as specifying when it should run or
+	 * in which system set it should belong.
+	 *
+	 * @remarks
+	 * It cannot be assumed that two systems scheduled in the same phase will run in the order they were registered.
+	 * Instead, consider using `useSystemChain`.
+	 *
+	 * @example
+	 * ```ts
+	 * scheduler()
+	 *     .useSystem('update', runsFirst)
+	 * 	   .useSystem('update', runsSecond, { after: runsFirst })
+	 * 	   .run()
+	 * ```
+	 *
+	 * #### Introspection
+	 *
+	 * After a system is scheduled, it becomes an entity with the `System` component.
+	 * This allows you to inspect metadata about the system and manipulate it.
+	 */
 	useSystem(
 		schedule: Schedules,
 		systemFn: SystemFn,
@@ -107,6 +146,20 @@ export class Scheduler {
 		return this
 	}
 
+	/**
+	 * Schedules a chain of systems to run in order in the specified `schedule`,
+	 * with an optional `SystemConfig` for each system.
+	 *
+	 * @example
+	 * ```ts
+	 * scheduler()
+	 *     .useSystemChain('update', [
+	 *         gatherInput, // Implicitly runs before `drawUI`.
+	 *         [drawUI, { runIf: !inCinematicMode }],
+	 *     ])
+	 *     .run()
+	 * ```
+	 */
 	useSystemChain(
 		schedule: Schedules,
 		...systemFns: (SystemFn | [SystemFn, SystemConfig])[]
@@ -116,12 +169,48 @@ export class Scheduler {
 		return this
 	}
 
+	/**
+	 * Configures a `SystemSet` for the specified `schedule` with the given `config`.
+	 *
+	 * @remarks
+	 * System set configuration is per schedule, meaning the same system set can be configured
+	 * differently for each schedule.
+	 *
+	 * @example
+	 * ```ts
+	 * const sense = new SystemSet('sense')
+	 * const think = new SystemSet('think')
+	 * const act = new SystemSet('act')
+	 *
+	 * scheduler()
+	 *     // System sets that don't need configuration don't need to be configured.
+	 *     .configureSet('update', think, { after: sense })
+	 *     .configureSet('update', act, { after: think })
+	 *     .run()
+	 * ```
+	 */
 	configureSet(schedule: Schedules, set: SystemSet, config: SetConfig): this {
 		this.assertNotRunning('configureSet')
 		this.scheduleMap.get(schedule)!.configureSet(set, config)
 		return this
-	}
-
+	} /**
+	 * Registers a plugin function to be run before the scheduler starts. This function is
+	 * given the scheduler and anything else passed in `...args`.
+	 *
+	 * @remarks
+	 * Throws when given an arrow function, as plugins strictly require an inferable name.
+	 *
+	 * @example
+	 * ```ts
+	 * function physics(scheduler: Scheduler, gravity: number) {
+	 *     scheduler.useSystem('update', updatePhysics, { args: gravity })
+	 * }
+	 *
+	 * scheduler()
+	 *    .usePlugin(physics, 196.2)
+	 *    .run()
+	 * ```
+	 */
 	usePlugin<Args extends unknown[]>(
 		pluginFn: PluginFn<Args>,
 		...args: Args
@@ -150,6 +239,12 @@ export class Scheduler {
 		return this
 	}
 
+	/**
+	 * Builds all plugins and then initializes every schedule.
+	 * 
+	 * @remarks
+	 * Throws if `run` is called while the scheduler is already running.
+	 */
 	run() {
 		this.assertNotRunning('run')
 
@@ -189,12 +284,12 @@ export class Scheduler {
 	/** @internal */
 	_despawn() {
 		schedulerAlreadyCreated = false
-        this.connections.forEach((c) => c.Disconnect())
+		this.connections.forEach((c) => c.Disconnect())
 
-        const forceDespawn = (e: Handle) => {
-            e.remove(Persistent)
-            e.despawn()
-        }
+		const forceDespawn = (e: Handle) => {
+			e.remove(Persistent)
+			e.despawn()
+		}
 		query(System).forEach(forceDespawn)
 		query(Plugin).forEach(forceDespawn)
 		query(ScheduleComponent).forEach(forceDespawn)
@@ -317,6 +412,36 @@ export class Scheduler {
 	}
 }
 
+/**
+ * Returns a new `Scheduler`, the starting point of a game made with Toucan.
+ *
+ * It is responsible for running systems, building plugins and configuring system sets.
+ *
+ * @remarks
+ * Only one scheduler can exist at a time. Calling `scheduler()` multiple times will throw an error.
+ *
+ * @example
+ * ```ts
+ * const Person = component()
+ * const Age = component<number>()
+ *
+ * function spawnPeople() {
+ *     entity('Alice').set(Age, 25)
+ *     entity('Bob').set(Age, 30)
+ * }
+ *
+ * const greetPeople = query(Age).with(Person).bind((entity, age) => {
+ *     print(`Hello, ${entity}! I can magically sense that you're ${age} years old!`)
+ * })
+ *
+ * scheduler()
+ *     .useSystem('startup', spawnPeople)
+ *     .useSystem('update', greetPeople)
+ *     .run()
+ * ```
+ *
+ * @group Core
+ */
 export function scheduler(): Scheduler {
 	return new Scheduler()
 }
