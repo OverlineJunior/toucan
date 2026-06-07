@@ -193,12 +193,16 @@ export class Scheduler {
 		this.assertNotRunning('configureSet')
 		this.scheduleMap.get(schedule)!.configureSet(set, config)
 		return this
-	} /**
+	}
+
+	/**
 	 * Registers a plugin function to be run before the scheduler starts. This function is
 	 * given the scheduler and anything else passed in `...args`.
 	 *
 	 * @remarks
 	 * Throws when given an arrow function, as plugins strictly require an inferable name.
+	 *
+	 * Every entity spawned within a plugin is automatically given the `pair(AddedByPlugin, pluginEntity)` relationship.
 	 *
 	 * @example
 	 * ```ts
@@ -241,7 +245,7 @@ export class Scheduler {
 
 	/**
 	 * Builds all plugins and then initializes every schedule.
-	 * 
+	 *
 	 * @remarks
 	 * Throws if `run` is called while the scheduler is already running.
 	 */
