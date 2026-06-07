@@ -4,6 +4,7 @@ import {
 	type EntityHandle,
 	entity,
 	Internal,
+	Label,
 	Persistent,
 } from '../handle'
 import { pair } from '../pair'
@@ -15,7 +16,7 @@ import {
 } from './directedAcyclicGraph'
 import type { Schedules } from './scheduler'
 import {
-	getSystemName,
+	inferSystemName,
 	type NormalizedSetConfig,
 	normalizeSetConfig,
 	normalizeSystemConfig,
@@ -44,14 +45,14 @@ export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
 function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 	if (res.ok) return
 	if (res.reason === 'cycle') {
-		const cycleStr = res.path.map(getSystemName).join(' -> ')
+		const cycleStr = res.path.map((fn) => inferSystemName(fn)).join(' -> ')
 		error(
 			`Cycle detected when scheduling systems: ${cycleStr}\n\n` +
 				`Tip: check your system dependencies. If they inherently depend on each other, consider combining them or splitting one into 'pre' and 'post' systems`,
 		)
 	} else if (res.reason === 'undefinedNode') {
 		error(
-			`System '${getSystemName(res.node)}' is referenced as a dependency, but hasn't been scheduled\n\n` +
+			`System '${inferSystemName(res.node)}' is referenced as a dependency, but hasn't been scheduled\n\n` +
 				`Tip: schedule the system with 'Scheduler.useSystem()'`,
 		)
 	} else {
@@ -79,12 +80,15 @@ export class Schedule {
 		const existing = query(System).find((_e, sys) => sys.fn === systemFn)
 		if (existing !== undefined) {
 			error(
-				`System '${getSystemName(systemFn)}' has already registered in schedule '${this.name}'`,
+				`System '${config?.label ?? systemFn}' has already registered in schedule '${this.name}'`,
 			)
 		}
 
-		const { before, after, runIfs, inSets } = normalizeSystemConfig(config)
-		entity(getSystemName(systemFn))
+		const { label, before, after, runIfs, inSets } =
+			normalizeSystemConfig(config)
+
+		const systemEntity = entity()
+		systemEntity
 			.set(System, {
 				fn: systemFn,
 				schedule: this.name,
@@ -93,6 +97,7 @@ export class Schedule {
 				runIfs,
 				_inSets: inSets,
 			})
+			.set(Label, label ?? inferSystemName(systemFn, systemEntity))
 			.set(pair(ChildOf, this.entity))
 
 		return this

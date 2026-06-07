@@ -922,6 +922,29 @@ class SchedulerTests {
 			'Expected a circular dependency between a set and a standalone system to throw on run()',
 		)
 	}
+
+	@Test
+	useSystem_label_addsLabelToSystemEntity() {
+		const label = 'verySpecificSystemLabel'
+		const systemFn = () => {}
+
+		scheduler.useSystem('startup', systemFn, { label }).run()
+
+		const systemData = query(Builtin.System).find(
+			(e) => e.toString() === label,
+		)?.[1]
+
+		Assert.true(
+			systemData !== undefined,
+			`Expected a system entity with label '${label}' to be created`,
+		)
+
+		Assert.equal(
+			systemData!.fn,
+			systemFn,
+			`Expected system entity with label '${label}' to have function '${systemFn}'`,
+		)
+	}
 }
 
 export = SchedulerTests

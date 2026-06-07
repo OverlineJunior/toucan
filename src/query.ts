@@ -23,7 +23,7 @@ type DisconnectFn = () => void
 
 /**
  * The type for queries created with {@link query}.
- * 
+ *
  * @group Types
  */
 export class Query<Cs extends (ComponentHandle | Pair)[]> {
@@ -203,8 +203,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * - Removes the need of an extra layer of indentation in systems.
 	 *
 	 * #### Cons:
-	 * - Cannot be passed optional arguments by `Scheduler.useSystem()`.
-	 * - Cannot easily infer a label from function name, requiring it to be manually given by `Scheduler.useLabeledSystem()`.
+	 * - Cannot be passed optional arguments in {@link SystemConfig}.
+	 * - Better used with arrow functions, meaning labels cannot be automatically inferred from function names.
 	 *
 	 * @example
 	 * ```ts
@@ -213,7 +213,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * })
 	 *
 	 * scheduler()
-	 *     .useLabeledSystem('update', 'greetPeople', greetPeople)
+	 *     .useSystem('update', greetPeople, { label: 'greetPeople' })
 	 *     .run()
 	 *
 	 * // Equivalent to...

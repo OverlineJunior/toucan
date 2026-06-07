@@ -1,10 +1,10 @@
-import { component, Internal, Persistent } from '../handle'
+import { component, type EntityHandle, Internal, Persistent } from '../handle'
 import { normalizeToArray } from '../util'
 import type { Schedules } from './scheduler'
 
 /**
  * A function that represents a system.
- * 
+ *
  * @group Types
  */
 export type SystemFn<Args extends unknown[] = unknown[]> = (
@@ -19,6 +19,8 @@ export type RunCondition = () => boolean
  * @group Types
  */
 export interface SystemConfig {
+	/** A human-readable label for this system. */
+	label?: string
 	/**
 	 * Runs this system before the given target(s).
 	 * When a `SystemSet` is given, this system runs before every system in that set.
@@ -33,6 +35,7 @@ export interface SystemConfig {
 }
 
 export interface NormalizedSystemConfig {
+	label?: string
 	before: (SystemSet | SystemFn)[]
 	after: (SystemSet | SystemFn)[]
 	inSets: SystemSet[]
@@ -83,14 +86,16 @@ export const System = component<{
 	.set(Internal)
 	.set(Persistent)
 
-export function getSystemName(system: SystemFn): string {
-	return debug.info(system, 'n')[0] || 'Unlabelled System'
+export function inferSystemName(system: SystemFn, e?: EntityHandle): string {
+	const defaultLabel = e === undefined ? `System ${system}` : `System #${e.id}`
+	return debug.info(system, 'n')[0] || defaultLabel
 }
 
 export function normalizeSystemConfig(
 	config?: SystemConfig,
 ): NormalizedSystemConfig {
-	return {
+    return {
+        label: config?.label,
 		before: normalizeToArray(config?.before),
 		after: normalizeToArray(config?.after),
 		runIfs: normalizeToArray(config?.runIf),
