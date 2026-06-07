@@ -520,14 +520,14 @@ export abstract class Handle {
 
 	/**
 	 * Completely deletes this entity from the world.
-	 * 
+	 *
 	 * Throws an error if the entity is marked as persistent.
 	 */
 	despawn(): void {
 		if (this.has(Persistent)) {
 			error(
-                `Cannot despawn entity '${this}' because it is marked as persistent\n\n` +
-                `Tip: check if the entity has the 'Persistent' component, or, in extreme cases, remove it first`
+				`Cannot despawn entity '${this}' because it is marked as persistent\n\n` +
+					`Tip: check if the entity has the 'Persistent' component, or, in extreme cases, remove it first`,
 			)
 		}
 
@@ -542,7 +542,7 @@ export abstract class Handle {
 
 /**
  * A handle for entities spawned with `entity()`.
- * 
+ *
  * @group Types
  */
 export class EntityHandle extends Handle {
@@ -720,7 +720,7 @@ function bootstrapBuiltinComponent<C extends ComponentHandle>(
  * Built-in component used to...
  * 1. Mark entities that cannot be despawned by any means;
  * 2. Mark components that cannot be removed by any means.
- * 
+ *
  * @group Built-ins
  */
 export const Persistent = bootstrapBuiltinComponent(
@@ -823,6 +823,11 @@ export const Resource = bootstrapBuiltinComponent(
 	'Resource',
 )
 
+/**
+ * Built-in component used as a relation for entities spawned within plugins.
+ * 
+ * @group Built-ins
+ */
 export const AddedByPlugin = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
 	'AddedByPlugin',

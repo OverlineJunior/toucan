@@ -15,6 +15,8 @@ Defined in: [index.ts:43](https://github.com/OverlineJunior/toucan/blob/master/s
 
 > **AddedByPlugin**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
 
+Built-in component used as a relation for entities spawned within plugins.
+
 ### ChildOf
 
 > **ChildOf**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
@@ -76,6 +78,8 @@ Built-in component used to distinguish entities that represent resources.
 ### Schedule
 
 > **Schedule**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<\{ `kind`: [`Schedules`](/toucan/api/types/schedules/); \}\>
+
+Built-in component used to distinguish entities that represent schedules.
 
 ### System
 

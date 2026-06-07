@@ -32,6 +32,11 @@ interface ResolvedSystem {
 	runIf: RunCondition[]
 }
 
+/**
+ * Built-in component used to distinguish entities that represent schedules.
+ *
+ * @group Built-ins
+ */
 export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
 	.set(Internal)
 	.set(Persistent)
