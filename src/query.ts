@@ -463,24 +463,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 }
 
 /**
- * Creates a new query for the specified components and/or pairs.
- *
- * @example
- * ```ts
- * const Position = component<Vector3>()
- * const Velocity = component<Vector3>()
- *
- * function updatePositions() {
- *     query(Position, Velocity).forEach((entity, position, velocity) => {
- *         entity.set(Position, position.add(velocity))
- *     })
- * }
- * ```
- *
- * @group Core ECS
- */
-
-/**
  * Creates a query, which represents a set of criteria used to filter and iterate over entities based on their components.
  *
  * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
