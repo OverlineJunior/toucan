@@ -127,14 +127,17 @@ export class Scheduler {
 	 * ```ts
 	 * scheduler()
 	 *     .useSystem('update', runsFirst)
-	 * 	   .useSystem('update', runsSecond, { after: runsFirst })
-	 * 	   .run()
+	 *     .useSystem('update', runsSecond, { after: runsFirst })
+	 *     .run()
 	 * ```
 	 *
 	 * #### Introspection
 	 *
 	 * After a system is scheduled, it becomes an entity with the `System` component.
 	 * This allows you to inspect metadata about the system and manipulate it.
+	 *
+	 * Additionally, the system is automatically made a child of its schedule
+	 * (i.e. `pair(ChildOf, scheduleEntity)`).
 	 */
 	useSystem(
 		schedule: Schedules,
