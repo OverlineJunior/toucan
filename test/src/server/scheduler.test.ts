@@ -945,6 +945,66 @@ class SchedulerTests {
 			`Expected system entity with label '${label}' to have function '${systemFn}'`,
 		)
 	}
+
+	@Test
+	useSystem_args_areForwardedToSystemFn() {
+		const received: unknown[] = []
+
+		scheduler
+			.useSystem(
+				'startup',
+				(...args: unknown[]) => {
+					received[0] = args[0]
+					received[1] = args[1]
+					received[2] = args[2]
+				},
+				{ args: ['hello', undefined, 42] },
+			)
+			.run()
+
+		Assert.equal(received[0], 'hello', 'Expected first arg to be "hello"')
+		Assert.equal(received[1], undefined, 'Expected second arg to be undefined')
+		Assert.equal(received[2], 42, 'Expected third arg to be 42')
+		Assert.equal(received.size(), 3, 'Expected exactly 3 args')
+	}
+
+	@Test
+	useSystem_args_defaultToEmptyWhenOmitted() {
+		let argCount = -1
+
+		scheduler
+			.useSystem('startup', (...args: unknown[]) => {
+				argCount = args.size()
+			})
+			.run()
+
+		Assert.equal(
+			argCount,
+			0,
+			'Expected system to receive no args when none are configured',
+		)
+	}
+
+	@Test
+	useSystem_args_objectReferenceIsPreserved() {
+		const shared = { count: 0 }
+
+		scheduler
+			.useSystem(
+				'startup',
+				(obj: typeof shared) => {
+					obj.count = 99
+				},
+				{ args: [shared] },
+			)
+			.run()
+
+		Assert.equal(
+			shared.count,
+			99,
+			'Expected mutation through arg to affect the original object (same reference)',
+		)
+	}
 }
 
 export = SchedulerTests

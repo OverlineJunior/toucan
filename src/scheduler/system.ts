@@ -1,4 +1,10 @@
-import { component, type EntityHandle, Internal, Persistent } from '../handle'
+import {
+	component,
+	type EntityHandle,
+	type InferValue,
+	Internal,
+	Persistent,
+} from '../handle'
 import { normalizeToArray } from '../util'
 import type { Schedules } from './scheduler'
 
@@ -13,14 +19,18 @@ export type SystemFn<Args extends unknown[] = unknown[]> = (
 
 export type RunCondition = () => boolean
 
+export type SystemData = InferValue<typeof System>
+
 /**
  * Configuration options for a system registered with {@link Scheduler.useSystem}.
  *
  * @group Types
  */
-export interface SystemConfig {
-	/** A human-readable label for this system. */
+export interface SystemConfig<Args extends unknown[] = unknown[]> {
+	/** A human-readable label. */
 	label?: string
+	/** Arguments to pass to the system function. */
+	args?: Args
 	/**
 	 * Runs this system before the given target(s).
 	 * When a `SystemSet` is given, this system runs before every system in that set.
@@ -36,6 +46,7 @@ export interface SystemConfig {
 
 export interface NormalizedSystemConfig {
 	label?: string
+	args: unknown[]
 	before: (SystemSet | SystemFn)[]
 	after: (SystemSet | SystemFn)[]
 	inSets: SystemSet[]
@@ -75,6 +86,7 @@ export interface NormalizedSetConfig {
  */
 export const System = component<{
 	fn: SystemFn
+	args: unknown[]
 	schedule: Schedules
 	before: (SystemFn | SystemSet)[]
 	after: (SystemFn | SystemSet)[]
@@ -94,8 +106,9 @@ export function inferSystemName(system: SystemFn, e?: EntityHandle): string {
 export function normalizeSystemConfig(
 	config?: SystemConfig,
 ): NormalizedSystemConfig {
-    return {
-        label: config?.label,
+	return {
+		label: config?.label,
+		args: config?.args ?? [],
 		before: normalizeToArray(config?.before),
 		after: normalizeToArray(config?.after),
 		runIfs: normalizeToArray(config?.runIf),

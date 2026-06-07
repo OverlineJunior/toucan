@@ -19,6 +19,7 @@ import {
 	type SetConfig,
 	System,
 	type SystemConfig,
+	type SystemData,
 	type SystemFn,
 	type SystemSet,
 } from './system'
@@ -156,13 +157,13 @@ export class Scheduler {
 	 * Additionally, the system is automatically made a child of its schedule
 	 * (i.e. `pair(ChildOf, scheduleEntity)`).
 	 */
-	useSystem(
+	useSystem<Args extends unknown[]>(
 		schedule: Schedules,
-		systemFn: SystemFn,
-		config?: SystemConfig,
+		systemFn: SystemFn<Args>,
+		config?: SystemConfig<Args>,
 	): this {
 		this.assertNotRunning('useSystem')
-		this.scheduleMap.get(schedule)!.useSystem(systemFn, config)
+		this.scheduleMap.get(schedule)!.useSystem(systemFn as SystemFn, config)
 		return this
 	}
 
@@ -332,13 +333,13 @@ export class Scheduler {
 		this.scheduleMap
 			.get(schedule)!
 			.getSortedSystems()
-			.forEach(({ systemFn, runIf }) => {
-				if (runIf.every((cond) => cond())) this.runSystem(systemFn)
+			.forEach((sysData) => {
+				if (sysData.runIfs.every((cond) => cond())) this.runSystem(sysData)
 			})
 	}
 
-	private runSystem(systemFn: SystemFn): void {
-		systemFn()
+	private runSystem(systemData: SystemData): void {
+		systemData.fn(...systemData.args)
 	}
 
 	private buildPlugins(): void {

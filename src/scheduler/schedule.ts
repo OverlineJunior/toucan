@@ -20,18 +20,13 @@ import {
 	type NormalizedSetConfig,
 	normalizeSetConfig,
 	normalizeSystemConfig,
-	type RunCondition,
 	type SetConfig,
 	System,
 	type SystemConfig,
+	type SystemData,
 	type SystemFn,
 	type SystemSet,
 } from './system'
-
-interface ResolvedSystem {
-	systemFn: SystemFn
-	runIf: RunCondition[]
-}
 
 /**
  * Built-in component used to distinguish entities that represent schedules.
@@ -64,7 +59,7 @@ export class Schedule {
 	public readonly name: Schedules
 	private readonly entity: EntityHandle
 	private readonly setConfigs = new Map<SystemSet, NormalizedSetConfig>()
-	private sortedCache?: ResolvedSystem[]
+	private sortedCache?: SystemData[]
 
 	constructor(name: Schedules) {
 		this.name = name
@@ -84,13 +79,14 @@ export class Schedule {
 			)
 		}
 
-		const { label, before, after, runIfs, inSets } =
+		const { label, args, before, after, runIfs, inSets } =
 			normalizeSystemConfig(config)
 
 		const systemEntity = entity()
 		systemEntity
 			.set(System, {
 				fn: systemFn,
+				args,
 				schedule: this.name,
 				before,
 				after,
@@ -148,7 +144,7 @@ export class Schedule {
 		return this
 	}
 
-	getSortedSystems(): ResolvedSystem[] {
+	getSortedSystems(): SystemData[] {
 		if (this.sortedCache !== undefined) return this.sortedCache
 
 		// Step 1: Group systems by their set membership.
@@ -203,12 +199,21 @@ export class Schedule {
 		// Steps 5-6: Topological sort, then merge each system's own run conditions
 		// with those inherited from every set it belongs to.
 		this.sortedCache = graph.sorted().map((systemFn) => {
-			const [_e, system] = query(System).find((_e, s) => s.fn === systemFn)!
+			const [sysEnt, sysData] = query(System).find(
+				(_e, s) => s.fn === systemFn,
+			)!
+
 			const setRunIfs = flatMap(
-				system._inSets,
+				sysData._inSets,
 				(set) => this.setConfigs.get(set)?.runIf ?? [],
 			)
-			return { systemFn, runIf: [...system.runIfs, ...setRunIfs] }
+			const newData = {
+				...sysData,
+				runIfs: [...sysData.runIfs, ...setRunIfs],
+			}
+			sysEnt.set(System, newData)
+
+			return newData
 		})
 
 		return this.sortedCache
