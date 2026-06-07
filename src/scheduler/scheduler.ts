@@ -251,6 +251,9 @@ export class Scheduler {
 	 *
 	 * @remarks
 	 * Throws if `run` is called while the scheduler is already running.
+	 * 
+	 * When a schedule is initialized, an entity representing it is spawned and all
+	 * related systems are made children of it.
 	 */
 	run() {
 		this.assertNotRunning('run')
