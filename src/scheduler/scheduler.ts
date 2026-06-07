@@ -205,8 +205,6 @@ export class Scheduler {
 	 * @remarks
 	 * Throws when given an arrow function, as plugins strictly require an inferable name.
 	 *
-	 * Every entity spawned within a plugin is automatically given the `pair(AddedByPlugin, pluginEntity)` relationship.
-	 *
 	 * @example
 	 * ```ts
 	 * function physics(scheduler: Scheduler, gravity: number) {
@@ -217,6 +215,14 @@ export class Scheduler {
 	 *    .usePlugin(physics, 196.2)
 	 *    .run()
 	 * ```
+	 *
+	 * #### Introspection
+	 *
+	 * After a plugin is built, it becomes an entity with the `Plugin` component.
+	 * This allows you to inspect metadata about the plugin and manipulate it.
+	 *
+	 * Additionally, every entity spawned within a plugin is automatically given
+	 * the `pair(AddedByPlugin, pluginEntity)` relationship.
 	 */
 	usePlugin<Args extends unknown[]>(
 		pluginFn: PluginFn<Args>,
@@ -251,7 +257,7 @@ export class Scheduler {
 	 *
 	 * @remarks
 	 * Throws if `run` is called while the scheduler is already running.
-	 * 
+	 *
 	 * When a schedule is initialized, an entity representing it is spawned and all
 	 * related systems are made children of it.
 	 */
