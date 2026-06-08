@@ -550,7 +550,7 @@ export class EntityHandle extends Handle {
 }
 
 /**
- * Spawns a new, empty entity and returns it.
+ * Spawns a new, empty {@link EntityHandle} and returns it.
  *
  * Additionally, a `label` can be provided for easier identification.
  *
@@ -586,7 +586,7 @@ export class ComponentHandle<Value = unknown> extends Handle {
 }
 
 /**
- * Creates a new component.
+ * Creates a new {@link ComponentHandle}.
  *
  * Additionally, a `label` can be provided for easier identification.
  *
@@ -665,7 +665,7 @@ export class ResourceHandle<Value = unknown> extends Handle {
 }
 
 /**
- * Spawns a resource with the given initial `value`.
+ * Creates a new {@link ResourceHandle} with the given initial `value`.
  *
  * Resources exist independently of entities (and cannot be attached to them).
  * They are useful to represent global state, such as game state, settings and so on.

@@ -463,7 +463,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 }
 
 /**
- * Creates a query, which represents a set of criteria used to filter and iterate over entities based on their components.
+ * Creates a {@link Query}, which represents a set of criteria used to filter and iterate over entities based on their components.
  *
  * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
  * excluding specific components) and offer various ways to consume the matching entities. You can

@@ -47,7 +47,7 @@ export class Pair<Value = unknown> {
 	/**
 	 * The relation entity of this pair.
 	 */
-    public readonly relation: Handle
+	public readonly relation: Handle
 	/**
 	 * The target entity of this pair.
 	 */
@@ -73,7 +73,7 @@ export class Pair<Value = unknown> {
 }
 
 /**
- * Creates a relationship pair `relation -> target` (e.g.: `Likes -> Bob`),
+ * Creates a relationship {@link Pair} of `relation -> target` (e.g.: `Likes -> Bob`),
  * where both `relation` and `target` can be either regular entities or components.
  * Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
  *

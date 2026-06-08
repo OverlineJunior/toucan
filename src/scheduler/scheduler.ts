@@ -447,7 +447,7 @@ export class Scheduler {
 }
 
 /**
- * Returns a new `Scheduler`, the starting point of a game made with Toucan.
+ * Returns a new {@link Scheduler}, the starting point of a game made with Toucan.
  *
  * It is responsible for running systems, building plugins and configuring system sets.
  *
