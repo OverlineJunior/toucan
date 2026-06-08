@@ -9,7 +9,7 @@ title: "component"
 
 Defined in: [handle.ts:604](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L604)
 
-Creates a new component.
+Creates a new [ComponentHandle](/toucan/api/types/componenthandle/).
 
 Additionally, a `label` can be provided for easier identification.
 

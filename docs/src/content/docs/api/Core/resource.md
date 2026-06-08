@@ -9,7 +9,7 @@ title: "resource"
 
 Defined in: [handle.ts:689](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L689)
 
-Spawns a resource with the given initial `value`.
+Creates a new [ResourceHandle](/toucan/api/types/resourcehandle/) with the given initial `value`.
 
 Resources exist independently of entities (and cannot be attached to them).
 They are useful to represent global state, such as game state, settings and so on.

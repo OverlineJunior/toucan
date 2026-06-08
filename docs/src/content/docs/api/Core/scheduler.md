@@ -9,7 +9,7 @@ title: "scheduler"
 
 Defined in: [scheduler/scheduler.ts:479](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L479)
 
-Returns a new `Scheduler`, the starting point of a game made with Toucan.
+Returns a new [Scheduler](/toucan/api/types/scheduler/), the starting point of a game made with Toucan.
 
 It is responsible for running systems, building plugins and configuring system sets.
 

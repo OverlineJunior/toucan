@@ -40,6 +40,9 @@ export {
 	systemSet,
 	type UpdateSchedules,
 } from './scheduler'
+/**
+ * A collection of built-in {@link Handle}s.
+ */
 export const Builtin = {
 	ChildOf,
 	Component,

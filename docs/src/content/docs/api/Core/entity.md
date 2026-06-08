@@ -9,7 +9,7 @@ title: "entity"
 
 Defined in: [handle.ts:559](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L559)
 
-Spawns a new, empty entity and returns it.
+Spawns a new, empty [EntityHandle](/toucan/api/types/entityhandle/) and returns it.
 
 Additionally, a `label` can be provided for easier identification.
 

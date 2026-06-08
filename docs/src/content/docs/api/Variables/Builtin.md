@@ -7,7 +7,9 @@ title: "Builtin"
 
 > `const` **Builtin**: `object`
 
-Defined in: [index.ts:43](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L43)
+Defined in: [index.ts:46](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L46)
+
+A collection of built-in [Handle](/toucan/api/types/handle/)s.
 
 ## Type Declaration
 
