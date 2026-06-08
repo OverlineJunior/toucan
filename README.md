@@ -25,7 +25,7 @@ Currently, it is in alpha stage and is not yet ready for production. The [docume
 ## Example
 
 ```ts
-import { component, entity, pair, query, scheduler, Scheduler, STARTUP, UPDATE, Wildcard } from '@rbxts/toucan'
+import { component, entity, pair, query, scheduler, Scheduler, Builtin } from '@rbxts/toucan'
 
 const Age = component<number>()
 const Likes = component()
@@ -41,18 +41,22 @@ function spawnPeople() {
 }
 
 const greetInterests = query(Age)
-	.with(pair(Likes, Wildcard))
+	.with(pair(Likes, Builtin.Wildcard))
 	.bind((subject, age) => {
 		subject.targetsOf(Likes).forEach((interest) => {
-			print(`Hey ${interest}, nice to meet you! I'm ${subject} and my age is ${age}.`)
+			print(`Hey ${interest}, nice to meet you! I'm ${subject} and my age is ${age}!1!`)
 		})
 	})
 
 function greetingPlugin(scheduler: Scheduler) {
-	scheduler.useSystem(spawnPeople, STARTUP).useSystem(greetInterests, UPDATE)
+    scheduler
+        .useSystem('startup', spawnPeople)
+        .useSystem('update', greetInterests)
 }
 
-scheduler().usePlugin(greetingPlugin).run()
+scheduler()
+    .usePlugin(greetingPlugin)
+    .run()
 ```
 
 ## Installation
@@ -66,7 +70,7 @@ bun add @rbxts/toucan
 
 ## Development
 
-1. Before anything, make sure you have [bun](https://bun.sh) and [rokit](https://github.com/rojo-rbx/rokit) installed in your system;
+1. First, make sure you have [bun](https://bun.sh) and [rokit](https://github.com/rojo-rbx/rokit) installed in your system;
 
 1. Then, run `bun run setup` to install dependencies across the entire project;
 
