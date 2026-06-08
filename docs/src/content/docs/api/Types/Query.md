@@ -31,8 +31,8 @@ Converts the query into a callback that can be scheduled just like a regular sys
 - Removes the need of an extra layer of indentation in systems.
 
 #### Cons:
-- Cannot be passed optional arguments by `Scheduler.useSystem()`.
-- Cannot easily infer a label from function name, requiring it to be manually given by `Scheduler.useLabeledSystem()`.
+- Cannot be passed optional arguments in [SystemConfig](/toucan/api/types/systemconfig/).
+- Better used with arrow functions, meaning labels cannot be automatically inferred from function names.
 
 #### Parameters
 
@@ -52,7 +52,7 @@ const greetPeople = query(Name, Person).bind((_e, name) => {
 })
 
 scheduler()
-    .useLabeledSystem('update', 'greetPeople', greetPeople)
+    .useSystem('update', greetPeople, { label: 'greetPeople' })
     .run()
 
 // Equivalent to...

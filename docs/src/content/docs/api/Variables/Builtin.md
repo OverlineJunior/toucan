@@ -83,7 +83,7 @@ Built-in component used to distinguish entities that represent schedules.
 
 ### System
 
-> **System**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
+> **System**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
 
 Built-in component used to distinguish entities that represent systems.
 

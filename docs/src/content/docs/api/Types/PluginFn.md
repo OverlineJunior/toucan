@@ -7,7 +7,7 @@ title: "PluginFn"
 
 > **PluginFn**\<`Args`\> = (`scheduler`, ...`args`) => `void`
 
-Defined in: [scheduler/scheduler.ts:31](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L31)
+Defined in: [scheduler/scheduler.ts:32](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L32)
 
 A function that represents a plugin.
 
