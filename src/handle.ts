@@ -102,18 +102,18 @@ export function resolveId(
 	}
 }
 
-let simulatingExternal = false
+let simulatingThirdParty = false
 /** @internal */
-export function _simulateExternal(callback: () => void): void {
-	simulatingExternal = true
+export function _simulateThirdParty(callback: () => void): void {
+	simulatingThirdParty = true
 	try {
 		callback()
 	} finally {
-		simulatingExternal = false
+		simulatingThirdParty = false
 	}
 }
-function hasExternalCaller(): boolean {
-	if (simulatingExternal) return true
+function hasThirdPartyCaller(): boolean {
+	if (simulatingThirdParty) return true
 
 	let level = 1
 
@@ -560,8 +560,8 @@ export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
 	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
 
-	if (hasExternalCaller()) {
-		handle.set(External)
+	if (hasThirdPartyCaller()) {
+		handle.set(ThirdParty)
 	}
 
 	const activePlugin = getActivePluginEntity()
@@ -613,8 +613,8 @@ export function component<Value = undefined>(
 
 function setupComponent<C extends ComponentHandle>(comp: C, label: string): C {
 	comp.set(Component).set(Label, label)
-	if (hasExternalCaller()) {
-		comp.set(External)
+	if (hasThirdPartyCaller()) {
+		comp.set(ThirdParty)
 	}
 	return comp
 }
@@ -696,8 +696,8 @@ export function resource<Value extends NonNullable<unknown>>(
 	const handle = new ResourceHandle<Value>(rawId)
 		.set(Resource)
 		.set(Label, label ?? `Resource #${rawId}`)
-	if (hasExternalCaller()) {
-		handle.set(External)
+	if (hasThirdPartyCaller()) {
+		handle.set(ThirdParty)
 	}
 	return handle
 }
@@ -739,13 +739,13 @@ export const Internal = bootstrapBuiltinComponent(
 )
 
 /**
- * Built-in component used to distinguish entities created by external packages.
+ * Built-in component used to distinguish entities created by third-party packages.
  *
  * @group Built-ins
  */
-export const External = bootstrapBuiltinComponent(
+export const ThirdParty = bootstrapBuiltinComponent(
 	new ComponentHandle<undefined>(world.component()),
-	'External',
+	'ThirdParty',
 )
 
 /**
@@ -825,7 +825,7 @@ export const Resource = bootstrapBuiltinComponent(
 
 /**
  * Built-in component used as a relation for entities spawned within plugins.
- * 
+ *
  * @group Built-ins
  */
 export const AddedByPlugin = bootstrapBuiltinComponent(

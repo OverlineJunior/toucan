@@ -3,12 +3,12 @@ import {
 	ChildOf,
 	component,
 	type EntityHandle,
-	External,
 	entity,
 	type Handle,
 	type InferValue,
 	Internal,
 	Persistent,
+	ThirdParty,
 } from '../handle'
 import { pair } from '../pair'
 import { query } from '../query'
@@ -348,9 +348,9 @@ export class Scheduler {
 			.filter(([, p]) => !p.built)
 
 		const sortUserFirst = (a: Handle, b: Handle) => {
-			const isAExternal = a.has(External)
-			const isBExternal = b.has(External)
-			return isAExternal === isBExternal ? false : !isAExternal
+			const isAThirdParty = a.has(ThirdParty)
+			const isBThirdParty = b.has(ThirdParty)
+			return isAThirdParty === isBThirdParty ? false : !isAThirdParty
 		}
 
 		const shouldBuild = (
@@ -366,36 +366,44 @@ export class Scheduler {
 			// From here on, we know incoming is a duplicate.
 			const [duplicateEnt, duplicateData] = [_incomingEnt, _incomingData]
 
-			const existingOrigin = existingEnt.has(External)
-				? 'external'
+			const existingOrigin = existingEnt.has(ThirdParty)
+				? 'third-party'
 				: existingEnt.has(Internal)
 					? 'internal'
 					: 'user'
 			if (existingOrigin === 'internal') {
 				error(`Internal plugin duplication found - this should never happen`)
 			}
-			const duplicateOrigin = duplicateEnt.has(External) ? 'external' : 'user'
+			const duplicateOrigin = duplicateEnt.has(ThirdParty)
+				? 'third-party'
+				: 'user'
 
 			// user <- user: should error, as the user likely forgot they've added the same plugin already.
-			// user <- external: should skip external's registration, as user registration takes precedence.
-			// external <- user: should never happen, as user plugins are built first.
-			// external <- external:
-			//      if arguments are the same: should skip, as the shared plugin would be built the same way by both external plugins.
+			// user <- third-party: should skip third-party's registration, as user registration takes precedence.
+			// third-party <- user: should never happen, as user plugins are built first.
+			// third-party <- third-party:
+			//      if arguments are the same: should skip, as the shared plugin would be built the same way by both third-party plugins.
 			//      if arguments differ: should error, as the user didn't register the plugin themselves in order to resolve the conflict.
 			if (existingOrigin === 'user' && duplicateOrigin === 'user') {
 				error(
 					`User plugin '${existingEnt}' has already been registered\n\n` +
 						`Tip: ensure '${duplicateEnt}' is only registered once`,
 				)
-			} else if (existingOrigin === 'user' && duplicateOrigin === 'external') {
+			} else if (
+				existingOrigin === 'user' &&
+				duplicateOrigin === 'third-party'
+			) {
 				return false
-			} else if (existingOrigin === 'external' && duplicateOrigin === 'user') {
+			} else if (
+				existingOrigin === 'third-party' &&
+				duplicateOrigin === 'user'
+			) {
 				error(
-					`User plugin '${duplicateEnt}' being built after external plugin should never happen, as user plugins are meant to be built first`,
+					`User plugin '${duplicateEnt}' being built after third-party plugin should never happen, as user plugins are meant to be built first`,
 				)
 			} else if (
-				existingOrigin === 'external' &&
-				duplicateOrigin === 'external'
+				existingOrigin === 'third-party' &&
+				duplicateOrigin === 'third-party'
 			) {
 				if (deepEqual(existingData.args, duplicateData.args)) return false
 

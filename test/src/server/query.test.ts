@@ -238,7 +238,7 @@ class QueryTests {
 		const bob = entity('Bob')
 
 		const results = query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.External))
+			.filter((e) => !e.has(Builtin.Internal) && !e.has(Builtin.ThirdParty))
 			.collect()
 
 		Assert.equal(

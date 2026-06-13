@@ -17,9 +17,9 @@ import {
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
 
-const _simulateExternal = (
-	Toucan as unknown as { _simulateExternal: (callback: () => void) => void }
-)._simulateExternal
+const _simulateThirdParty = (
+	Toucan as unknown as { _simulateThirdParty: (callback: () => void) => void }
+)._simulateThirdParty
 
 let scheduler = newScheduler()
 
@@ -240,18 +240,18 @@ class SchedulerTests {
 	useSystemChain_before_respectsImplicidWithExplicitOrdering() {
 		const order: string[] = []
 
-		const external = () => order.push('external')
+		const thirdParty = () => order.push('third-party')
 		const a = () => order.push('a')
 		const b = () => order.push('b')
 		const c = () => order.push('c')
 
 		scheduler
-			.useSystem('startup', external)
-			.useSystemChain('startup', [a, { before: external }], b, c)
+			.useSystem('startup', thirdParty)
+			.useSystemChain('startup', [a, { before: thirdParty }], b, c)
 			.run()
 
 		const [extIdx, aIdx, bIdx, cIdx] = [
-			order.indexOf('external'),
+			order.indexOf('third-party'),
 			order.indexOf('a'),
 			order.indexOf('b'),
 			order.indexOf('c'),
@@ -259,7 +259,7 @@ class SchedulerTests {
 
 		Assert.true(
 			aIdx < extIdx && aIdx < bIdx && bIdx < cIdx,
-			`Expected 'a' to come before 'b' and 'external',  got: '${order.join(' -> ')}'`,
+			`Expected 'a' to come before 'b' and 'third-party',  got: '${order.join(' -> ')}'`,
 		)
 	}
 
@@ -736,27 +736,27 @@ class SchedulerTests {
 	}
 
 	@Test
-	usePlugin_externalOverwritingExternalPluginWithSameArgsDoesNotThrow() {
+	usePlugin_thirdPartyOverwritingThirdPartyPluginWithSameArgsDoesNotThrow() {
 		function somePlugin(_s: Scheduler, _n: number) {}
 
 		Assert.doesNotThrow(() =>
-			_simulateExternal(() =>
+			_simulateThirdParty(() =>
 				scheduler.usePlugin(somePlugin, 1).usePlugin(somePlugin, 1).run(),
 			),
 		)
 	}
 
 	@Test
-	usePlugin_externalOverwritingExternalPluginWithDifferentArgsThrows() {
+	usePlugin_thirdPartyOverwritingThirdPartyPluginWithDifferentArgsThrows() {
 		function somePlugin(_s: Scheduler, _n: number) {}
 
 		Assert.throws(
 			() =>
-				_simulateExternal(() =>
+				_simulateThirdParty(() =>
 					scheduler.usePlugin(somePlugin, 1).usePlugin(somePlugin, 2).run(),
 				),
 			undefined,
-			'Expected usePlugin to throw when an external tries to overwrite the same external plugin with different arguments',
+			'Expected usePlugin to throw when a third-party tries to overwrite the same third-party plugin with different arguments',
 		)
 	}
 
