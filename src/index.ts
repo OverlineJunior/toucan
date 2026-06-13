@@ -57,5 +57,11 @@ export const Builtin = {
 	System,
 	Schedule,
 }
+export {
+    /**
+     * The underlying Jecs world instance. Should only be used when it is absolutely necessary.
+     */
+    world as _world
+} from './world'
 /** @internal */
 export { _simulateExternal } from './handle'
