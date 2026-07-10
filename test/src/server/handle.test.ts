@@ -598,6 +598,17 @@ class EntityTests {
 			'Expected despawn to throw on persistent entity',
 		)
 	}
+
+	// This was an obscure bug due to how Jecs' `world.children` works internally. 
+	@Test
+	public children_wildcardReturnsEmpty() {
+		entity('child').set(pair(Builtin.ChildOf, entity('parent')))
+		Assert.equal(
+			Builtin.Wildcard.children().size(),
+			0,
+			'Expected Wildcard.children() to return nothing even when children exist',
+		)
+	}
 }
 
 export = EntityTests

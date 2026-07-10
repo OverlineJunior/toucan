@@ -419,7 +419,11 @@ export abstract class Handle {
 	 * const children = alice.children() // [charlie, bob]
 	 * ```
 	 */
-	children(): Handle[] {
+    children(): Handle[] {
+        // Jecs uses (ChildOf, Wildcard) as an internal index for every ChildOf pair,
+        // so world.children(Wildcard) would return all children in the world.
+        if (this.id === Wildcard.id) return []
+        
 		const childIds = []
 		for (const id of world.children(this.id)) {
 			childIds.push(resolveId(id)!)
