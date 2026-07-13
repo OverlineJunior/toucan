@@ -9,7 +9,6 @@ import {
 	type RawId,
 	resolveId,
 	resource,
-	tryGetHandleType,
 } from '@rbxts/toucan'
 
 class EntityTests {
@@ -187,13 +186,13 @@ class EntityTests {
 
 	@Test
 	public clear_doesNotRemovePersistentComponentsAndPairs() {
-        const Handsome = component('Handsome').set(Builtin.Persistent)
+		const Handsome = component('Handsome').set(Builtin.Persistent)
 		const Funny = component('Funny').set(Builtin.Persistent)
-        const Is = component('Is').set(Builtin.Persistent)
-        const IsNot = component('IsNot').set(Builtin.Persistent)
+		const Is = component('Is').set(Builtin.Persistent)
+		const IsNot = component('IsNot').set(Builtin.Persistent)
 
-        const p1 = pair(Is, Handsome)
-        const p2 = pair(IsNot, Funny)
+		const p1 = pair(Is, Handsome)
+		const p2 = pair(IsNot, Funny)
 
 		const bob = entity('bob').set(Handsome).set(Funny).set(p1).set(p2)
 		bob.clear()
@@ -201,7 +200,7 @@ class EntityTests {
 		Assert.true(
 			bob.has(Handsome) && bob.has(Funny),
 			'Expected persistent components to remain after clear',
-        )
+		)
 
 		Assert.true(
 			bob.has(p1) && bob.has(p2),
@@ -600,7 +599,7 @@ class EntityTests {
 		)
 	}
 
-	// This was an obscure bug due to how Jecs' `world.children` works internally. 
+	// This was an obscure bug due to how Jecs' `world.children` works internally.
 	@Test
 	public children_wildcardReturnsEmpty() {
 		entity('child').set(pair(Builtin.ChildOf, entity('parent')))
@@ -608,47 +607,6 @@ class EntityTests {
 			Builtin.Wildcard.children().size(),
 			0,
 			'Expected Wildcard.children() to return nothing even when children exist',
-		)
-	}
-
-	@Test
-	public tryGetHandleType_returnsCorrectTypeForEachHandle() {
-		const e = entity()
-		const C = component()
-		const GameState = resource('lobby', 'GameState')
-		Assert.equal(
-			tryGetHandleType(e),
-			'entity',
-			'Expected tryGetHandleType to return "entity" for an EntityHandle',
-		)
-		Assert.equal(
-			tryGetHandleType(C),
-			'component',
-			'Expected tryGetHandleType to return "component" for a ComponentHandle',
-		)
-		Assert.equal(
-			tryGetHandleType(GameState),
-			'resource',
-			'Expected tryGetHandleType to return "resource" for a ResourceHandle',
-		)
-	}
-
-	@Test
-	public tryGetHandleType_returnsUndefinedForNonHandle() {
-		Assert.equal(
-			tryGetHandleType('not a handle'),
-			undefined,
-			'Expected tryGetHandleType to return undefined for a plain string',
-		)
-		Assert.equal(
-			tryGetHandleType(42),
-			undefined,
-			'Expected tryGetHandleType to return undefined for a number',
-		)
-		Assert.equal(
-			tryGetHandleType(undefined),
-			undefined,
-			'Expected tryGetHandleType to return undefined for undefined',
 		)
 	}
 }
