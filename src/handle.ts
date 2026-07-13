@@ -102,6 +102,18 @@ export function resolveId(
 	}
 }
 
+/**
+ * Returns the handle type of `value`, or `undefined` if it is not a handle.
+ *
+ * @group Core
+ */
+export function tryGetHandleType(value: unknown): 'entity' | 'component' | 'resource' | undefined {
+	if (value instanceof EntityHandle) return 'entity'
+	if (value instanceof ComponentHandle) return 'component'
+	if (value instanceof ResourceHandle) return 'resource'
+	return undefined
+}
+
 let simulatingThirdParty = false
 /** @internal */
 export function _simulateThirdParty(callback: () => void): void {

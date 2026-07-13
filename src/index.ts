@@ -23,6 +23,7 @@ export {
 	type ResourceHandle,
 	resolveId,
 	resource,
+	tryGetHandleType,
 } from './handle'
 export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
