@@ -185,8 +185,8 @@ export class Scheduler {
 		schedule: Schedules,
 		systemFns: {
 			[K in keyof T]: [] extends T[K]
-				? SystemFn<T[K]> | [SystemFn<T[K]>, SystemConfig<T[K]>]
-				: [SystemFn<T[K]>, SystemConfig<T[K]>]
+				? SystemFn<T[K]> | [SystemFn<T[K]>, SystemConfig<NoInfer<T[K]>>]
+				: [SystemFn<T[K]>, SystemConfig<NoInfer<T[K]>>]
 		}
 	): this {
 		this.assertNotRunning('useSystemChain')
