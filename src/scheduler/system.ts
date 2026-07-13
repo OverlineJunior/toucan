@@ -26,11 +26,9 @@ export type SystemData = InferValue<typeof System>
  *
  * @group Types
  */
-export interface SystemConfig<Args extends unknown[] = unknown[]> {
+export type SystemConfig<Args extends unknown[] = unknown[]> = {
 	/** A human-readable label. */
 	label?: string
-	/** Arguments to pass to the system function. */
-	args?: Args
 	/**
 	 * Runs this system before the given target(s).
 	 * When a `SystemSet` is given, this system runs before every system in that set.
@@ -42,7 +40,7 @@ export interface SystemConfig<Args extends unknown[] = unknown[]> {
 	inSet?: SystemSet | SystemSet[]
 	/** One or more conditions, where all must return `true` for the system to run. */
 	runIf?: RunCondition | RunCondition[]
-}
+} & ([] extends Args ? { args?: Args } : { args: Args })
 
 export interface NormalizedSystemConfig {
 	label?: string

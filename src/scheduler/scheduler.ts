@@ -181,12 +181,16 @@ export class Scheduler {
 	 *     .run()
 	 * ```
 	 */
-	useSystemChain(
+	useSystemChain<T extends unknown[][]>(
 		schedule: Schedules,
-		...systemFns: (SystemFn | [SystemFn, SystemConfig])[]
+		systemFns: {
+			[K in keyof T]: [] extends T[K]
+				? SystemFn<T[K]> | [SystemFn<T[K]>, SystemConfig<T[K]>]
+				: [SystemFn<T[K]>, SystemConfig<T[K]>]
+		}
 	): this {
 		this.assertNotRunning('useSystemChain')
-		this.scheduleMap.get(schedule)!.useSystemChain(...systemFns)
+		this.scheduleMap.get(schedule)!.useSystemChain(systemFns)
 		return this
 	}
 

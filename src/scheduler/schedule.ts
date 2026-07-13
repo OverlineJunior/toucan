@@ -115,7 +115,7 @@ export class Schedule {
 		return this
 	}
 
-	useSystemChain(...systems: (SystemFn | [SystemFn, SystemConfig])[]): this {
+	useSystemChain(systems: (SystemFn | [SystemFn, SystemConfig])[]): this {
 		for (let i = 0; i <= systems.size() - 2; i++) {
 			const a = systems[i]
 			const b = systems[i + 1]

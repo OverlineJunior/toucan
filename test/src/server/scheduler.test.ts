@@ -99,7 +99,7 @@ class SchedulerTests {
 		Assert.throws(
 			() => {
 				scheduler.run()
-				scheduler.useSystemChain('update', () => {})
+				scheduler.useSystemChain('update', [() => {}])
 			},
 			undefined,
 			'Expected useSystemChain to throw after run',
@@ -130,7 +130,7 @@ class SchedulerTests {
 		scheduler
 			.useSystemChain(
 				'startup',
-				...systemNames.map((name) => () => executionOrder.push(name)),
+				systemNames.map((name) => () => executionOrder.push(name)),
 			)
 			.run()
 
@@ -247,7 +247,7 @@ class SchedulerTests {
 
 		scheduler
 			.useSystem('startup', thirdParty)
-			.useSystemChain('startup', [a, { before: thirdParty }], b, c)
+			.useSystemChain('startup', [[a, { before: thirdParty }], b, c])
 			.run()
 
 		const [extIdx, aIdx, bIdx, cIdx] = [
@@ -271,7 +271,9 @@ class SchedulerTests {
 		const b = () => order.push('b')
 		const c = () => order.push('c')
 
-		scheduler.useSystemChain('startup', a, [b, { runIf: () => false }], c).run()
+		scheduler
+			.useSystemChain('startup', [a, [b, { runIf: () => false }], c])
+			.run()
 
 		Assert.true(
 			order.indexOf('a') < order.indexOf('c'),
