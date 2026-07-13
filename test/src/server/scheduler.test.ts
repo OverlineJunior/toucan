@@ -424,7 +424,7 @@ class SchedulerTests {
 		const preUpdateSystem = () => result.add('preUpdate')
 		const updateSystem = () => result.add('update')
 		const preSimulationSystem = () => result.add('preSimulation')
-		const preRenderSystem = () => result.add('preRender')
+		const postSimulationSystem = () => result.add('postSimulation')
 
 		scheduler
 			.configureSet('preStartup', sharedSet, { runIf: () => false })
@@ -435,12 +435,12 @@ class SchedulerTests {
 			.useSystem('preUpdate', preUpdateSystem, { inSet: sharedSet })
 			.useSystem('update', updateSystem, { inSet: sharedSet })
 			.useSystem('preSimulation', preSimulationSystem, { inSet: sharedSet })
-			.useSystem('preRender', preRenderSystem, { inSet: sharedSet })
+			.useSystem('postSimulation', postSimulationSystem, { inSet: sharedSet })
 			.run()
 
 		task.wait(SCHEDULE_SETTLE_DELAY)
 
-		const expectedIncluded = ['startup', 'update', 'preRender']
+		const expectedIncluded = ['startup', 'update', 'postSimulation']
 		expectedIncluded.forEach((str) =>
 			Assert.true(result.has(str), `Expected result to contain ${str}`),
 		)
