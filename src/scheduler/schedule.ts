@@ -59,7 +59,7 @@ export class Schedule {
 	public readonly name: Schedules
 	private readonly entity: EntityHandle
 	private readonly setConfigs = new Map<SystemSet, NormalizedSetConfig>()
-	private sortedCache?: SystemData[]
+	private sortedCache?: [EntityHandle, SystemData][]
 
 	constructor(name: Schedules) {
 		this.name = name
@@ -90,7 +90,8 @@ export class Schedule {
 				schedule: this.name,
 				before,
 				after,
-				runIfs,
+                runIfs,
+				runtimeMs: 0,
 				_inSets: inSets,
 			})
 			.set(Label, label ?? inferSystemName(systemFn, systemEntity))
@@ -144,7 +145,7 @@ export class Schedule {
 		return this
 	}
 
-	getSortedSystems(): SystemData[] {
+	getSortedSystems(): [EntityHandle, SystemData][] {
 		if (this.sortedCache !== undefined) return this.sortedCache
 
 		// Step 1: Group systems by their set membership.
@@ -213,7 +214,7 @@ export class Schedule {
 			}
 			sysEnt.set(System, newData)
 
-			return newData
+			return [sysEnt as EntityHandle, newData]
 		})
 
 		return this.sortedCache

@@ -88,7 +88,8 @@ export const System = component<{
 	schedule: Schedules
 	before: (SystemFn | SystemSet)[]
 	after: (SystemFn | SystemSet)[]
-	runIfs: RunCondition[]
+    runIfs: RunCondition[]
+	runtimeMs: number
 	// System sets are ephemeral information for the scheduler - they all get reduced into systems at runtime.
 	/** @internal */
 	_inSets: SystemSet[]

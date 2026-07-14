@@ -1,6 +1,6 @@
 {
 	"name": "@rbxts/toucan",
-	"version": "0.5.7",
+	"version": "0.5.8",
 	"main": "out/init.lua",
 	"packageManager": "bun@1.3.14",
 	"scripts": {

@@ -337,13 +337,21 @@ export class Scheduler {
 		this.scheduleMap
 			.get(schedule)!
 			.getSortedSystems()
-			.forEach((sysData) => {
-				if (sysData.runIfs.every((cond) => cond())) this.runSystem(sysData)
+			.forEach(([sysEntt, sysData]) => {
+				if (sysData.runIfs.every((cond) => cond()))
+					this.runSystem(sysEntt, sysData)
 			})
 	}
 
-	private runSystem(systemData: SystemData): void {
-		systemData.fn(...systemData.args)
+	private runSystem(sysEntt: EntityHandle, sysData: SystemData): void {
+		const start = os.clock()
+		sysData.fn(...sysData.args)
+		const runtimeMs = (os.clock() - start) * 1000
+
+		sysEntt.set(System, {
+			...sysData,
+			runtimeMs,
+		})
 	}
 
 	private buildPlugins(): void {
