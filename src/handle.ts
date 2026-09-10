@@ -1,4 +1,5 @@
 import { ChildOf as JecsChildOf, Wildcard as JecsWildcard } from '@rbxts/jecs'
+import { entityHistory } from './entityHistory'
 import {
 	getPairRelationFromId,
 	getPairTargetFromId,
@@ -33,39 +34,6 @@ type GetComponentValues<Args extends unknown[]> = WrapLuaTuple<
 // 1. Allow Typescript to infer the value type of Id subclasses with `InferValue`;
 // 2. Hide the property from the user.
 export declare const VALUE_SYMBOL: unique symbol
-
-// Used to store the previous component values for a specific entity when they are updated.
-class EntityHistory {
-	// Reads as `EntityId -> ComponentId -> PreviousValue`.
-	private readonly history = new Map<RawId, Map<RawId, unknown>>()
-
-	get(entityId: RawId, componentId: RawId): unknown | undefined {
-		return this.history.get(entityId)?.get(componentId)
-	}
-
-	set(entityId: RawId, componentId: RawId, value: unknown): void {
-		let hist = this.history.get(entityId)
-		if (!hist) {
-			hist = new Map<RawId, unknown>()
-			this.history.set(entityId, hist)
-		}
-		hist.set(componentId, value)
-	}
-
-	deleteComponent(entityId: RawId, componentId: RawId): void {
-		this.history.get(entityId)?.delete(componentId)
-	}
-
-	clearComponents(entityId: RawId): void {
-		this.history.get(entityId)?.clear()
-	}
-
-	deleteEntity(entityId: RawId): void {
-		this.history.delete(entityId)
-	}
-}
-
-export const entityHistory = new EntityHistory()
 
 /**
  * Returns the appropriate handle for `rawId`, or `undefined` if it does not exist in the world.
