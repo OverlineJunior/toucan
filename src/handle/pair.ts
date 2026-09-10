@@ -1,7 +1,7 @@
 import { pair as jecsPair } from '@rbxts/jecs'
-import type { ComponentHandle, EntityHandle, Handle } from './handle'
-import { VALUE_SYMBOL } from './handle'
-import type { RawId } from './id'
+import type { RawId } from '../id'
+import type { ComponentHandle, EntityHandle, Handle } from '.'
+import { VALUE_SYMBOL } from '.'
 
 /**
  * A special handle for relationship pairs created with `pair()`.

@@ -7,7 +7,7 @@ import {
 	type InferValue,
 } from '../handle'
 import { ChildOf, Internal, Persistent, ThirdParty } from '../handle/builtins'
-import { pair } from '../pair'
+import { pair } from '../handle/pair'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
 import { setActivePluginEntity } from './pluginContext'

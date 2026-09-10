@@ -5,11 +5,11 @@ import {
 	isPairId,
 	type RawId,
 } from '../id'
-import { type Pair, pair } from '../pair'
 import { getActivePluginEntity } from '../scheduler/pluginContext'
 import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from '../util'
 import { getAllComponentIdsIn, world } from '../world'
 import { getBuiltin } from './builtinRegistry'
+import { type Pair, pair } from './pair'
 
 /**
  * Extracts the value type from a component/resource/pair type.

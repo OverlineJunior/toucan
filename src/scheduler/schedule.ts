@@ -1,6 +1,6 @@
 import { component, type EntityHandle, entity } from '../handle'
 import { ChildOf, Internal, Label, Persistent } from '../handle/builtins'
-import { pair } from '../pair'
+import { pair } from '../handle/pair'
 import { query } from '../query'
 import { flatMap, getOrInit, normalizeToArray } from '../util'
 import {

@@ -8,8 +8,8 @@ import {
 	resolveId,
 } from './handle'
 import { Wildcard } from './handle/builtins'
+import type { Pair } from './handle/pair'
 import type { RawId } from './id'
-import type { Pair } from './pair'
 import type { SystemFn } from './scheduler'
 import type { ZeroUpToEight } from './util'
 import { getAllEntityIds, world } from './world'

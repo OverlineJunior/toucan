@@ -23,8 +23,8 @@ export {
 	resolveId,
 	resource,
 } from './handle'
+export { type Pair, pair } from './handle/pair'
 export type { RawId } from './id'
-export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
 export {
 	type PluginFn,
