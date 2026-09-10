@@ -231,10 +231,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	bind(
 		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
 	): SystemFn<[]> {
+		const hoistedQuery = this.makeRawQuery().cached()
+
 		return () => {
 			this.iterate(
-				// TODO! Pretty sure we're calling `cached` per frame. Put this outside the system fn and benchmark.
-				this.makeRawQuery().cached(),
+				hoistedQuery,
 				callback as IterateFn,
 			)
 		}
