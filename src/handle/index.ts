@@ -1,15 +1,15 @@
-import { ChildOf as JecsChildOf, Wildcard as JecsWildcard } from '@rbxts/jecs'
-import { entityHistory } from './entityHistory'
+import { entityHistory } from '../entityHistory'
 import {
 	getPairRelationFromId,
 	getPairTargetFromId,
 	isPairId,
 	type RawId,
-} from './id'
-import { type Pair, pair } from './pair'
-import { getActivePluginEntity } from './scheduler/pluginContext'
-import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
-import { getAllComponentIdsIn, world } from './world'
+} from '../id'
+import { type Pair, pair } from '../pair'
+import { getActivePluginEntity } from '../scheduler/pluginContext'
+import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from '../util'
+import { getAllComponentIdsIn, world } from '../world'
+import { getBuiltin } from './builtinRegistry'
 
 /**
  * Extracts the value type from a component/resource/pair type.
@@ -47,11 +47,11 @@ export function resolveId(
 		return
 	}
 
-	if (world.has(rawId, Component.id)) {
+	if (world.has(rawId, getBuiltin('Component').id)) {
 		return new ComponentHandle(rawId)
-	} else if (world.has(rawId, Resource.id)) {
+	} else if (world.has(rawId, getBuiltin('Resource').id)) {
 		return new ResourceHandle(rawId)
-	} else if (world.has(rawId, Label.id)) {
+	} else if (world.has(rawId, getBuiltin('Label').id)) {
 		// Every entity created through Toucan has a Label, the ones that
 		// don't are Jecs internals that we intentionally ignore.
 		// Because we ignore them, the user doesn't even know they exist.
@@ -265,7 +265,7 @@ export abstract class Handle {
 			? getPairRelationFromId(componentOrPair.id, world)
 			: componentOrPair.id
 
-		if (world.has(targetId, Persistent.id)) {
+		if (world.has(targetId, getBuiltin('Persistent').id)) {
 			error(
 				`Cannot remove component '${componentOrPair}' from entity '${this}' because it is marked as persistent\n\n` +
 					`Tip: check if the component has the 'Persistent' component itself, or, in extreme cases, remove it first`,
@@ -286,12 +286,16 @@ export abstract class Handle {
 	 */
 	clear(): this {
 		this.components()
-			.filter((c) => !world.has(c.id, Persistent.id))
+			.filter((c) => !world.has(c.id, getBuiltin('Persistent').id))
 			.forEach((c) => this.remove(c))
 
 		this.relationships()
 			.filter(
-				(p) => !world.has(getPairRelationFromId(p.id, world), Persistent.id),
+				(p) =>
+					!world.has(
+						getPairRelationFromId(p.id, world),
+						getBuiltin('Persistent').id,
+					),
 			)
 			.forEach((p) => this.remove(p))
 
@@ -347,7 +351,7 @@ export abstract class Handle {
 	 * Gets the label assigned to this entity.
 	 */
 	toString(): string {
-		return this.get(Label)!
+		return this.get(getBuiltin('Label'))!
 	}
 
 	/**
@@ -381,7 +385,7 @@ export abstract class Handle {
 	children(): Handle[] {
 		// Jecs uses (ChildOf, Wildcard) as an internal index for every ChildOf pair,
 		// so world.children(Wildcard) would return all children in the world.
-		if (this.id === Wildcard.id) return []
+		if (this.id === getBuiltin('Wildcard').id) return []
 
 		const childIds = []
 		for (const id of world.children(this.id)) {
@@ -487,7 +491,7 @@ export abstract class Handle {
 	 * Throws an error if the entity is marked as persistent.
 	 */
 	despawn(): void {
-		if (this.has(Persistent)) {
+		if (this.has(getBuiltin('Persistent'))) {
 			error(
 				`Cannot despawn entity '${this}' because it is marked as persistent\n\n` +
 					`Tip: check if the entity has the 'Persistent' component, or, in extreme cases, remove it first`,
@@ -521,15 +525,18 @@ export class EntityHandle extends Handle {
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
-	const handle = new EntityHandle(rawId).set(Label, label ?? `Entity #${rawId}`)
+	const handle = new EntityHandle(rawId).set(
+		getBuiltin('Label'),
+		label ?? `Entity #${rawId}`,
+	)
 
 	if (hasThirdPartyCaller()) {
-		handle.set(ThirdParty)
+		handle.set(getBuiltin('ThirdParty'))
 	}
 
 	const activePlugin = getActivePluginEntity()
 	if (activePlugin !== undefined) {
-		handle.set(pair(AddedByPlugin, activePlugin))
+		handle.set(pair(getBuiltin('AddedByPlugin'), activePlugin))
 	}
 
 	return handle
@@ -568,16 +575,22 @@ export function component<Value = undefined>(
 	label?: string,
 ): ComponentHandle<Value> {
 	const rawId = world.component<Value>()
-	return setupComponent(
+	return addDefaultComponentMetadata(
 		new ComponentHandle<Value>(rawId),
 		label ?? `Component #${rawId}`,
 	)
 }
 
-function setupComponent<C extends ComponentHandle>(comp: C, label: string): C {
-	comp.set(Component).set(Label, label)
+/**
+ * Adds metadata components that **every** component should have.
+ */
+export function addDefaultComponentMetadata<C extends ComponentHandle>(
+	comp: C,
+	label: string,
+): C {
+	comp.set(getBuiltin('Component')).set(getBuiltin('Label'), label)
 	if (hasThirdPartyCaller()) {
-		comp.set(ThirdParty)
+		comp.set(getBuiltin('ThirdParty'))
 	}
 	return comp
 }
@@ -657,149 +670,10 @@ export function resource<Value extends NonNullable<unknown>>(
 	world.set(rawId, rawId, value)
 
 	const handle = new ResourceHandle<Value>(rawId)
-		.set(Resource)
-		.set(Label, label ?? `Resource #${rawId}`)
+		.set(getBuiltin('Resource'))
+		.set(getBuiltin('Label'), label ?? `Resource #${rawId}`)
 	if (hasThirdPartyCaller()) {
-		handle.set(ThirdParty)
+		handle.set(getBuiltin('ThirdParty'))
 	}
 	return handle
 }
-
-// -----------------------------------------------------------------------------
-// Built-in Components
-// -----------------------------------------------------------------------------
-
-const bootstrappedComponents: [ComponentHandle, string][] = []
-
-function bootstrapBuiltinComponent<C extends ComponentHandle>(
-	handle: C,
-	label: string,
-): C {
-	bootstrappedComponents.push([handle, label])
-	return handle
-}
-
-/**
- * Built-in component used to...
- * 1. Mark entities that cannot be despawned by any means;
- * 2. Mark components that cannot be removed by any means.
- *
- * @group Built-ins
- */
-export const Persistent = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(world.component()),
-	'Persistent',
-)
-
-/**
- * Built-in component used to distinguish entities created internally by Toucan.
- *
- * @group Built-ins
- */
-export const Internal = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(world.component()),
-	'Internal',
-)
-
-/**
- * Built-in component used to distinguish entities created by third-party packages.
- *
- * @group Built-ins
- */
-export const ThirdParty = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(world.component()),
-	'ThirdParty',
-)
-
-/**
- * Built-in component used by Toucan to assign human-readable labels to entities.
- *
- * @group Built-ins
- */
-export const Label = bootstrapBuiltinComponent(
-	new ComponentHandle<string>(world.component()),
-	'Label',
-)
-
-/**
- * Built-in component used to distinguish entities that represent components.
- *
- * @group Built-ins
- */
-export const Component = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(world.component()),
-	'Component',
-)
-
-// We reuse Jecs' built-in Wildcard component because it uses it internally.
-/**
- * Built-in component that acts as a wildcard in queries. It has two use cases:
- * 1. To query for all entities, including variations, such as components, systems and so on;
- * 2. To query for all sources or targets of a relationship, without caring about the other end of the relationship.
- *
- * @example
- * ```ts
- * // 1. Query all simple entities (entities that are not also components, systems, resources or plugins):
- * query(Wildcard).withoutAny(Component, System, Resource, Plugin).forEach((id) => {
- *     ...
- * })
- *
- * // 2. Query all entities that are children of any other entity:
- * query(pair(ChildOf, Wildcard)).forEach((child) => {
- *     const parent = child.targetOf(ChildOf)
- * })
- * ```
- *
- * @group Built-ins
- */
-export const Wildcard = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(JecsWildcard),
-	'Wildcard',
-)
-
-// TODO! Consider making a standard system that removes previous ChildOf
-// ! relationships when setting a new one.
-/**
- * Built-in component used to represent parent-child relationships between entities.
- *
- * @example
- * ```ts
- * const alice = entity()
- * const bob = entity().set(pair(ChildOf, alice))
- * assert(bob.parent() === alice)
- * ```
- *
- * @group Built-ins
- */
-export const ChildOf = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(JecsChildOf),
-	'ChildOf',
-)
-
-/**
- * Built-in component used to distinguish entities that represent resources.
- *
- * @group Built-ins
- */
-export const Resource = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(world.component()),
-	'Resource',
-)
-
-/**
- * Built-in component used as a relation for entities spawned within plugins.
- *
- * @group Built-ins
- */
-export const AddedByPlugin = bootstrapBuiltinComponent(
-	new ComponentHandle<undefined>(world.component()),
-	'AddedByPlugin',
-)
-
-bootstrappedComponents.forEach(([comp, label]) => {
-	setupComponent(comp, label)
-	comp.set(Internal)
-
-	const compsWithoutPersistent: ComponentHandle[] = [ChildOf, Persistent]
-	if (!compsWithoutPersistent.includes(comp)) comp.set(Persistent)
-})

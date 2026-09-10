@@ -1,15 +1,12 @@
 import { RunService } from '@rbxts/services'
 import {
-	ChildOf,
 	component,
 	type EntityHandle,
 	entity,
 	type Handle,
 	type InferValue,
-	Internal,
-	Persistent,
-	ThirdParty,
 } from '../handle'
+import { ChildOf, Internal, Persistent, ThirdParty } from '../handle/builtins'
 import { pair } from '../pair'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
@@ -187,7 +184,7 @@ export class Scheduler {
 			[K in keyof T]: [] extends T[K]
 				? SystemFn<T[K]> | [SystemFn<T[K]>, SystemConfig<NoInfer<T[K]>>]
 				: [SystemFn<T[K]>, SystemConfig<NoInfer<T[K]>>]
-		}
+		},
 	): this {
 		this.assertNotRunning('useSystemChain')
 		this.scheduleMap.get(schedule)!.useSystemChain(systemFns)

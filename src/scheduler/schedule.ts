@@ -1,12 +1,5 @@
-import {
-	ChildOf,
-	component,
-	type EntityHandle,
-	entity,
-	Internal,
-	Label,
-	Persistent,
-} from '../handle'
+import { component, type EntityHandle, entity } from '../handle'
+import { ChildOf, Internal, Label, Persistent } from '../handle/builtins'
 import { pair } from '../pair'
 import { query } from '../query'
 import { flatMap, getOrInit, normalizeToArray } from '../util'
@@ -90,7 +83,7 @@ export class Schedule {
 				schedule: this.name,
 				before,
 				after,
-                runIfs,
+				runIfs,
 				runtimeMs: 0,
 				_inSets: inSets,
 			})

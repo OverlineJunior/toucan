@@ -1,10 +1,5 @@
-import {
-	component,
-	type EntityHandle,
-	type InferValue,
-	Internal,
-	Persistent,
-} from '../handle'
+import { component, type EntityHandle, type InferValue } from '../handle'
+import { Internal, Persistent } from '../handle/builtins'
 import { normalizeToArray } from '../util'
 import type { Schedules } from './scheduler'
 
@@ -88,7 +83,7 @@ export const System = component<{
 	schedule: Schedules
 	before: (SystemFn | SystemSet)[]
 	after: (SystemFn | SystemSet)[]
-    runIfs: RunCondition[]
+	runIfs: RunCondition[]
 	runtimeMs: number
 	// System sets are ephemeral information for the scheduler - they all get reduced into systems at runtime.
 	/** @internal */

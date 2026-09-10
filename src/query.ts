@@ -6,8 +6,8 @@ import {
 	type InferValue,
 	type InferValues,
 	resolveId,
-	Wildcard,
 } from './handle'
+import { Wildcard } from './handle/builtins'
 import type { RawId } from './id'
 import type { Pair } from './pair'
 import type { SystemFn } from './scheduler'

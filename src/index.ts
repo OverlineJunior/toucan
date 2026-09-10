@@ -8,7 +8,7 @@ import {
 	Resource,
 	ThirdParty,
 	Wildcard,
-} from './handle'
+} from './handle/builtins'
 import { Plugin, ScheduleComponent as Schedule, System } from './scheduler'
 
 export {
