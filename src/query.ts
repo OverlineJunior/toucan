@@ -1,7 +1,7 @@
 import type * as jecs from '@rbxts/jecs'
+import { entityHistory } from './entityHistory'
 import {
 	type ComponentHandle,
-	entityHistory,
 	type Handle,
 	type InferValue,
 	type InferValues,
