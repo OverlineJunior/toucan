@@ -19,6 +19,18 @@ export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [
 	...InferValues<Cs>,
 ]
 
+type IterateFn = (
+	id: Handle,
+	v1?: unknown,
+	v2?: unknown,
+	v3?: unknown,
+	v4?: unknown,
+	v5?: unknown,
+	v6?: unknown,
+	v7?: unknown,
+	v8?: unknown,
+) => boolean | void
+
 type DisconnectFn = () => void
 
 /**
@@ -55,7 +67,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Does not append the values of these components to the results.
 	 */
 	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
-		return this.addFilter((e) => components.some((c) => e.has(c)))
+		this.filters.push((e) => components.some((c) => e.has(c)))
+		return this
 	}
 
 	/**
@@ -70,7 +83,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * Excludes entities with _any_ of the specified components from the query's results.
 	 */
 	withoutAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
-		return this.addFilter((e) => components.every((c) => !e.has(c)))
+		this.filters.push((e) => components.every((c) => !e.has(c)))
+		return this
 	}
 
 	/**
@@ -79,12 +93,13 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	filter(
 		predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean,
 	): Query<Cs> {
-		return this.addFilter(
+		this.filters.push(
 			predicate as unknown as (
 				entity: Handle,
 				...components: unknown[]
 			) => boolean,
 		)
+		return this
 	}
 
 	/**
@@ -94,11 +109,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	forEach(
 		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
 	): void {
-		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
-
-		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-			fn(e, v1, v2, v3, v4, v5, v6, v7, v8)
-		})
+		this.iterate(this.makeRawQuery(), callback as IterateFn)
 	}
 
 	/**
@@ -109,30 +120,16 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	find(
 		predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean,
 	): QueryResult<Cs> | undefined {
-		const pred = predicate as unknown as (
-			e: Handle,
-			...args: unknown[]
-		) => boolean
-		let result: QueryResult<Cs> | undefined
+		let result: [Handle, ...unknown[]] | undefined
 
 		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-			if (pred(e, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				result = [
-					e,
-					v1,
-					v2,
-					v3,
-					v4,
-					v5,
-					v6,
-					v7,
-					v8,
-				] as unknown as QueryResult<Cs>
+			if ((predicate as IterateFn)(e, v1, v2, v3, v4, v5, v6, v7, v8)) {
+				result = [e, v1, v2, v3, v4, v5, v6, v7, v8]
 				return true
 			}
 		})
 
-		return result
+		return result as QueryResult<Cs>
 	}
 
 	/**
@@ -146,10 +143,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	map<const R extends defined>(
 		mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R,
 	): R[] {
+		const fn = mapper as (e: Handle, ...values: unknown[]) => R
 		const results: R[] = []
 
-		this.forEach((e, ...components) => {
-			results.push(mapper(e, ...components))
+		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+			results.push(fn(e, v1, v2, v3, v4, v5, v6, v7, v8))
 		})
 
 		return results
@@ -167,10 +165,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		) => R,
 		initialValue: R,
 	): R {
+		const fn = reducer as (acc: R, e: Handle, ...values: unknown[]) => R
 		let accumulator = initialValue
 
-		this.forEach((e, ...components) => {
-			accumulator = reducer(accumulator, e, ...components)
+		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+			accumulator = fn(accumulator, e, v1, v2, v3, v4, v5, v6, v7, v8)
 		})
 
 		return accumulator
@@ -187,8 +186,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	collect(): QueryResult<Cs>[] {
 		const results: [Handle, ...unknown[]][] = []
 
-		this.forEach((e, ...components) => {
-			results.push([e, ...components])
+		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+			results.push([e, v1, v2, v3, v4, v5, v6, v7, v8])
 		})
 
 		return results as QueryResult<Cs>[]
@@ -232,14 +231,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	bind(
 		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
 	): SystemFn<[]> {
-		const fn = callback as unknown as (e: Handle, ...args: unknown[]) => void
-
 		return () => {
 			this.iterate(
+				// TODO! Pretty sure we're calling `cached` per frame. Put this outside the system fn and benchmark.
 				this.makeRawQuery().cached(),
-				(e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-					fn(e, v1, v2, v3, v4, v5, v6, v7, v8)
-				},
+				callback as IterateFn,
 			)
 		}
 	}
@@ -367,24 +363,14 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	private iterate(
 		rawQuery: jecs.Query<RawId[]> | jecs.CachedQuery<RawId[]>,
-		callback: (
-			id: Handle,
-			v1?: unknown,
-			v2?: unknown,
-			v3?: unknown,
-			v4?: unknown,
-			v5?: unknown,
-			v6?: unknown,
-			v7?: unknown,
-			v8?: unknown,
-		) => boolean | void,
+		callback: IterateFn,
 	): void {
 		// TODO! Optimize this by adding a flag when we add Wildcard to the query.
 		// Wildcard queries are a special case where we want all entities.
 		if (this.isWildcardQuery()) {
 			for (const rawId of getAllEntityIds()) {
 				const id = resolveId(rawId)
-				if (!id || !this.matchesFilters(id)) continue
+				if (!id || !this.passesFilters(id)) continue
 
 				if (callback(id)) return
 			}
@@ -395,7 +381,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
 		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
 			const id = resolveId(rawId)!
-			if (!this.matchesFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
+			if (!this.passesFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
 
 			if (callback(id, v1, v2, v3, v4, v5, v6, v7, v8)) return
 		}
@@ -408,29 +394,6 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			.without(...this.excludedIds)
 	}
 
-	private matchesFilters(
-		e: Handle,
-		v1?: unknown,
-		v2?: unknown,
-		v3?: unknown,
-		v4?: unknown,
-		v5?: unknown,
-		v6?: unknown,
-		v7?: unknown,
-		v8?: unknown,
-	): boolean {
-		return this.filters.every((filter) =>
-			filter(e, v1, v2, v3, v4, v5, v6, v7, v8),
-		)
-	}
-
-	private addFilter(
-		predicate: (entity: Handle, ...components: unknown[]) => boolean,
-	): Query<Cs> {
-		this.filters.push(predicate)
-		return this
-	}
-
 	private isWildcardQuery(): boolean {
 		return (
 			this.requiredIds.includes(Wildcard.id) ||
@@ -438,6 +401,11 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		)
 	}
 
+	/**
+	 * Checks whether `e` satisfies _all_ of the query's criteria (required,
+	 * included and excluded ids, plus filters) outside of a jecs query iteration,
+	 * returning the values of the required components if it does.
+	 */
 	private match(e: Handle): InferValues<Cs> | undefined {
 		const requiredValues: defined[] = []
 
@@ -456,9 +424,26 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			if (world.has(e.id, compId)) return undefined
 		}
 
-		if (!this.matchesFilters(e, ...requiredValues)) return undefined
+		if (!this.passesFilters(e, ...requiredValues)) return undefined
 
 		return requiredValues as unknown as InferValues<Cs>
+	}
+
+	private passesFilters(
+		e: Handle,
+		v1?: unknown,
+		v2?: unknown,
+		v3?: unknown,
+		v4?: unknown,
+		v5?: unknown,
+		v6?: unknown,
+		v7?: unknown,
+		v8?: unknown,
+	): boolean {
+		for (const filter of this.filters) {
+			if (!filter(e, v1, v2, v3, v4, v5, v6, v7, v8)) return false
+		}
+		return true
 	}
 }
 
