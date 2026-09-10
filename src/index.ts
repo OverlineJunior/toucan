@@ -19,11 +19,11 @@ export {
 	Handle,
 	type InferValue,
 	type InferValues,
-	type RawId,
 	type ResourceHandle,
 	resolveId,
 	resource,
 } from './handle'
+export type { RawId } from './id'
 export { type Pair, pair } from './pair'
 export { type Query, query } from './query'
 export {

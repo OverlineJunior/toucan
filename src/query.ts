@@ -5,10 +5,10 @@ import {
 	type Handle,
 	type InferValue,
 	type InferValues,
-	type RawId,
 	resolveId,
 	Wildcard,
 } from './handle'
+import type { RawId } from './id'
 import type { Pair } from './pair'
 import type { SystemFn } from './scheduler'
 import type { ZeroUpToEight } from './util'

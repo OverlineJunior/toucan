@@ -1,5 +1,5 @@
 import * as jecs from '@rbxts/jecs'
-import type { RawId } from './handle'
+import { ECS_ENTITY_MASK, type RawId } from './id'
 
 type UnsafeWorld = jecs.World & {
 	entity_index: {
@@ -11,9 +11,6 @@ type UnsafeWorld = jecs.World & {
 		}[]
 	}
 }
-
-export const ECS_PAIR_OFFSET = 2 ** 48
-export const ECS_ENTITY_MASK = 0x1000000
 
 export const world = jecs.world()
 

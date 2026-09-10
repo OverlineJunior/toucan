@@ -1,25 +1,14 @@
-import {
-	ChildOf as JecsChildOf,
-	type Entity as JecsEntity,
-	Wildcard as JecsWildcard,
-} from '@rbxts/jecs'
+import { ChildOf as JecsChildOf, Wildcard as JecsWildcard } from '@rbxts/jecs'
 import {
 	getPairRelationFromId,
 	getPairTargetFromId,
-	isPair,
-	type Pair,
-	pair,
-} from './pair'
+	isPairId,
+	type RawId,
+} from './id'
+import { type Pair, pair } from './pair'
 import { getActivePluginEntity } from './scheduler/pluginContext'
 import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from './util'
 import { getAllComponentIdsIn, world } from './world'
-
-/**
- * A numerical entity identifier used internally.
- *
- * @group Types
- */
-export type RawId = JecsEntity
 
 /**
  * Extracts the value type from a component/resource/pair type.
@@ -304,8 +293,8 @@ export abstract class Handle {
 	 * with the `Persistent` component (i.e. most built-in components).
 	 */
 	remove(componentOrPair: ComponentHandle | Pair): this {
-		const targetId = isPair(componentOrPair.id)
-			? getPairRelationFromId(componentOrPair.id)
+		const targetId = isPairId(componentOrPair.id)
+			? getPairRelationFromId(componentOrPair.id, world)
 			: componentOrPair.id
 
 		if (world.has(targetId, Persistent.id)) {
@@ -333,7 +322,9 @@ export abstract class Handle {
 			.forEach((c) => this.remove(c))
 
 		this.relationships()
-			.filter((p) => !world.has(getPairRelationFromId(p.id), Persistent.id))
+			.filter(
+				(p) => !world.has(getPairRelationFromId(p.id, world), Persistent.id),
+			)
 			.forEach((p) => this.remove(p))
 
 		entityHistory.clearComponents(this.id)
@@ -348,7 +339,7 @@ export abstract class Handle {
 
 		getAllComponentIdsIn(this.id).forEach((compId_) => {
 			const compId = compId_ as RawId
-			if (isPair(compId)) return
+			if (isPairId(compId)) return
 			const handle = resolveId(compId as RawId)
 			if (handle) {
 				comps.push(handle as ComponentHandle)
@@ -366,10 +357,10 @@ export abstract class Handle {
 
 		getAllComponentIdsIn(this.id).forEach((compId_) => {
 			const compId = compId_ as RawId
-			if (!isPair(compId)) return
+			if (!isPairId(compId)) return
 
-			const relationId = getPairRelationFromId(compId)
-			const targetId = getPairTargetFromId(compId)
+			const relationId = getPairRelationFromId(compId, world)
+			const targetId = getPairTargetFromId(compId, world)
 
 			const relationHandle = resolveId(relationId)
 			const targetHandle = resolveId(targetId)
@@ -419,11 +410,11 @@ export abstract class Handle {
 	 * const children = alice.children() // [charlie, bob]
 	 * ```
 	 */
-    children(): Handle[] {
-        // Jecs uses (ChildOf, Wildcard) as an internal index for every ChildOf pair,
-        // so world.children(Wildcard) would return all children in the world.
-        if (this.id === Wildcard.id) return []
-        
+	children(): Handle[] {
+		// Jecs uses (ChildOf, Wildcard) as an internal index for every ChildOf pair,
+		// so world.children(Wildcard) would return all children in the world.
+		if (this.id === Wildcard.id) return []
+
 		const childIds = []
 		for (const id of world.children(this.id)) {
 			childIds.push(resolveId(id)!)

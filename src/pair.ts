@@ -1,40 +1,7 @@
 import { pair as jecsPair } from '@rbxts/jecs'
-import type { ComponentHandle, EntityHandle, Handle, RawId } from './handle'
+import type { ComponentHandle, EntityHandle, Handle } from './handle'
 import { VALUE_SYMBOL } from './handle'
-import { ECS_ENTITY_MASK, ECS_PAIR_OFFSET, world } from './world'
-
-/**
- * Due to Roblox's max of 53 bits of integer precision, Jecs' pairs use a stripped ID format (relation's 24 bits + target's 24 bits).
- * Because of this, we need to reconstruct the full ID by checking if the stripped ID exists, and if not, we add the pair offset until we find a match.
- */
-function reconstructStrippedId(strippedId: RawId): RawId {
-	if (world.contains(strippedId)) return strippedId
-
-	for (let gen = 1; gen < 256; gen++) {
-		const fullId = strippedId + gen * ECS_ENTITY_MASK
-		if (world.contains(fullId)) {
-			return fullId as RawId
-		}
-	}
-
-	return strippedId
-}
-
-export function isPair(id: RawId): boolean {
-	return id >= ECS_PAIR_OFFSET
-}
-
-export function getPairRelationFromId(pairId: RawId): RawId {
-	const strippedId = math.floor(
-		(pairId - ECS_PAIR_OFFSET) / ECS_ENTITY_MASK,
-	) as RawId
-	return reconstructStrippedId(strippedId)
-}
-
-export function getPairTargetFromId(pairId: RawId): RawId {
-	const strippedId = ((pairId - ECS_PAIR_OFFSET) % ECS_ENTITY_MASK) as RawId
-	return reconstructStrippedId(strippedId)
-}
+import type { RawId } from './id'
 
 /**
  * A special handle for relationship pairs created with `pair()`.
