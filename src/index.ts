@@ -4,6 +4,7 @@ import {
 	Component,
 	Internal,
 	Label,
+	Message,
 	Persistent,
 	Resource,
 	ThirdParty,
@@ -56,6 +57,7 @@ export const Builtin = {
 	Plugin,
 	System,
 	Schedule,
+	Message,
 }
 /** @internal */
 export { _simulateThirdParty } from './handle'

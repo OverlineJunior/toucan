@@ -13,6 +13,14 @@ export interface BuiltinComponentHandleMap {
 	Wildcard: ComponentHandle<undefined>
 	ChildOf: ComponentHandle<undefined>
 	AddedByPlugin: ComponentHandle<undefined>
+	/**
+	 * - `sequence`: The next message counter. Used for guaranteeing emission-order.
+	 * - `frame`: The frame counter at the moment of emission.
+	 */
+	Message: ComponentHandle<{
+		sequence: number
+		frame: number
+	}>
 }
 
 export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
@@ -20,6 +28,7 @@ export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
 const BUILTINS_WITHOUT_PERSISTENT: BuiltinComponentLabels[] = [
 	'Persistent',
 	'ChildOf',
+	'Message',
 ]
 
 /**
@@ -137,6 +146,11 @@ export const Resource = registerBuiltin(
 export const AddedByPlugin = registerBuiltin(
 	'AddedByPlugin',
 	new ComponentHandle<undefined>(world.component()),
+)
+
+export const Message = registerBuiltin(
+	'Message',
+	new ComponentHandle(world.component()),
 )
 
 bootstrapBuiltins((component, label) => {
