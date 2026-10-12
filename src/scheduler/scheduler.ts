@@ -8,6 +8,7 @@ import {
 } from '../handle'
 import { ChildOf, Internal, Persistent, ThirdParty } from '../handle/builtins'
 import { pair } from '../handle/pair'
+import { clearStaleMessages } from '../message'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
 import { setActivePluginEntity } from './pluginContext'
@@ -126,6 +127,8 @@ export class Scheduler {
 		}
 
 		schedulerAlreadyCreated = true
+
+		this.useSystem('first', clearStaleMessages)
 	}
 
 	/**

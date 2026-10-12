@@ -4,7 +4,7 @@ import {
 	Component,
 	Internal,
 	Label,
-	Message,
+	MessageSequence,
 	Persistent,
 	Resource,
 	ThirdParty,
@@ -26,6 +26,7 @@ export {
 } from './handle'
 export { type Pair, pair } from './handle/pair'
 export type { RawId } from './id'
+export { message } from './message'
 export { type Query, query } from './query'
 export {
 	type PluginFn,
@@ -41,6 +42,7 @@ export {
 	systemSet,
 	type UpdateSchedules,
 } from './scheduler'
+
 /**
  * A collection of built-in {@link Handle}s.
  */
@@ -57,7 +59,7 @@ export const Builtin = {
 	Plugin,
 	System,
 	Schedule,
-	Message,
+	MessageSequence,
 }
 /** @internal */
 export { _simulateThirdParty } from './handle'

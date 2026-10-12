@@ -17,10 +17,7 @@ export interface BuiltinComponentHandleMap {
 	 * - `sequence`: The message's monotonic counter. Used for guaranteeing emission-order.
 	 * - `frame`: The frame counter at the moment of emission.
 	 */
-	Message: ComponentHandle<{
-		sequence: number
-		frame: number
-	}>
+	MessageSequence: ComponentHandle<number>
 }
 
 export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
@@ -28,7 +25,7 @@ export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
 const BUILTINS_WITHOUT_PERSISTENT: BuiltinComponentLabels[] = [
 	'Persistent',
 	'ChildOf',
-	'Message',
+	'MessageSequence',
 ]
 
 /**
@@ -148,8 +145,8 @@ export const AddedByPlugin = registerBuiltin(
 	new ComponentHandle<undefined>(world.component()),
 )
 
-export const Message = registerBuiltin(
-	'Message',
+export const MessageSequence = registerBuiltin(
+	'MessageSequence',
 	new ComponentHandle(world.component()),
 )
 
