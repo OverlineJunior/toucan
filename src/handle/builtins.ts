@@ -25,7 +25,6 @@ export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
 const BUILTINS_WITHOUT_PERSISTENT: BuiltinComponentLabels[] = [
 	'Persistent',
 	'ChildOf',
-	'MessageSequence',
 ]
 
 /**
