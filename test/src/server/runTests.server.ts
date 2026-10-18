@@ -27,7 +27,7 @@ function systemB() {
 function systemC() {
 	query()
 		.on(Fired)
-		.forEach((a, b) => {
+		.forEach((_a, _b) => {
 			print('SystemC')
 		})
 }
