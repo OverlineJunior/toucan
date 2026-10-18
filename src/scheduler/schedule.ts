@@ -1,11 +1,8 @@
-import { pair as jecsPair } from '@rbxts/jecs'
 import { component, type EntityHandle, entity } from '../handle'
 import { ChildOf, Internal, Label, Persistent } from '../handle/builtins'
 import { pair } from '../handle/pair'
-import type { RawId } from '../id'
 import { query } from '../query'
 import { flatMap, getOrInit, normalizeToArray } from '../util'
-import { world } from '../world'
 import {
 	type AddEdgeResult,
 	DirectedAcyclicGraph,
