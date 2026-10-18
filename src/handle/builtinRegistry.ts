@@ -1,11 +1,11 @@
 // This file exists to separate built-in component definitions from `index.ts`
 // while avoiding circular dependencies between `builtins.ts` and `index.ts`.
-// 
+//
 // This file must not import values from index.ts as to avoid circular dependencies;
 // types are okay.
 // Good: builtins.ts -> index.ts -> builtinRegistry.ts
 // Bad: builtins.ts -> index.ts -> builtinRegistry.ts -> index.ts
-// 
+//
 // Other files can safely import directly from `builtins.ts`, skipping this registry.
 
 import type { ComponentHandle } from '.'

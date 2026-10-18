@@ -14,8 +14,7 @@ export interface BuiltinComponentHandleMap {
 	ChildOf: ComponentHandle<undefined>
 	AddedByPlugin: ComponentHandle<undefined>
 	/**
-	 * - `sequence`: The message's monotonic counter. Used for guaranteeing emission-order.
-	 * - `frame`: The frame counter at the moment of emission.
+	 * The message's monotonic counter. Used for guaranteeing emission-order.
 	 */
 	MessageSequence: ComponentHandle<number>
 }

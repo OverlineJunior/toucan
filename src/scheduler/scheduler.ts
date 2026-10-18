@@ -21,6 +21,7 @@ import {
 	type SystemFn,
 	type SystemSet,
 } from './system'
+import { setActiveSystemEntity } from './systemContext'
 
 /**
  * A function that represents a plugin.
@@ -337,17 +338,25 @@ export class Scheduler {
 		this.scheduleMap
 			.get(schedule)!
 			.getSortedSystems()
-			.forEach(([sysEntt, sysData]) => {
-				if (sysData.runIfs.every((cond) => cond()))
-					this.runSystem(sysEntt, sysData)
+			.forEach((sys) => {
+				const data = sys.get(System)!
+				if (data.runIfs.every((cond) => cond())) this.runSystem(sys, data)
 			})
 	}
 
 	private runSystem(sysEntt: EntityHandle, sysData: SystemData): void {
 		const start = os.clock()
-		sysData.fn(...sysData.args)
-		const runtimeMs = (os.clock() - start) * 1000
 
+		setActiveSystemEntity(sysEntt)
+
+		// We use a try-finally block to ensure the active system entity is always cleared, even if the system throws an error.
+		try {
+			sysData.fn(...sysData.args)
+		} finally {
+			setActiveSystemEntity(undefined)
+		}
+
+		const runtimeMs = (os.clock() - start) * 1000
 		sysEntt.set(System, {
 			...sysData,
 			runtimeMs,

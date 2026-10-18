@@ -2,6 +2,7 @@ import { type ComponentHandle, entity, type InferValue } from './handle'
 import { MessageSequence } from './handle/builtins'
 import type { Pair } from './handle/pair'
 import type { RawId } from './id'
+import { System, type SystemData } from './scheduler/system'
 import { world } from './world'
 
 type Term = ComponentHandle | Pair
@@ -13,6 +14,31 @@ let frameFirstSequence = 0
 
 export function getCurrentMessageSequence(): number {
 	return nextSequence
+}
+
+/**
+ * Returns the first message sequence the given system hasn't read yet for the
+ * given signature, and marks every message emitted so far (up to `now`) as read.
+ */
+export function advanceMessageCursor(
+	systemRawId: RawId,
+	signature: string,
+	now: number,
+): number {
+	const sysData = world.get(systemRawId, System.id) as SystemData | undefined
+	if (sysData === undefined) {
+		return 0
+	}
+
+	let cursors = sysData.cursors
+	if (cursors === undefined) {
+		cursors = new Map()
+		sysData.cursors = cursors
+	}
+
+	const cursor = cursors.get(signature) ?? 0
+	cursors.set(signature, now)
+	return cursor
 }
 
 /**

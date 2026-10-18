@@ -195,7 +195,7 @@ THEME
 }
 
 a[href="/toucan/api/variables/builtin/"] {
-    font-size: var(--sl-text-base);
-    font-weight: 600;
-    color: var(--sl-color-white);
+	font-size: var(--sl-text-base);
+	font-weight: 600;
+	color: var(--sl-color-white);
 }

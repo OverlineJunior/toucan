@@ -85,8 +85,20 @@ export const System = component<{
 	after: (SystemFn | SystemSet)[]
 	runIfs: RunCondition[]
 	runtimeMs: number
-	// System sets are ephemeral information for the scheduler - they all get reduced into systems at runtime.
-	/** @internal */
+	/**
+	 * A system's message cursors, keyed by a signature of the terms it reads
+	 * messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
+	 * message sequence that the system hasn't read yet.
+	 *
+	 * Created lazily the first time the system reads messages with `on()`.
+	 */
+	cursors?: Map<string, number>
+	/**
+	 * System sets are ephemeral information for the scheduler - they all get
+	 * reduced into systems at runtime.
+	 *
+	 * @internal
+	 */
 	_inSets: SystemSet[]
 }>('System')
 	.set(Internal)

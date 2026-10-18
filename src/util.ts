@@ -17,6 +17,16 @@ export type ZeroUpToEight<T> =
 	| [T, T, T, T, T, T, T]
 	| [T, T, T, T, T, T, T, T]
 
+export type OneUpToEight<T> =
+	| [T]
+	| [T, T]
+	| [T, T, T]
+	| [T, T, T, T]
+	| [T, T, T, T, T]
+	| [T, T, T, T, T, T]
+	| [T, T, T, T, T, T, T]
+	| [T, T, T, T, T, T, T, T]
+
 export function deepEqual(a: unknown, b: unknown): boolean {
 	if (a === b) return true
 

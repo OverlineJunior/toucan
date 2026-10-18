@@ -7,17 +7,37 @@ import {
 	type InferValues,
 	resolveId,
 } from './handle'
-import { Wildcard } from './handle/builtins'
+import { MessageSequence, Wildcard } from './handle/builtins'
 import type { Pair } from './handle/pair'
 import type { RawId } from './id'
+import { advanceMessageCursor, getCurrentMessageSequence } from './message'
 import type { SystemFn } from './scheduler'
-import type { ZeroUpToEight } from './util'
+import { getActiveSystemEntity } from './scheduler/systemContext'
+import type { OneUpToEight, ZeroUpToEight } from './util'
 import { getAllEntityIds, world } from './world'
 
-export type QueryResult<Cs extends (ComponentHandle | Pair)[]> = [
-	Handle,
-	...InferValues<Cs>,
-]
+export type QueryResult<
+	Cs extends (ComponentHandle | Pair)[],
+	Ms extends (ComponentHandle | Pair)[] = [],
+> = [] extends Ms
+	? [Handle, ...InferValues<Cs>]
+	: [] extends Cs
+		? [Handle, ...InferValues<Ms>]
+		: [Handle, ...InferValues<Cs>, Handle, ...InferValues<Ms>]
+
+/**
+ * The type of the callback passed to a query's consumers (e.g. {@link Query.forEach}).
+ *
+ * For queries that read messages with {@link Query.on}, the message entity and the
+ * values of the message's terms are appended after the query's own values.
+ *
+ * @group Types
+ */
+export type QueryCallback<
+	Cs extends (ComponentHandle | Pair)[],
+	Ms extends (ComponentHandle | Pair)[] = [],
+	Ret = void,
+> = (...args: QueryResult<Cs, Ms>) => Ret
 
 type IterateFn = (
 	id: Handle,
@@ -31,14 +51,30 @@ type IterateFn = (
 	v8?: unknown,
 ) => boolean | void
 
+type AnyIterateFn = (id: Handle, ...args: unknown[]) => boolean | void
+
+type RawQuery = jecs.Query<RawId[]> | jecs.CachedQuery<RawId[]>
+
 type DisconnectFn = () => void
+
+interface MessageSnapshot {
+	entity: Handle
+	sequence: number
+	values: unknown[]
+}
 
 /**
  * The type for queries created with {@link query}.
  *
+ * `Cs` are the components and pairs that entities must have, and `Ms` are the
+ * terms passed to {@link Query.on} (empty when the query doesn't read messages).
+ *
  * @group Types
  */
-export class Query<Cs extends (ComponentHandle | Pair)[]> {
+export class Query<
+	Cs extends (ComponentHandle | Pair)[],
+	Ms extends (ComponentHandle | Pair)[] = [],
+> {
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
@@ -46,6 +82,8 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 		entity: Handle,
 		...components: unknown[]
 	) => boolean)[] = []
+	private onTermIds: RawId[] = []
+	private onSignature?: string
 
 	constructor(...components: Cs) {
 		this.requiredIds = components.map((c) => c.id)
@@ -56,7 +94,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 *
 	 * Does not append the values of these components to the results.
 	 */
-	with(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+	with(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
 		components.forEach((c) => this.includedIds.push(c.id))
 		return this
 	}
@@ -66,7 +104,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 *
 	 * Does not append the values of these components to the results.
 	 */
-	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
 		this.filters.push((e) => components.some((c) => e.has(c)))
 		return this
 	}
@@ -74,7 +112,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	/**
 	 * Excludes entities with _all_ of the specified components from the query's results.
 	 */
-	without(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+	without(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
 		components.forEach((c) => this.excludedIds.push(c.id))
 		return this
 	}
@@ -82,7 +120,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	/**
 	 * Excludes entities with _any_ of the specified components from the query's results.
 	 */
-	withoutAny(...components: (ComponentHandle | Pair)[]): Query<Cs> {
+	withoutAny(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
 		this.filters.push((e) => components.every((c) => !e.has(c)))
 		return this
 	}
@@ -92,7 +130,7 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 */
 	filter(
 		predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean,
-	): Query<Cs> {
+	): Query<Cs, Ms> {
 		this.filters.push(
 			predicate as unknown as (
 				entity: Handle,
@@ -103,13 +141,58 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
+	 * Reads messages that have _all_ of the specified components or pairs, pairing
+	 * each one with every entity that matches this query.
+	 *
+	 * The callback receives `(entity, ...entityValues, message, ...messageValues)`.
+	 * With no required components (`query().on(...)`), it receives only
+	 * `(message, ...messageValues)`.
+	 *
+	 * Messages can be read even by systems that run before they're emitted, at the cost of a one-frame delay.
+	 *
+	 * @remarks
+	 * - Calling `on()` more than once will throw an error.
+	 * - Calling `on()` outside of a system will throw an error.
+	 *
+	 * @example
+	 * ```ts
+	 * const Health = component<number>()
+	 * const Damaged = component<number>()
+	 *
+	 * function applyDamage() {
+	 *     query(Health).on(Damaged).forEach((e, health, _msg, damage) => {
+	 *         e.set(Health, health - damage)
+	 *     })
+	 * }
+	 * ```
+	 *
+	 * @example
+	 * ```ts
+	 * function announceDamage() {
+	 *     query().on(Damaged).forEach((_msg, damage) => {
+	 *         print(`Ouch! ${damage} damage!`)
+	 *     })
+	 * }
+	 * ```
+	 */
+	on<NewMs extends OneUpToEight<ComponentHandle | Pair>>(
+		...terms: NewMs
+	): Query<Cs, NewMs> {
+		if (this.onSignature !== undefined)
+			error("'on' can only be called once per query")
+
+		this.onTermIds = terms.map((t) => t.id)
+		this.onSignature = this.onTermIds.join(',')
+
+		return this as unknown as Query<Cs, NewMs>
+	}
+
+	/**
 	 * Iterates over each entity that matches the query, calling the provided `callback`
 	 * with the entity itself and its corresponding component values.
 	 */
-	forEach(
-		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
-	): void {
-		this.iterate(this.makeRawQuery(), callback as IterateFn)
+	forEach(callback: QueryCallback<Cs, Ms>): void {
+		this.runQuery(callback as unknown as AnyIterateFn)
 	}
 
 	/**
@@ -118,18 +201,22 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * component values, or `undefined` if no such entity exists.
 	 */
 	find(
-		predicate: (entity: Handle, ...componentValues: InferValues<Cs>) => boolean,
-	): QueryResult<Cs> | undefined {
+		predicate: QueryCallback<Cs, Ms, boolean>,
+	): QueryResult<Cs, Ms> | undefined {
+		const fn = predicate as unknown as (
+			e: Handle,
+			...args: unknown[]
+		) => boolean
 		let result: [Handle, ...unknown[]] | undefined
 
-		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-			if ((predicate as IterateFn)(e, v1, v2, v3, v4, v5, v6, v7, v8)) {
-				result = [e, v1, v2, v3, v4, v5, v6, v7, v8]
-				return true
-			}
+		this.runQuery((e, ...args) => {
+			if (!fn(e, ...args)) return
+
+			result = [e, ...args]
+			return true
 		})
 
-		return result as QueryResult<Cs>
+		return result as QueryResult<Cs, Ms> | undefined
 	}
 
 	/**
@@ -140,14 +227,12 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * ⚠️ This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
-	map<const R extends defined>(
-		mapper: (entity: Handle, ...componentValues: InferValues<Cs>) => R,
-	): R[] {
-		const fn = mapper as (e: Handle, ...values: unknown[]) => R
+	map<const R extends defined>(mapper: QueryCallback<Cs, Ms, R>): R[] {
+		const fn = mapper as unknown as (e: Handle, ...args: unknown[]) => R
 		const results: R[] = []
 
-		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-			results.push(fn(e, v1, v2, v3, v4, v5, v6, v7, v8))
+		this.runQuery((e, ...args) => {
+			results.push(fn(e, ...args))
 		})
 
 		return results
@@ -158,18 +243,18 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * `reducer` function and `initialValue`.
 	 */
 	reduce<R>(
-		reducer: (
-			accumulator: R,
-			entity: Handle,
-			...componentValues: InferValues<Cs>
-		) => R,
+		reducer: (accumulator: R, ...args: QueryResult<Cs, Ms>) => R,
 		initialValue: R,
 	): R {
-		const fn = reducer as (acc: R, e: Handle, ...values: unknown[]) => R
+		const fn = reducer as unknown as (
+			acc: R,
+			e: Handle,
+			...args: unknown[]
+		) => R
 		let accumulator = initialValue
 
-		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-			accumulator = fn(accumulator, e, v1, v2, v3, v4, v5, v6, v7, v8)
+		this.runQuery((e, ...args) => {
+			accumulator = fn(accumulator, e, ...args)
 		})
 
 		return accumulator
@@ -183,14 +268,14 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * ⚠️ This method allocates memory for all entities that match the query, so it should be
 	 * used sparingly in performance-critical code.
 	 */
-	collect(): QueryResult<Cs>[] {
+	collect(): QueryResult<Cs, Ms>[] {
 		const results: [Handle, ...unknown[]][] = []
 
-		this.iterate(this.makeRawQuery(), (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
-			results.push([e, v1, v2, v3, v4, v5, v6, v7, v8])
+		this.runQuery((e, ...args) => {
+			results.push([e, ...args])
 		})
 
-		return results as QueryResult<Cs>[]
+		return results as unknown as QueryResult<Cs, Ms>[]
 	}
 
 	/**
@@ -228,15 +313,25 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 *     .run()
 	 * ```
 	 */
-	bind(
-		callback: (entity: Handle, ...componentValues: InferValues<Cs>) => void,
-	): SystemFn<[]> {
-		const hoistedQuery = this.makeRawQuery().cached()
+	bind(callback: QueryCallback<Cs, Ms>): SystemFn<[]> {
+		if (this.onTermIds.isEmpty()) {
+			const hoistedQuery = this.makeRawQuery().cached()
+
+			return () => {
+				this.iterateEntities(hoistedQuery, callback as unknown as IterateFn)
+			}
+		}
+
+		const hoistedBaseQuery = this.requiredIds.isEmpty()
+			? undefined
+			: this.makeRawQuery().cached()
+		const hoistedMsgQuery = this.makeMessageRawQuery().cached()
 
 		return () => {
-			this.iterate(
-				hoistedQuery,
-				callback as IterateFn,
+			this.iterateEntitiesWithMessages(
+				hoistedBaseQuery,
+				hoistedMsgQuery,
+				callback as unknown as AnyIterateFn,
 			)
 		}
 	}
@@ -358,25 +453,52 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	}
 
 	/**
-	 * Iterates over each id in the query, calling the provided `callback`
-	 * with the id and its corresponding component values. Returns early
-	 * if `callback` returns `true`.
+	 * Iterates the query, using the message-aware path when `on()` was called.
 	 */
-	private iterate(
+	private runQuery(callback: AnyIterateFn): void {
+		if (this.onTermIds.isEmpty()) {
+			this.iterateEntities(this.makeRawQuery(), callback)
+			return
+		}
+
+		this.iterateEntitiesWithMessages(
+			this.requiredIds.isEmpty() ? undefined : this.makeRawQuery(),
+			this.makeMessageRawQuery(),
+			callback,
+		)
+	}
+
+	private makeMessageRawQuery(): jecs.Query<RawId[]> {
+		return world.query(...this.onTermIds).with(MessageSequence.id)
+	}
+
+	/**
+	 * Iterates over each entity in the query, calling the provided `callback`
+	 * with the entity and its corresponding component values.
+	 *
+	 * Stops early if `callback` returns `true`.
+	 *
+	 * @returns `true` if the iteration was stopped early by `callback`, or `false`
+	 * if every id was visited.
+	 */
+	private iterateEntities(
 		rawQuery: jecs.Query<RawId[]> | jecs.CachedQuery<RawId[]>,
 		callback: IterateFn,
-	): void {
+	): boolean {
 		// TODO! Optimize this by adding a flag when we add Wildcard to the query.
 		// Wildcard queries are a special case where we want all entities.
 		if (this.isWildcardQuery()) {
 			for (const rawId of getAllEntityIds()) {
+				// Messages are only readable through `on()`.
+				if (world.has(rawId, MessageSequence.id)) continue
+
 				const id = resolveId(rawId)
 				if (!id || !this.passesFilters(id)) continue
 
-				if (callback(id)) return
+				if (callback(id) === true) return true
 			}
 
-			return
+			return false
 		}
 
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
@@ -384,15 +506,101 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 			const id = resolveId(rawId)!
 			if (!this.passesFilters(id, v1, v2, v3, v4, v5, v6, v7, v8)) continue
 
-			if (callback(id, v1, v2, v3, v4, v5, v6, v7, v8)) return
+			if (callback(id, v1, v2, v3, v4, v5, v6, v7, v8) === true) return true
+		}
+
+		return false
+	}
+
+	/**
+	 * Reads the messages this system hasn't read yet that have _all_ of the query's
+	 * `on()` terms, in emission order, calling `callback` for each one:
+	 * - `query().on(...)`: `callback` receives the message and its values.
+	 * - `query(...).on(...)`: `callback` is called for every entity that matches the
+	 *   base query, receiving the entity, its values, the message, and its values.
+	 *
+	 * The system's cursor is advanced past every message emitted so far, matching or
+	 * not, so no message is read twice. Stops early if `callback` returns `true`.
+	 */
+	private iterateEntitiesWithMessages(
+		baseRawQuery: RawQuery | undefined,
+		msgRawQuery: RawQuery,
+		callback: AnyIterateFn,
+	): void {
+		const systemEntt = getActiveSystemEntity()
+		if (systemEntt === undefined)
+			error('Messages can only be read from within a system')
+
+		const now = getCurrentMessageSequence()
+		const cursor = advanceMessageCursor(systemEntt.id, this.onSignature!, now)
+
+		// Collected up front so callbacks can safely emit messages or despawn entities.
+		const messageSnapshots = this.collectMessages(msgRawQuery, cursor, now)
+		const baseCount = this.requiredIds.size()
+
+		for (const { entity, values: mv } of messageSnapshots) {
+			// `query().on(...)`: only the message is passed.
+			if (baseRawQuery === undefined) {
+				// biome-ignore format: keeps each argument on a single line.
+				const result = callback(entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+				if (result === true) return
+				continue
+			}
+
+			// `query(...).on(...)`: every matching entity is paired with the message.
+			// biome-ignore format: keeps each case on a single line.
+			const stopped = this.iterateEntities(baseRawQuery, (e, v1, v2, v3, v4, v5, v6, v7, v8) => {
+    			// Roblox-TS can't spread in the middle of an argument list, so this switch replaces:
+    			// this.iterateEntities(baseRawQuery, (e, ...values) => callback(e, ...values, entity, ...mv))
+				switch (baseCount) {
+					case 1: return callback(e, v1, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					case 2: return callback(e, v1, v2, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					case 3: return callback(e, v1, v2, v3, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					case 4: return callback(e, v1, v2, v3, v4, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					case 5: return callback(e, v1, v2, v3, v4, v5, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					case 6: return callback(e, v1, v2, v3, v4, v5, v6, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					case 7: return callback(e, v1, v2, v3, v4, v5, v6, v7, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+					default: return callback(e, v1, v2, v3, v4, v5, v6, v7, v8, entity, mv[0], mv[1], mv[2], mv[3], mv[4], mv[5], mv[6], mv[7])
+				}
+			})
+			if (stopped) return
 		}
 	}
 
+	/**
+	 * Collects the messages with _all_ of the query's `on()` terms that were emitted
+	 * in `[cursor, now)`, sorted by emission order.
+	 */
+	private collectMessages(
+		msgRawQuery: RawQuery,
+		cursor: number,
+		now: number,
+	): MessageSnapshot[] {
+		const snapshots: MessageSnapshot[] = []
+
+		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of msgRawQuery) {
+			const sequence = world.get(rawId, MessageSequence.id) as number
+			if (sequence < cursor || sequence >= now) continue
+
+			snapshots.push({
+				entity: resolveId(rawId)!,
+				sequence,
+				values: [v1, v2, v3, v4, v5, v6, v7, v8],
+			})
+		}
+
+		snapshots.sort((a, b) => a.sequence < b.sequence)
+		return snapshots
+	}
+
 	private makeRawQuery(): jecs.Query<RawId[]> {
-		return world
-			.query(...this.requiredIds)
-			.with(...this.includedIds)
-			.without(...this.excludedIds)
+		return (
+			world
+				.query(...this.requiredIds)
+				.with(...this.includedIds)
+				// Messages are only readable through `on()`.
+				.without(...[...this.excludedIds, MessageSequence.id])
+		)
 	}
 
 	private isWildcardQuery(): boolean {
@@ -408,6 +616,9 @@ export class Query<Cs extends (ComponentHandle | Pair)[]> {
 	 * returning the values of the required components if it does.
 	 */
 	private match(e: Handle): InferValues<Cs> | undefined {
+		// Messages are only readable through `on()`, so they don't match plain queries.
+		if (world.has(e.id, MessageSequence.id)) return undefined
+
 		const requiredValues: defined[] = []
 
 		for (const compId of this.requiredIds) {

@@ -1,8 +1,11 @@
+import { pair as jecsPair } from '@rbxts/jecs'
 import { component, type EntityHandle, entity } from '../handle'
 import { ChildOf, Internal, Label, Persistent } from '../handle/builtins'
 import { pair } from '../handle/pair'
+import type { RawId } from '../id'
 import { query } from '../query'
 import { flatMap, getOrInit, normalizeToArray } from '../util'
+import { world } from '../world'
 import {
 	type AddEdgeResult,
 	DirectedAcyclicGraph,
@@ -52,7 +55,8 @@ export class Schedule {
 	public readonly name: Schedules
 	private readonly entity: EntityHandle
 	private readonly setConfigs = new Map<SystemSet, NormalizedSetConfig>()
-	private sortedCache?: [EntityHandle, SystemData][]
+	// `getSortedSystems` is called multiple times a frame, so we cache the result.
+	private sortedCache?: EntityHandle[]
 
 	constructor(name: Schedules) {
 		this.name = name
@@ -138,22 +142,27 @@ export class Schedule {
 		return this
 	}
 
-	getSortedSystems(): [EntityHandle, SystemData][] {
+	getSortedSystems(): EntityHandle[] {
 		if (this.sortedCache !== undefined) return this.sortedCache
 
-		// Step 1: Group systems by their set membership.
+		const systems: SystemData[] = []
+		const enttByFn = new Map<SystemFn, EntityHandle>()
+		query(System, pair(ChildOf, this.entity)).forEach((e, data) => {
+			systems.push(data)
+			enttByFn.set(data.fn, e as EntityHandle)
+		})
+
+		// Group systems by their set membership.
 		const systemsInSet = new Map<SystemSet, SystemFn[]>()
-		query(System, pair(ChildOf, this.entity)).forEach((_e, sys) => {
+		systems.forEach((sys) => {
 			sys._inSets.forEach((set) =>
 				getOrInit(systemsInSet, set, () => []).push(sys.fn),
 			)
 		})
 
-		// Step 2: Create a fresh DAG and add all registered systems as nodes.
+		// Create a fresh DAG and add all registered systems as nodes.
 		const graph = new DirectedAcyclicGraph<SystemFn>()
-		query(System, pair(ChildOf, this.entity)).forEach((_e, sys) =>
-			graph.tryAddNode(sys.fn),
-		)
+		systems.forEach((sys) => graph.tryAddNode(sys.fn))
 
 		// Expands a mixed target list into concrete systems.
 		const resolveTargets = (targets: (SystemFn | SystemSet)[]): SystemFn[] =>
@@ -163,8 +172,8 @@ export class Schedule {
 					: (systemsInSet.get(target) ?? []),
 			)
 
-		// Step 3: Add system-level ordering edges.
-		query(System, pair(ChildOf, this.entity)).forEach((_e, sys) => {
+		// Add system-level ordering edges.
+		systems.forEach((sys) => {
 			resolveTargets(sys.before).forEach((t) => {
 				assertAddEdgeResult(graph.addEdge(sys.fn, t))
 			})
@@ -173,7 +182,7 @@ export class Schedule {
 			)
 		})
 
-		// Step 4: Expand set-level ordering into system-to-system edges.
+		// Expand set-level ordering into system-to-system edges.
 		this.setConfigs.forEach((cfg, thisSet) => {
 			const setMembers = systemsInSet.get(thisSet) ?? []
 
@@ -190,24 +199,24 @@ export class Schedule {
 			)
 		})
 
-		// Steps 5-6: Topological sort, then merge each system's own run conditions
-		// with those inherited from every set it belongs to.
-		this.sortedCache = graph.sorted().map((systemFn) => {
-			const [sysEnt, sysData] = query(System).find(
-				(_e, s) => s.fn === systemFn,
-			)!
+		// Topological sort, then merge each system's own run conditions
+		// with those inherited from every set it belongs to. We only cache the
+		// sorted entity ids; a system's data always lives on its `System` component,
+		// which stays the single source of truth.
+		this.sortedCache = graph.sorted().map((fn) => {
+			const sysEntt = enttByFn.get(fn)!
+			const sysData = sysEntt.get(System)!
 
 			const setRunIfs = flatMap(
 				sysData._inSets,
 				(set) => this.setConfigs.get(set)?.runIf ?? [],
 			)
-			const newData = {
+			sysEntt.set(System, {
 				...sysData,
 				runIfs: [...sysData.runIfs, ...setRunIfs],
-			}
-			sysEnt.set(System, newData)
+			})
 
-			return [sysEnt as EntityHandle, newData]
+			return sysEntt
 		})
 
 		return this.sortedCache
