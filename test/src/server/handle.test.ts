@@ -590,6 +590,19 @@ class EntityTests {
 		)
 	}
 
+	@Test
+	public toString_returnsFallbackForDespawnedEntity() {
+		const e = entity('TestEntity')
+		const id = e.id
+		e.despawn()
+
+		Assert.equal(
+			tostring(e),
+			`Entity #${id} (despawned)`,
+			'Expected tostring to return a fallback label for a despawned entity',
+		)
+	}
+
 	// This was an obscure bug due to how Jecs' `world.children` works internally.
 	@Test
 	public children_wildcardReturnsEmpty() {
