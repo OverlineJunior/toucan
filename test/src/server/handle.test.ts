@@ -3,10 +3,13 @@ import {
 	Builtin,
 	component,
 	entity,
+	type Handle,
 	pair,
+	query,
 	type RawId,
 	resolveId,
 	resource,
+	scheduler,
 } from '@rbxts/toucan'
 import { clearWorld } from './helpers'
 
@@ -585,6 +588,30 @@ class HandleTests {
 			`Entity #${id} (despawned)`,
 			'Expected tostring to return a fallback label for a despawned entity',
 		)
+	}
+
+	@Test
+	everyEntity_hasExactlyOneKindTag() {
+		const kinds = [Builtin.Entity, Builtin.Component, Builtin.Resource]
+
+		// We spawn the scheduler so we also have the schedule entities to test against.
+		scheduler()
+
+		const everything: Handle[] = []
+		for (const kind of kinds) {
+			query(kind)
+				.collect()
+				.forEach(([e]) => everything.push(e))
+		}
+
+		for (const e of everything) {
+			const kindCount = kinds.filter((kind) => e.has(kind)).size()
+			Assert.equal(
+				kindCount,
+				1,
+				`Expected ${tostring(e)} to have exactly one of Entity, Component or Resource`,
+			)
+		}
 	}
 
 	// This was an obscure bug due to how Jecs' `world.children` works internally.
