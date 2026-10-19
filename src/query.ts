@@ -154,7 +154,7 @@ export class Query<
 	 * - The query's own terms never match message entities unless `MessageSequence`
 	 *   is explicitly required; `on()` is the cursor-aware way to read them.
 	 * - Calling `on()` more than once will throw an error.
-	 * - Calling `on()` outside of a system will throw an error.
+	 * - Iterating a query with `on()` outside of a system will throw an error.
 	 *
 	 * @example
 	 * ```ts
@@ -201,6 +201,9 @@ export class Query<
 	 * Finds the first entity that matches the query _and_ satisfies the provided
 	 * `predicate` function, returning the entity itself and its corresponding
 	 * component values, or `undefined` if no such entity exists.
+	 *
+	 * @remarks
+	 * With {@link Query.on}, only the first matching message is read.
 	 */
 	find(
 		predicate: QueryCallback<Cs, Ms, boolean>,
