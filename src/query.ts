@@ -495,7 +495,7 @@ export class Query<
 				if (world.has(rawId, MessageSequence.id)) continue
 
 				const id = resolveId(rawId)
-				if (!id || !this.passesFilters(id)) continue
+				if (!id || !this.matchesIds(id) || !this.passesFilters(id)) continue
 
 				if (callback(id) === true) return true
 			}
@@ -623,6 +623,32 @@ export class Query<
 			this.requiredIds.includes(Wildcard.id) ||
 			this.includedIds.includes(Wildcard.id)
 		)
+	}
+
+	/**
+	 * Checks whether `e` satisfies the query's id-based criteria (required,
+	 * included and excluded ids), ignoring filters.
+	 *
+	 * Wildcard queries bypass jecs' query engine, so they have to apply these
+	 * criteria manually.
+	 */
+	private matchesIds(e: Handle): boolean {
+		for (const compId of this.requiredIds) {
+			// `Wildcard` matches every entity, so it isn't stored on them.
+			if (compId === Wildcard.id) continue
+			if (!world.has(e.id, compId)) return false
+		}
+
+		for (const compId of this.includedIds) {
+			if (compId === Wildcard.id) continue
+			if (!world.has(e.id, compId)) return false
+		}
+
+		for (const compId of this.excludedIds) {
+			if (world.has(e.id, compId)) return false
+		}
+
+		return true
 	}
 
 	/**

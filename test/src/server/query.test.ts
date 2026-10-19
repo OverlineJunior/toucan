@@ -257,6 +257,31 @@ class QueryTests {
 	}
 
 	@Test
+	public wildcard_without_matchesEquivalentFilter() {
+		const Stunned = component('Stunned')
+		entity('Alice')
+		entity('Bob').set(Stunned)
+
+		const filtered = query(Builtin.Wildcard)
+			.filter((e) => !e.has(Stunned))
+			.collect()
+		const without = query(Builtin.Wildcard).without(Stunned).collect()
+
+		Assert.equal(
+			without.size(),
+			filtered.size(),
+			'Expected without(Stunned) to match the same number of entities as filter(!has(Stunned))',
+		)
+
+		filtered.forEach(([e]) => {
+			Assert.true(
+				without.find(([other]) => other.id === e.id) !== undefined,
+				'Expected every entity matched by filter to also be matched by without',
+			)
+		})
+	}
+
+	@Test
 	public onAdded_firesWhenComponentIsAddedToMatchingEntity() {
 		const Health = component<number>('Health')
 		const e = entity('Alice')
