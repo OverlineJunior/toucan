@@ -9,6 +9,11 @@ title: "@rbxts/toucan"
 
 - [Builtin](/toucan/api/variables/builtin/)
 
+## Functions
+
+- [\_\_despawnScheduler](/toucan/api/functions/__despawnscheduler/)
+- [message](/toucan/api/functions/message/)
+
 ## Core
 
 - [component](/toucan/api/core/component/)
@@ -22,15 +27,14 @@ title: "@rbxts/toucan"
 
 ## Types
 
+- [Handle](/toucan/api/types/handle/)
 - [ComponentHandle](/toucan/api/types/componenthandle/)
 - [EntityHandle](/toucan/api/types/entityhandle/)
-- [Handle](/toucan/api/types/handle/)
 - [Pair](/toucan/api/types/pair/)
 - [Query](/toucan/api/types/query/)
 - [ResourceHandle](/toucan/api/types/resourcehandle/)
 - [Scheduler](/toucan/api/types/scheduler/)
 - [SetConfig](/toucan/api/types/setconfig/)
-- [SystemConfig](/toucan/api/types/systemconfig/)
 - [SystemSet](/toucan/api/types/systemset/)
 - [InferValue](/toucan/api/types/infervalue/)
 - [InferValues](/toucan/api/types/infervalues/)
@@ -39,5 +43,6 @@ title: "@rbxts/toucan"
 - [RunServiceSchedules](/toucan/api/types/runserviceschedules/)
 - [Schedules](/toucan/api/types/schedules/)
 - [StartupSchedules](/toucan/api/types/startupschedules/)
+- [SystemConfig](/toucan/api/types/systemconfig/)
 - [SystemFn](/toucan/api/types/systemfn/)
 - [UpdateSchedules](/toucan/api/types/updateschedules/)

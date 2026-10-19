@@ -5,17 +5,59 @@ prev: false
 title: "Scheduler"
 ---
 
-Defined in: [scheduler/scheduler.ts:103](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L103)
+Defined in: [scheduler/scheduler.ts:102](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L102)
 
 The type for the scheduler created with [scheduler](/toucan/api/core/scheduler/).
 
 ## Methods
 
+### \_\_runSchedule()
+
+> **\_\_runSchedule**(`schedule`): `void`
+
+Defined in: [scheduler/scheduler.ts:328](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L328)
+
+Simulates a single run of the specified `schedule`.
+
+#### Parameters
+
+##### schedule
+
+[`Schedules`](/toucan/api/types/schedules/)
+
+#### Returns
+
+`void`
+
+#### Remarks
+
+This is primarily used for testing - use at your own risk.
+
+***
+
+### \_\_tick()
+
+> **\_\_tick**(): `void`
+
+Defined in: [scheduler/scheduler.ts:338](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L338)
+
+Simulates a `first -> preUpdate -> update -> postUpdate -> last` tick of the scheduler.
+
+#### Returns
+
+`void`
+
+#### Remarks
+
+This is primarily used for testing - use at your own risk.
+
+***
+
 ### configureSet()
 
 > **configureSet**(`schedule`, `set`, `config`): `this`
 
-Defined in: [scheduler/scheduler.ts:213](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L213)
+Defined in: [scheduler/scheduler.ts:218](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L218)
 
 Configures a `SystemSet` for the specified `schedule` with the given `config`.
 
@@ -62,7 +104,7 @@ scheduler()
 
 > **run**(): `void`
 
-Defined in: [scheduler/scheduler.ts:282](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L282)
+Defined in: [scheduler/scheduler.ts:287](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L287)
 
 Builds all plugins and then initializes every schedule.
 
@@ -83,7 +125,7 @@ related systems are made children of it.
 
 > **usePlugin**\<`Args`\>(`pluginFn`, ...`args`): `this`
 
-Defined in: [scheduler/scheduler.ts:245](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L245)
+Defined in: [scheduler/scheduler.ts:250](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L250)
 
 Registers a plugin function to be run before the scheduler starts. This function is
 given the scheduler and anything else passed in `...args`.
@@ -138,7 +180,7 @@ the `pair(AddedByPlugin, pluginEntity)` relationship.
 
 > **useSystem**\<`Args`\>(`schedule`, `systemFn`, `config?`): `this`
 
-Defined in: [scheduler/scheduler.ts:160](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L160)
+Defined in: [scheduler/scheduler.ts:161](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L161)
 
 Schedules a system to run in the specified `schedule` with the provided arguments.
 
@@ -195,12 +237,18 @@ Additionally, the system is automatically made a child of its schedule
 
 ### useSystemChain()
 
-> **useSystemChain**(`schedule`, ...`systemFns`): `this`
+> **useSystemChain**\<`T`\>(`schedule`, `systemFns`): `this`
 
-Defined in: [scheduler/scheduler.ts:184](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L184)
+Defined in: [scheduler/scheduler.ts:185](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L185)
 
 Schedules a chain of systems to run in order in the specified `schedule`,
 with an optional `SystemConfig` for each system.
+
+#### Type Parameters
+
+##### T
+
+`T` *extends* `unknown`[][]
 
 #### Parameters
 
@@ -210,7 +258,7 @@ with an optional `SystemConfig` for each system.
 
 ##### systemFns
 
-...([`SystemFn`](/toucan/api/types/systemfn/) \| \[[`SystemFn`](/toucan/api/types/systemfn/), [`SystemConfig`](/toucan/api/types/systemconfig/)\<`unknown`[]\>\])[]
+\{ \[K in string \| number \| symbol\]: \[\] extends T\[K\] ? SystemFn\<T\[K\]\> \| \[SystemFn\<T\[K\]\>, SystemConfig\<NoInfer\<T\[K\]\>\>\] : \[SystemFn\<T\[K\]\>, SystemConfig\<NoInfer\<T\[K\]\>\>\] \}
 
 #### Returns
 

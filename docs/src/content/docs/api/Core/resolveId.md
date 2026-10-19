@@ -7,7 +7,7 @@ title: "resolveId"
 
 > **resolveId**(`rawId`): [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`EntityHandle`](/toucan/api/types/entityhandle/) \| [`ResourceHandle`](/toucan/api/types/resourcehandle/)\<`unknown`\>
 
-Defined in: [handle.ts:86](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L86)
+Defined in: [handle/index.ts:43](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L43)
 
 Returns the appropriate handle for `rawId`, or `undefined` if it does not exist in the world.
 

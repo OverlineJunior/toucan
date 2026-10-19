@@ -7,7 +7,7 @@ title: "query"
 
 > **query**\<`Cs`\>(...`components`): [`Query`](/toucan/api/types/query/)\<`Cs`\>
 
-Defined in: [query.ts:489](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L489)
+Defined in: [query.ts:708](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L708)
 
 Creates a [Query](/toucan/api/types/query/), which represents a set of criteria used to filter and iterate over entities based on their components.
 
@@ -31,6 +31,13 @@ or bind them directly into optimized system callbacks (`bind`).
 ## Returns
 
 [`Query`](/toucan/api/types/query/)\<`Cs`\>
+
+## Remarks
+
+Messages are excluded from queries by default. To read them as regular entities,
+explicitly require `Builtin.MessageSequence` (e.g. `query(Builtin.MessageSequence)`).
+Prefer [Query.on](/toucan/api/types/query/#on) when you need frame lifetime and per-system cursors handled
+for you.
 
 ## Example
 

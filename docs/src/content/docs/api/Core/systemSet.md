@@ -7,7 +7,7 @@ title: "systemSet"
 
 > **systemSet**(`name`): [`SystemSet`](/toucan/api/types/systemset/)
 
-Defined in: [scheduler/system.ts:155](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L155)
+Defined in: [scheduler/system.ts:161](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L161)
 
 Creates a system set — a named group that systems can belong to.
 

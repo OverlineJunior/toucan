@@ -7,7 +7,7 @@ title: "InferValues"
 
 > **InferValues**\<`Ts`\> = `{ [K in keyof Ts]: InferValue<Ts[K]> }`
 
-Defined in: [handle.ts:36](https://github.com/OverlineJunior/toucan/blob/master/src/handle.ts#L36)
+Defined in: [handle/index.ts:26](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L26)
 
 Extracts the value types from a tuple of component/resource/pair types.
 
