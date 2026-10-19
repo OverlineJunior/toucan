@@ -319,6 +319,30 @@ export class Scheduler {
 		this.connections.push(c1, c2, c3, c4, c5)
 	}
 
+	/**
+	 * Simulates a single run of the specified `schedule`.
+	 *
+	 * @remarks
+	 * This is primarily used for testing - use at your own risk.
+	 */
+	__runSchedule(schedule: Schedules): void {
+		this.runSchedule(schedule)
+	}
+
+	/**
+	 * Simulates a `first -> preUpdate -> update -> postUpdate -> last` tick of the scheduler.
+	 *
+	 * @remarks
+	 * This is primarily used for testing - use at your own risk.
+	 */
+	__tick() {
+		this.runSchedule('first')
+		this.runSchedule('preUpdate')
+		this.runSchedule('update')
+		this.runSchedule('postUpdate')
+		this.runSchedule('last')
+	}
+
 	/** @internal */
 	__despawn() {
 		existingScheduler = undefined
