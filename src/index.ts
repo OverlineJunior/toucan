@@ -25,6 +25,7 @@ export {
 	resource,
 } from './handle'
 export { type Pair, pair } from './handle/pair'
+export { __simulateThirdParty } from './handle/thirdParty'
 export type { RawId } from './id'
 export { message } from './message'
 export { type Query, query } from './query'
@@ -62,5 +63,3 @@ export const Builtin = {
 	Schedule,
 	MessageSequence,
 }
-/** @internal */
-export { _simulateThirdParty } from './handle'

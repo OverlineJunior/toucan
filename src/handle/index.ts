@@ -10,6 +10,7 @@ import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from '../util'
 import { getAllComponentIdsIn, world } from '../world'
 import { getBuiltin } from './builtinRegistry'
 import { type Pair, pair } from './pair'
+import { hasThirdPartyCaller } from './thirdParty'
 
 /**
  * Extracts the value type from a component/resource/pair type.
@@ -57,41 +58,6 @@ export function resolveId(
 		// Because we ignore them, the user doesn't even know they exist.
 		return new EntityHandle(rawId)
 	}
-}
-
-let simulatingThirdParty = false
-/** @internal */
-export function _simulateThirdParty(callback: () => void): void {
-	simulatingThirdParty = true
-	try {
-		callback()
-	} finally {
-		simulatingThirdParty = false
-	}
-}
-function hasThirdPartyCaller(): boolean {
-	if (simulatingThirdParty) return true
-
-	let level = 1
-
-	while (true) {
-		const callerPath = debug.info(level, 's')[0]
-		if (callerPath === undefined) break
-
-		const isInPackage = callerPath.match('node_modules')[0] !== undefined
-		if (isInPackage) {
-			const isToucan =
-				callerPath.match('%.toucan%.')[0] !== undefined ||
-				string.match(callerPath, '%.toucan$')[0] !== undefined
-			if (!isToucan) return true
-		} else {
-			return false
-		}
-
-		level++
-	}
-
-	return false
 }
 
 // -----------------------------------------------------------------------------
