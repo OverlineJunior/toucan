@@ -17,10 +17,6 @@ import { clearWorld } from './helpers'
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
 
-const _simulateThirdParty = (
-	Toucan as unknown as { _simulateThirdParty: (callback: () => void) => void }
-)._simulateThirdParty
-
 let scheduler = newScheduler()
 
 class SchedulerTests {
@@ -732,7 +728,7 @@ class SchedulerTests {
 		function somePlugin(_s: Scheduler, _n: number) {}
 
 		Assert.doesNotThrow(() =>
-			_simulateThirdParty(() =>
+			Toucan.__simulateThirdParty(() =>
 				scheduler.usePlugin(somePlugin, 1).usePlugin(somePlugin, 1).run(),
 			),
 		)
@@ -744,7 +740,7 @@ class SchedulerTests {
 
 		Assert.throws(
 			() =>
-				_simulateThirdParty(() =>
+				Toucan.__simulateThirdParty(() =>
 					scheduler.usePlugin(somePlugin, 1).usePlugin(somePlugin, 2).run(),
 				),
 			undefined,
