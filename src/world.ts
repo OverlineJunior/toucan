@@ -3,7 +3,6 @@ import { ECS_ENTITY_MASK, type RawId } from './id'
 
 type UnsafeWorld = jecs.World & {
 	entity_index: {
-		dense_array: jecs.Entity[]
 		sparse_array: {
 			archetype: {
 				types: number[]
@@ -13,13 +12,6 @@ type UnsafeWorld = jecs.World & {
 }
 
 export const world = jecs.world()
-
-/**
- * ⚠️ The ID array returned by this function should never be written to or modified in any way.
- */
-export function getAllEntityIds(): RawId[] {
-	return (world as UnsafeWorld).entity_index.dense_array
-}
 
 /**
  * ⚠️ The ID array returned by this function should never be written to or modified in any way.

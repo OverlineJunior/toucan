@@ -7,14 +7,14 @@ import {
 	type InferValues,
 	resolveId,
 } from './handle'
-import { MessageSequence, Wildcard } from './handle/builtins'
+import { MessageSequence } from './handle/builtins'
 import type { Pair } from './handle/pair'
 import type { RawId } from './id'
 import { advanceMessageCursor, getCurrentMessageSequence } from './message'
 import type { SystemFn } from './scheduler'
 import { getActiveSystemEntity } from './scheduler/systemContext'
 import type { OneUpToEight, ZeroUpToEight } from './util'
-import { getAllEntityIds, world } from './world'
+import { world } from './world'
 
 export type QueryResult<
 	Cs extends (ComponentHandle | Pair)[],
@@ -490,22 +490,6 @@ export class Query<
 		rawQuery: jecs.Query<RawId[]> | jecs.CachedQuery<RawId[]>,
 		callback: IterateFn,
 	): boolean {
-		// TODO! Optimize this by adding a flag when we add Wildcard to the query.
-		// Wildcard queries are a special case where we want all entities.
-		if (this.isWildcardQuery()) {
-			for (const rawId of getAllEntityIds()) {
-				// Messages are only readable through `on()`.
-				if (world.has(rawId, MessageSequence.id)) continue
-
-				const id = resolveId(rawId)
-				if (!id || !this.matchesIds(id) || !this.passesFilters(id)) continue
-
-				if (callback(id) === true) return true
-			}
-
-			return false
-		}
-
 		// Roblox-TS won't allow spreading tuples from iterators, so we have to do it manually.
 		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of rawQuery) {
 			const id = resolveId(rawId)!
@@ -615,43 +599,9 @@ export class Query<
 
 	private isMessageQuery(): boolean {
 		return (
-			(this.requiredIds.includes(MessageSequence.id) ||
-				this.includedIds.includes(MessageSequence.id)) &&
-			!this.isWildcardQuery()
+			this.requiredIds.includes(MessageSequence.id) ||
+			this.includedIds.includes(MessageSequence.id)
 		)
-	}
-
-	private isWildcardQuery(): boolean {
-		return (
-			this.requiredIds.includes(Wildcard.id) ||
-			this.includedIds.includes(Wildcard.id)
-		)
-	}
-
-	/**
-	 * Checks whether `e` satisfies the query's id-based criteria (required,
-	 * included and excluded ids), ignoring filters.
-	 *
-	 * Wildcard queries bypass jecs' query engine, so they have to apply these
-	 * criteria manually.
-	 */
-	private matchesIds(e: Handle): boolean {
-		for (const compId of this.requiredIds) {
-			// `Wildcard` matches every entity, so it isn't stored on them.
-			if (compId === Wildcard.id) continue
-			if (!world.has(e.id, compId)) return false
-		}
-
-		for (const compId of this.includedIds) {
-			if (compId === Wildcard.id) continue
-			if (!world.has(e.id, compId)) return false
-		}
-
-		for (const compId of this.excludedIds) {
-			if (world.has(e.id, compId)) return false
-		}
-
-		return true
 	}
 
 	/**
