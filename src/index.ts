@@ -29,6 +29,7 @@ export type { RawId } from './id'
 export { message } from './message'
 export { type Query, query } from './query'
 export {
+	__despawnScheduler,
 	type PluginFn,
 	type RunServiceSchedules,
 	type Scheduler,

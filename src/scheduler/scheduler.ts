@@ -72,7 +72,7 @@ export const Plugin = component<{
 	.set(Internal)
 	.set(Persistent)
 
-let schedulerAlreadyCreated = false
+let existingScheduler: Scheduler | undefined
 
 function findParentPlugin(): EntityHandle | undefined {
 	// Traverses the call stack to find the first function matching the given callback.
@@ -123,11 +123,11 @@ export class Scheduler {
 	private running = false
 
 	constructor() {
-		if (schedulerAlreadyCreated) {
+		if (existingScheduler) {
 			error('There can only be one scheduler instance')
 		}
 
-		schedulerAlreadyCreated = true
+		existingScheduler = this
 
 		this.useSystem('first', clearStaleMessages)
 	}
@@ -319,10 +319,10 @@ export class Scheduler {
 		this.connections.push(c1, c2, c3, c4, c5)
 	}
 
-	// Scheduler isn't allowed to be instantiated more than once, but our test suite needs to be able to reset it.
 	/** @internal */
-	_despawn() {
-		schedulerAlreadyCreated = false
+	__despawn() {
+		existingScheduler = undefined
+
 		this.connections.forEach((c) => c.Disconnect())
 
 		const forceDespawn = (e: Handle) => {
@@ -507,4 +507,17 @@ export class Scheduler {
  */
 export function scheduler(): Scheduler {
 	return new Scheduler()
+}
+
+/**
+ * Fully despawns an existing scheduler, which in turn despawns every system,
+ * plugin and schedule, allowing a new scheduler to be created.
+ *
+ * @remarks
+ * This is primarily used for testing - use at your own risk.
+ */
+export function __despawnScheduler(): void {
+	if (!existingScheduler) return
+
+	existingScheduler.__despawn()
 }

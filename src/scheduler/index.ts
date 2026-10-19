@@ -1,5 +1,6 @@
 export { ScheduleComponent } from './schedule'
 export {
+	__despawnScheduler,
 	Plugin,
 	type PluginFn,
 	type RunServiceSchedules,
