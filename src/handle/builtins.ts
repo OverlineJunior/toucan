@@ -13,10 +13,8 @@ export interface BuiltinComponentHandleMap {
 	Wildcard: ComponentHandle<undefined>
 	ChildOf: ComponentHandle<undefined>
 	AddedByPlugin: ComponentHandle<undefined>
-	/**
-	 * The message's monotonic counter. Used for guaranteeing emission-order.
-	 */
 	MessageSequence: ComponentHandle<number>
+	Entity: ComponentHandle<undefined>
 }
 
 export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
@@ -81,8 +79,8 @@ export const Component = registerBuiltin(
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
  * Built-in component that acts as a wildcard in relationship pairs.
- * 
- * 
+ *
+ *
  * It can be used to query for all sources or targets of a relationship without caring about the other end of it.
  *
  * @example
@@ -162,6 +160,14 @@ export const AddedByPlugin = registerBuiltin(
 export const MessageSequence = registerBuiltin(
 	'MessageSequence',
 	new ComponentHandle(world.component()),
+)
+
+/**
+ * Built-in component used to distinguish regular entities from components and resources.
+ */
+export const Entity = registerBuiltin(
+	'Entity',
+	new ComponentHandle<undefined>(world.component()),
 )
 
 bootstrapBuiltins((component, label) => {

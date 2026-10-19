@@ -2,6 +2,7 @@ import {
 	AddedByPlugin,
 	ChildOf,
 	Component,
+	Entity,
 	Internal,
 	Label,
 	MessageSequence,
@@ -62,4 +63,5 @@ export const Builtin = {
 	System,
 	Schedule,
 	MessageSequence,
+	Entity,
 }

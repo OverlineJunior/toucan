@@ -52,12 +52,14 @@ export function resolveId(
 		return new ComponentHandle(rawId)
 	} else if (world.has(rawId, getBuiltin('Resource').id)) {
 		return new ResourceHandle(rawId)
-	} else if (world.has(rawId, getBuiltin('Label').id)) {
-		// Every entity created through Toucan has a Label, the ones that
-		// don't are Jecs internals that we intentionally ignore.
-		// Because we ignore them, the user doesn't even know they exist.
+	} else if (world.has(rawId, getBuiltin('Entity').id)) {
 		return new EntityHandle(rawId)
 	}
+
+	// Every entity created through Toucan has exactly one of `Entity`,
+	// `Component` or `Resource`. Jecs internals have none of them,
+	// so they're intentionally ignored here.
+	return undefined
 }
 
 // -----------------------------------------------------------------------------
@@ -499,10 +501,9 @@ export class EntityHandle extends Handle {
  */
 export function entity(label?: string): EntityHandle {
 	const rawId = world.entity()
-	const handle = new EntityHandle(rawId).set(
-		getBuiltin('Label'),
-		label ?? `Entity #${rawId}`,
-	)
+	const handle = new EntityHandle(rawId)
+		.set(getBuiltin('Entity'))
+		.set(getBuiltin('Label'), label ?? `Entity #${rawId}`)
 
 	if (hasThirdPartyCaller()) {
 		handle.set(getBuiltin('ThirdParty'))
