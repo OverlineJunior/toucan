@@ -151,6 +151,8 @@ export class Query<
 	 * Messages can be read even by systems that run before they're emitted, at the cost of a one-frame delay.
 	 *
 	 * @remarks
+	 * - The query's own terms never match message entities unless `MessageSequence`
+	 *   is explicitly required; `on()` is the cursor-aware way to read them.
 	 * - Calling `on()` more than once will throw an error.
 	 * - Calling `on()` outside of a system will throw an error.
 	 *
@@ -598,8 +600,21 @@ export class Query<
 			world
 				.query(...this.requiredIds)
 				.with(...this.includedIds)
-				// Messages are only readable through `on()`.
-				.without(...[...this.excludedIds, MessageSequence.id])
+				// Messages are only readable through `on()` or by explicitly
+				// requiring `MessageSequence`.
+				.without(
+					...(this.isMessageQuery()
+						? this.excludedIds
+						: [...this.excludedIds, MessageSequence.id]),
+				)
+		)
+	}
+
+	private isMessageQuery(): boolean {
+		return (
+			(this.requiredIds.includes(MessageSequence.id) ||
+				this.includedIds.includes(MessageSequence.id)) &&
+			!this.isWildcardQuery()
 		)
 	}
 
@@ -616,8 +631,9 @@ export class Query<
 	 * returning the values of the required components if it does.
 	 */
 	private match(e: Handle): InferValues<Cs> | undefined {
-		// Messages are only readable through `on()`, so they don't match plain queries.
-		if (world.has(e.id, MessageSequence.id)) return undefined
+		// Messages are only readable through `on()` or by requiring `MessageSequence`.
+		if (!this.isMessageQuery() && world.has(e.id, MessageSequence.id))
+			return undefined
 
 		const requiredValues: defined[] = []
 

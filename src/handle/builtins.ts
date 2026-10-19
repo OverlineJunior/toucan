@@ -143,6 +143,26 @@ export const AddedByPlugin = registerBuiltin(
 	new ComponentHandle<undefined>(world.component()),
 )
 
+/**
+ * Built-in component that marks an entity as a message and stores its monotonic
+ * sequence number, used to guarantee emission order.
+ *
+ * Messages are excluded from queries by default. Requiring this component opts
+ * into reading them as regular entities:
+ *
+ * @example
+ * ```ts
+ * query(Builtin.MessageSequence).forEach((message, sequence) => {
+ *     print(`Message #${sequence}`)
+ * })
+ * ```
+ *
+ * @remarks
+ * Prefer `on()` to read messages, as it handles frame lifetime and per-system
+ * cursors for you.
+ *
+ * @group Built-ins
+ */
 export const MessageSequence = registerBuiltin(
 	'MessageSequence',
 	new ComponentHandle(world.component()),
