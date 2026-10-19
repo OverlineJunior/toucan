@@ -3,26 +3,17 @@ import {
 	Builtin,
 	component,
 	entity,
-	type Handle,
 	pair,
-	query,
 	type RawId,
 	resolveId,
 	resource,
 } from '@rbxts/toucan'
+import { clearWorld } from './helpers'
 
 class EntityTests {
 	@BeforeEach
 	public reset() {
-		const forceDespawn = (e: Handle) => {
-			e.remove(Builtin.Persistent)
-			e.despawn()
-		}
-
-		query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal))
-			.collect() // We collect due to iterator invalidation; see issue #2.
-			.forEach(([e]) => forceDespawn(e))
+		clearWorld()
 	}
 
 	@Test
@@ -591,9 +582,9 @@ class EntityTests {
 
 	@Test
 	public despawn_throwsOnPersistentEntity() {
-		const scheduleEntity = query(Builtin.Schedule).find(() => true)![0]
+		const e = entity().set(Builtin.Persistent)
 		Assert.throws(
-			() => scheduleEntity.despawn(),
+			() => e.despawn(),
 			undefined,
 			'Expected despawn to throw on persistent entity',
 		)

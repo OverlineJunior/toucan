@@ -1,25 +1,11 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-import {
-	Builtin,
-	component,
-	entity,
-	type Handle,
-	pair,
-	query,
-} from '@rbxts/toucan'
+import { Builtin, component, entity, pair, query } from '@rbxts/toucan'
+import { clearWorld } from './helpers'
 
 class QueryTests {
 	@BeforeEach
 	public reset() {
-		const forceDespawn = (e: Handle) => {
-			e.remove(Builtin.Persistent)
-			e.despawn()
-		}
-
-		query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal))
-			.collect() // We collect due to iterator invalidation; see issue #2.
-			.forEach(([e]) => forceDespawn(e))
+		clearWorld()
 	}
 
 	@Test

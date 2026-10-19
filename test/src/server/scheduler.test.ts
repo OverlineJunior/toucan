@@ -5,7 +5,6 @@ import {
 	Builtin,
 	type EntityHandle,
 	entity,
-	type Handle,
 	scheduler as newScheduler,
 	pair,
 	query,
@@ -13,6 +12,7 @@ import {
 	type Schedules,
 	systemSet,
 } from '@rbxts/toucan'
+import { clearWorld } from './helpers'
 
 // This is enough time for all of the RunService schedules to run at least once.
 const SCHEDULE_SETTLE_DELAY = 0.5
@@ -26,17 +26,7 @@ let scheduler = newScheduler()
 class SchedulerTests {
 	@BeforeEach
 	reset() {
-		const forceDespawn = (e: Handle) => {
-			e.remove(Builtin.Persistent)
-			e.despawn()
-		}
-
-		query(Builtin.Wildcard)
-			.filter((e) => !e.has(Builtin.Internal))
-			.collect() // We collect due to iterator invalidation; see issue #2.
-			.forEach(([e]) => forceDespawn(e))
-
-		;(scheduler as unknown as { _despawn(): void })._despawn()
+		clearWorld()
 		scheduler = newScheduler()
 	}
 
