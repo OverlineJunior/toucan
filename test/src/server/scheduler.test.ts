@@ -808,9 +808,9 @@ class SchedulerTests {
 
 		sched.usePlugin(parentPlugin).run()
 
-		const spawnedEntity = query(Builtin.Wildcard)
-			.filter((e) => tostring(e) === 'addedByPlugin')
-			.collect()[0][0]
+		const [spawnedEntity] = query(Builtin.Entity).find(
+			(e) => tostring(e) === 'addedByPlugin',
+		)!
 
 		const [systemEntity] = query(Builtin.System).find(
 			(_, sys) => sys.fn === someSystem,

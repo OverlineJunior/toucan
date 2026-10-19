@@ -1069,15 +1069,15 @@ class MessageTests {
 	}
 
 	@Test
-	message_isNotMatchedByWildcardQuery() {
+	message_isNotMatchedByEntityQuery() {
 		const Fired = component<number>('Fired')
 
 		message().set(Fired, 1).emit()
 
-		const results = query(Builtin.Wildcard).collect()
+		const results = query(Builtin.Entity).collect()
 		Assert.true(
 			results.find(([e]) => e.has(Builtin.MessageSequence)) === undefined,
-			'Expected a wildcard query not to match message entities',
+			'Expected an entity query not to match message entities',
 		)
 	}
 

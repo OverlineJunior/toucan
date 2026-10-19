@@ -6,15 +6,18 @@ export function clearWorld(): void {
 		e.despawn()
 	}
 
-	query(Builtin.Wildcard)
-		.without(Builtin.Internal)
-		.collect() // We collect due to iterator invalidation; see issue #2.
-		.forEach(([e]) => forceDespawn(e))
-
-	// Message entities are only queried when explicitly requested.
-	query(Builtin.MessageSequence)
-		.collect() // See #2.
-		.forEach(([msg]) => forceDespawn(msg))
+	for (const enttKind of [
+		Builtin.Entity,
+		Builtin.Component,
+		Builtin.Resource,
+		// Message entities are only queried when explicitly requested.
+		Builtin.MessageSequence,
+	]) {
+		query(enttKind)
+			.without(Builtin.Internal)
+			.collect() // We collect due to iterator invalidation; see issue #2.
+			.forEach(([e]) => forceDespawn(e))
+	}
 
 	__despawnScheduler()
 }

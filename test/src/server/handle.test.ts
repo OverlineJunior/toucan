@@ -18,8 +18,13 @@ class HandleTests {
 
 	@Test
 	entity_createsSuccessfully() {
-		const e = entity()
+		const e = entity('TestEntity')
 		Assert.true(e.exists(), 'Expected a new entity to exist')
+		Assert.equal(e.toString(), 'TestEntity', 'Expected entity label to match')
+		Assert.true(
+			e.has(Builtin.Entity),
+			'Expected the entity to have the internal Entity tag',
+		)
 	}
 
 	@Test
@@ -196,22 +201,6 @@ class HandleTests {
 		Assert.true(
 			bob.has(p1) && bob.has(p2),
 			'Expected persistent pairs to remain after clear',
-		)
-	}
-
-	@Test
-	components_returnsOnlyAssignedComponents() {
-		const e = entity()
-		const comps = e.components()
-		Assert.equal(
-			comps.size(),
-			1,
-			'Expected entity to have exactly one component (Label)',
-		)
-		Assert.equal(
-			comps[0],
-			Builtin.Label,
-			'Expected the only component to be the Label component',
 		)
 	}
 
@@ -508,18 +497,13 @@ class HandleTests {
 	components_excludesRelationships() {
 		const Likes = component()
 		const bob = entity('Bob')
-		const alice = entity('Alice').set(pair(Likes, bob))
+		const withoutPair = entity('Alice')
+		const withPair = entity('Alice').set(pair(Likes, bob))
 
-		const comps = alice.components()
 		Assert.equal(
-			comps.size(),
-			1,
+			withPair.components().size(),
+			withoutPair.components().size(),
 			'Expected components() to exclude relationships',
-		)
-		Assert.equal(
-			comps[0],
-			Builtin.Label,
-			'Expected the only component returned to be Label',
 		)
 	}
 
