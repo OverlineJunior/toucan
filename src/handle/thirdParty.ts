@@ -1,6 +1,6 @@
 let simulatingThirdParty = false
 
-/** 
+/**
  * Simulates a third-party caller for the duration of the provided callback.
  *
  * @remarks

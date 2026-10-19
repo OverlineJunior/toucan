@@ -6,38 +6,26 @@ import {
 	entity,
 	type Handle,
 	message,
-	scheduler as newScheduler,
 	pair,
 	query,
-	type Scheduler,
-	type Schedules,
+	scheduler,
 } from '@rbxts/toucan'
 import { clearWorld } from './helpers'
-
-let scheduler: Scheduler
-
-function tick() {
-	scheduler.__tick()
-}
-
-function runSchedule(name: Schedules) {
-	scheduler.__runSchedule(name)
-}
 
 class MessageTests {
 	@BeforeEach
 	reset() {
 		clearWorld()
-		scheduler = newScheduler()
 	}
 
 	@Test
 	message_emit_withComponent_isReadByOnQuery() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let seenEntity: Handle | undefined
 		let seenValue: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((msg, value) => {
@@ -47,7 +35,7 @@ class MessageTests {
 		})
 
 		message().set(Fired, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.true(seenEntity !== undefined, 'Expected the message to be read')
 		Assert.true(seenEntity!.exists(), 'Expected the message entity to exist')
@@ -56,10 +44,11 @@ class MessageTests {
 
 	@Test
 	message_emit_withTagComponent_passesUndefined() {
+		const sched = scheduler()
 		const Fired = component('Fired')
 		let seenValue: unknown = 'unset'
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => {
@@ -68,7 +57,7 @@ class MessageTests {
 		})
 
 		message().set(Fired).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seenValue,
@@ -79,12 +68,13 @@ class MessageTests {
 
 	@Test
 	message_emit_withMultipleTerms_passesValuesInOrder() {
+		const sched = scheduler()
 		const A = component<number>('A')
 		const B = component<number>('B')
 		let seenA: number | undefined
 		let seenB: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(A, B)
 				.forEach((_msg, a, b) => {
@@ -94,7 +84,7 @@ class MessageTests {
 		})
 
 		message().set(A, 1).set(B, 2).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seenA, 1, 'Expected the first term value to be 1')
 		Assert.equal(seenB, 2, 'Expected the second term value to be 2')
@@ -102,12 +92,13 @@ class MessageTests {
 
 	@Test
 	message_emit_withPair_passesPairValue() {
+		const sched = scheduler()
 		const Owns = component<number>('Owns')
 		const car = entity('Car')
 		const ownsCar = pair(Owns, car)
 		let seenValue: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(ownsCar)
 				.forEach((_msg, value) => {
@@ -116,19 +107,20 @@ class MessageTests {
 		})
 
 		message().set(ownsCar, 5).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seenValue, 5, 'Expected the pair value to be 5')
 	}
 
 	@Test
 	message_emit_withTagPair_passesUndefined() {
+		const sched = scheduler()
 		const Likes = component('Likes')
 		const bob = entity('Bob')
 		const likesBob = pair(Likes, bob)
 		let seenValue: unknown = 'unset'
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(likesBob)
 				.forEach((_msg, value) => {
@@ -137,7 +129,7 @@ class MessageTests {
 		})
 
 		message().set(likesBob).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seenValue, undefined, 'Expected a tag pair to pass undefined')
 	}
@@ -145,10 +137,11 @@ class MessageTests {
 	@Test
 	@Each([[0], [false], [''], [-1]])
 	message_emit_withFalsyValues_preservesThem(value: number | boolean | string) {
+		const sched = scheduler()
 		const Value = component<number | boolean | string>('Value')
 		let seenValue: unknown = 'unset'
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Value)
 				.forEach((_msg, v) => {
@@ -157,7 +150,7 @@ class MessageTests {
 		})
 
 		message().set(Value, value).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seenValue,
@@ -168,10 +161,11 @@ class MessageTests {
 
 	@Test
 	message_emit_withNoTerms_throws() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let called = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach(() => {
@@ -185,16 +179,17 @@ class MessageTests {
 			'Expected emitting a message with no terms to throw',
 		)
 
-		tick()
+		sched.__tick()
 		Assert.false(called, 'Expected no message to be read')
 	}
 
 	@Test
 	message_emit_multipleMessagesInSameFrame_preservesOrder() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: [Handle, number][] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((msg, value) => {
@@ -205,7 +200,7 @@ class MessageTests {
 		message().set(Fired, 1).emit()
 		message().set(Fired, 2).emit()
 		message().set(Fired, 3).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 3, 'Expected three messages to be read')
 		Assert.equal(seen[0][1], 1, 'Expected the first message value to be 1')
@@ -221,11 +216,12 @@ class MessageTests {
 
 	@Test
 	query_on_withNoRequiredComponents_receivesMessageAndValues() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let seenEntity: Handle | undefined
 		let seenValue: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((msg, value) => {
@@ -235,7 +231,7 @@ class MessageTests {
 		})
 
 		message().set(Fired, 42).emit()
-		tick()
+		sched.__tick()
 
 		Assert.true(seenEntity !== undefined, 'Expected the message to be read')
 		Assert.equal(seenValue, 42, 'Expected the message value to be 42')
@@ -243,6 +239,7 @@ class MessageTests {
 
 	@Test
 	query_on_withRequiredComponents_receivesEntityThenMessage() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
@@ -251,7 +248,7 @@ class MessageTests {
 		let seenMessage: Handle | undefined
 		let seenDamage: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.on(Damaged)
 				.forEach((e, health, msg, damage) => {
@@ -263,7 +260,7 @@ class MessageTests {
 		})
 
 		message().set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seenEntity, alice, 'Expected the base entity to be Alice')
 		Assert.equal(seenHealth, 100, 'Expected the base entity health to be 100')
@@ -273,13 +270,14 @@ class MessageTests {
 
 	@Test
 	query_on_withMultipleRequiredComponents_preservesArgumentOrder() {
+		const sched = scheduler()
 		const A = component<number>('A')
 		const B = component<number>('B')
 		const Msg = component<number>('Msg')
 		const e = entity('E').set(A, 1).set(B, 2)
 		let seen: [Handle, number, number, Handle, number] | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(A, B)
 				.on(Msg)
 				.forEach((entity, a, b, msg, value) => {
@@ -288,7 +286,7 @@ class MessageTests {
 		})
 
 		message().set(Msg, 3).emit()
-		tick()
+		sched.__tick()
 
 		Assert.true(seen !== undefined, 'Expected the message to be read')
 		Assert.equal(seen![0], e, 'Expected the base entity to be E')
@@ -300,11 +298,12 @@ class MessageTests {
 
 	@Test
 	query_on_withMultipleMessageTerms_requiresAllTerms() {
+		const sched = scheduler()
 		const A = component<number>('A')
 		const B = component<number>('B')
 		const seen: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(A, B)
 				.forEach((_msg, a, b) => {
@@ -314,7 +313,7 @@ class MessageTests {
 
 		message().set(A, 1).emit()
 		message().set(A, 2).set(B, 3).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -330,12 +329,13 @@ class MessageTests {
 
 	@Test
 	query_on_withSubsetOfMessageTerms_matches() {
+		const sched = scheduler()
 		const A = component<number>('A')
 		const B = component<number>('B')
 		const seenA: number[] = []
 		const seenB: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(A)
 				.forEach((_msg, a) => seenA.push(a))
@@ -345,7 +345,7 @@ class MessageTests {
 		})
 
 		message().set(A, 1).set(B, 2).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seenA.size(), 1, 'Expected on(A) to match the message')
 		Assert.equal(seenA[0], 1, 'Expected on(A) to receive 1')
@@ -355,11 +355,12 @@ class MessageTests {
 
 	@Test
 	query_on_withNoMatchingMessages_doesNotCallCallback() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const Other = component<number>('Other')
 		let called = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach(() => {
@@ -368,17 +369,18 @@ class MessageTests {
 		})
 
 		message().set(Other, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.false(called, 'Expected an unrelated message not to match')
 	}
 
 	@Test
 	query_on_withNoMessages_doesNotCallCallback() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let called = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach(() => {
@@ -386,17 +388,18 @@ class MessageTests {
 				})
 		})
 
-		tick()
+		sched.__tick()
 
 		Assert.false(called, 'Expected no callback without messages')
 	}
 
 	@Test
 	query_on_doesNotMatchPlainEntities() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let called = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach(() => {
@@ -405,20 +408,21 @@ class MessageTests {
 		})
 
 		entity('Alice').set(Fired, 1)
-		tick()
+		sched.__tick()
 
 		Assert.false(called, 'Expected a plain entity not to be read as a message')
 	}
 
 	@Test
 	query_on_withBaseQuery_pairsEachMessageWithEveryMatchingEntity() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
 		const bob = entity('Bob').set(Health, 50)
 		const seen: [Handle, number, Handle, number][] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.on(Damaged)
 				.forEach((e, health, msg, damage) => {
@@ -427,7 +431,7 @@ class MessageTests {
 		})
 
 		message().set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -451,11 +455,12 @@ class MessageTests {
 
 	@Test
 	query_on_withBaseQuery_andNoMatchingEntities_doesNotCallCallback() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		let called = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.on(Damaged)
 				.forEach(() => {
@@ -464,19 +469,20 @@ class MessageTests {
 		})
 
 		message().set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.false(called, 'Expected no callback without matching base entities')
 	}
 
 	@Test
 	query_on_withBaseQuery_excludesMessageEntities() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
 		const seen: Handle[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.on(Damaged)
 				.forEach((e) => {
@@ -485,7 +491,7 @@ class MessageTests {
 		})
 
 		message().set(Health, 999).set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected only the real entity to match')
 		Assert.equal(seen[0], alice, 'Expected the real entity to be Alice')
@@ -493,6 +499,7 @@ class MessageTests {
 
 	@Test
 	query_on_withBaseQuery_appliesWithWithoutFilter() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Stamina = component<number>('Stamina')
 		const Stunned = component('Stunned')
@@ -503,7 +510,7 @@ class MessageTests {
 		entity('Dave').set(Health, 5).set(Stamina, 50)
 		const seen: Handle[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.with(Stamina)
 				.without(Stunned)
@@ -515,7 +522,7 @@ class MessageTests {
 		})
 
 		message().set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected only Alice to match all criteria')
 		Assert.equal(seen[0], alice, 'Expected the matching entity to be Alice')
@@ -523,10 +530,11 @@ class MessageTests {
 
 	@Test
 	query_on_sameSystemReadsEachMessageOnce() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => seen.push(value))
@@ -536,7 +544,7 @@ class MessageTests {
 		})
 
 		message().set(Fired, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected the message to be read only once')
 		Assert.equal(seen[0], 1, 'Expected the message value to be 1')
@@ -544,23 +552,24 @@ class MessageTests {
 
 	@Test
 	query_on_differentSystemsReadSameMessageIndependently() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seenA: number[] = []
 		const seenB: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => seenA.push(value))
 		})
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => seenB.push(value))
 		})
 
 		message().set(Fired, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seenA.size(),
@@ -576,12 +585,13 @@ class MessageTests {
 
 	@Test
 	query_on_differentSignaturesHaveIndependentCursors() {
+		const sched = scheduler()
 		const A = component<number>('A')
 		const B = component<number>('B')
 		const seenA: number[] = []
 		const seenB: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(A)
 				.forEach((_msg, value) => seenA.push(value))
@@ -592,7 +602,7 @@ class MessageTests {
 
 		message().set(A, 1).emit()
 		message().set(B, 2).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seenA.size(), 1, 'Expected on(A) to read its message')
 		Assert.equal(seenA[0], 1, 'Expected on(A) to receive 1')
@@ -602,10 +612,11 @@ class MessageTests {
 
 	@Test
 	query_on_messageEmittedBeforeQuery_isReadInSamePass() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let seenValue: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			message().set(Fired, 1).emit()
 			query()
 				.on(Fired)
@@ -614,7 +625,7 @@ class MessageTests {
 				})
 		})
 
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seenValue,
@@ -625,11 +636,12 @@ class MessageTests {
 
 	@Test
 	query_on_messageEmittedDuringCallback_isNotReadInSamePass() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let emitted = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => {
@@ -642,7 +654,7 @@ class MessageTests {
 		})
 
 		message().set(Fired, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -651,7 +663,7 @@ class MessageTests {
 		)
 		Assert.equal(seen[0], 1, 'Expected the original message value to be 1')
 
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -663,11 +675,12 @@ class MessageTests {
 
 	@Test
 	query_on_messageEmittedAfterQuery_isReadNextFrame() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let emitted = false
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => seen.push(value))
@@ -677,21 +690,22 @@ class MessageTests {
 			}
 		})
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 0, 'Expected no message in the first pass')
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 1, 'Expected the message to be read next frame')
 		Assert.equal(seen[0], 1, 'Expected the message value to be 1')
 	}
 
 	@Test
 	query_on_cursorAdvancesPastMessagesWithNoMatchingBaseEntities() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const seen: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.on(Damaged)
 				.forEach((_e, _health, _msg, damage) => {
@@ -708,7 +722,7 @@ class MessageTests {
 		})
 
 		message().set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -719,11 +733,12 @@ class MessageTests {
 
 	@Test
 	query_on_find_stopsAtFirstMatchAndConsumesRest() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let found: number | undefined
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			const result = query()
 				.on(Fired)
 				.find((_msg, value) => {
@@ -736,14 +751,14 @@ class MessageTests {
 		message().set(Fired, 1).emit()
 		message().set(Fired, 2).emit()
 		message().set(Fired, 3).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(found, 2, 'Expected find to return the matching message value')
 		Assert.equal(seen.size(), 2, 'Expected find to stop after the first match')
 		Assert.equal(seen[0], 1, 'Expected the first message to be seen')
 		Assert.equal(seen[1], 2, 'Expected the second message to be seen')
 
-		tick()
+		sched.__tick()
 		Assert.equal(
 			seen.size(),
 			2,
@@ -753,11 +768,12 @@ class MessageTests {
 
 	@Test
 	query_on_find_withNoMatch_consumesAllMessages() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let found: unknown = 'unset'
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			found = query()
 				.on(Fired)
 				.find((_msg, value) => {
@@ -768,24 +784,25 @@ class MessageTests {
 
 		message().set(Fired, 1).emit()
 		message().set(Fired, 2).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(found, undefined, 'Expected find to return undefined')
 		Assert.equal(seen.size(), 2, 'Expected find to visit every message')
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 2, 'Expected all messages to be consumed')
 	}
 
 	@Test
 	query_on_find_withBaseQuery_stopsAtFirstEntityMessagePair() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		entity('Alice').set(Health, 100)
 		entity('Bob').set(Health, 50)
 		const seen: [Handle, number][] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query(Health)
 				.on(Damaged)
 				.find((e, _health, _msg, damage) => {
@@ -796,17 +813,18 @@ class MessageTests {
 
 		message().set(Damaged, 10).emit()
 		message().set(Damaged, 20).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected find to stop at the first pair')
 		Assert.equal(seen[0][1], 10, 'Expected the first message to be matched')
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 1, 'Expected the second message to be consumed')
 	}
 
 	@Test
 	message_emittedInFrame_isReadByLaterSystemInSameFrame() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 
@@ -820,8 +838,8 @@ class MessageTests {
 				.forEach((_msg, value) => seen.push(value))
 		}
 
-		scheduler.useSystemChain('update', [emit, read])
-		tick()
+		sched.useSystemChain('update', [emit, read])
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -833,6 +851,7 @@ class MessageTests {
 
 	@Test
 	message_emittedInFrame_isReadByEarlierSystemNextFrame() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let emitted = false
@@ -849,12 +868,12 @@ class MessageTests {
 			message().set(Fired, 1).emit()
 		}
 
-		scheduler.useSystemChain('update', [read, emit])
-		tick()
+		sched.useSystemChain('update', [read, emit])
+		sched.__tick()
 
 		Assert.equal(seen.size(), 0, 'Expected no message in the first frame')
 
-		tick()
+		sched.__tick()
 		Assert.equal(
 			seen.size(),
 			1,
@@ -865,6 +884,7 @@ class MessageTests {
 
 	@Test
 	message_isNotReadAfterTwoFrames() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let emitted = false
@@ -881,19 +901,19 @@ class MessageTests {
 			message().set(Fired, 1).emit()
 		}
 
-		scheduler.useSystemChain('update', [read, emit])
+		sched.useSystemChain('update', [read, emit])
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 0, 'Expected no message in the first frame')
 
-		tick()
+		sched.__tick()
 		Assert.equal(
 			seen.size(),
 			1,
 			'Expected the message to be read in the second frame',
 		)
 
-		tick()
+		sched.__tick()
 		Assert.equal(
 			seen.size(),
 			1,
@@ -903,6 +923,7 @@ class MessageTests {
 
 	@Test
 	message_entity_isDespawnedAfterTwoFrames() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		let messageEntity: Handle | undefined
 		let emitted = false
@@ -921,22 +942,22 @@ class MessageTests {
 				})
 		}
 
-		scheduler.useSystemChain('update', [emit, read])
+		sched.useSystemChain('update', [emit, read])
 
-		tick()
+		sched.__tick()
 		Assert.true(messageEntity !== undefined, 'Expected the message to be read')
 		Assert.true(
 			messageEntity!.exists(),
 			'Expected the message to exist in frame 1',
 		)
 
-		tick()
+		sched.__tick()
 		Assert.true(
 			messageEntity!.exists(),
 			'Expected the message to exist in frame 2',
 		)
 
-		tick()
+		sched.__tick()
 		Assert.false(
 			messageEntity!.exists(),
 			'Expected the message to be despawned in frame 3',
@@ -945,17 +966,18 @@ class MessageTests {
 
 	@Test
 	message_emittedOutsideSystem_isReadInNextTick() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => seen.push(value))
 		})
 
 		message().set(Fired, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -964,12 +986,13 @@ class MessageTests {
 		)
 		Assert.equal(seen[0], 1, 'Expected the message value to be 1')
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 1, 'Expected the message not to be read again')
 	}
 
 	@Test
 	message_cleanup_deletesOnlyStaleMessages() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let frame = 0
@@ -989,11 +1012,11 @@ class MessageTests {
 			}
 		}
 
-		scheduler.useSystemChain('update', [read, emit])
+		sched.useSystemChain('update', [read, emit])
 
-		tick()
-		tick()
-		tick()
+		sched.__tick()
+		sched.__tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 2, 'Expected the reader to see A then B')
 		Assert.equal(seen[0], 1, 'Expected the first message to be A')
@@ -1002,23 +1025,24 @@ class MessageTests {
 
 	@Test
 	message_emittedInStartup_isReadInFirstUpdateFrame() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		let emitted = false
 
-		scheduler.useSystem('startup', () => {
+		sched.useSystem('startup', () => {
 			if (emitted) return
 			emitted = true
 			message().set(Fired, 1).emit()
 		})
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => seen.push(value))
 		})
 
-		runSchedule('startup')
-		tick()
+		sched.__runSchedule('startup')
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -1027,7 +1051,7 @@ class MessageTests {
 		)
 		Assert.equal(seen[0], 1, 'Expected the message value to be 1')
 
-		tick()
+		sched.__tick()
 		Assert.equal(seen.size(), 1, 'Expected the message not to be read again')
 	}
 
@@ -1080,6 +1104,7 @@ class MessageTests {
 
 	@Test
 	message_isNotMatchedByOnChanged() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const changed: Handle[] = []
 		const unsubscribe = query().onChanged(Fired, (e) => {
@@ -1089,7 +1114,7 @@ class MessageTests {
 		const alice = entity('Alice').set(Fired, 1)
 		alice.set(Fired, 2)
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.forEach((msg) => {
@@ -1098,7 +1123,7 @@ class MessageTests {
 		})
 
 		message().set(Fired, 10).emit()
-		tick()
+		sched.__tick()
 		unsubscribe()
 
 		Assert.equal(
@@ -1111,6 +1136,7 @@ class MessageTests {
 
 	@Test
 	message_isNotMatchedByOnRemoved() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const removed: Handle[] = []
 		const unsubscribe = query().onRemoved(Fired, (e) => {
@@ -1118,9 +1144,9 @@ class MessageTests {
 		})
 
 		message().set(Fired, 1).emit()
-		tick()
-		tick()
-		tick()
+		sched.__tick()
+		sched.__tick()
+		sched.__tick()
 		unsubscribe()
 
 		Assert.equal(
@@ -1128,7 +1154,7 @@ class MessageTests {
 			0,
 			'Expected onRemoved not to fire for message cleanup',
 		)
-    }
+	}
 
 	@Test
 	query_on_calledTwice_throws() {
@@ -1172,10 +1198,11 @@ class MessageTests {
 
 	@Test
 	query_on_collect_returnsAllMessagesInOrder() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: [Handle, number][] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Fired)
 				.collect()
@@ -1187,7 +1214,7 @@ class MessageTests {
 		message().set(Fired, 1).emit()
 		message().set(Fired, 2).emit()
 		message().set(Fired, 3).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 3, 'Expected collect to return all messages')
 		Assert.equal(seen[0][1], 1, 'Expected the first message value to be 1')
@@ -1197,6 +1224,7 @@ class MessageTests {
 
 	@Test
 	query_on_bind_readsMessagesWhenScheduled() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 		const bound = query()
@@ -1205,9 +1233,9 @@ class MessageTests {
 				seen.push(value)
 			})
 
-		scheduler.useSystem('update', bound)
+		sched.useSystem('update', bound)
 		message().set(Fired, 1).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -1219,6 +1247,7 @@ class MessageTests {
 
 	@Test
 	query_on_bind_withBaseQuery_pairsEntitiesAndMessages() {
+		const sched = scheduler()
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
@@ -1229,9 +1258,9 @@ class MessageTests {
 				seen.push([e, health, msg, damage])
 			})
 
-		scheduler.useSystem('update', bound)
+		sched.useSystem('update', bound)
 		message().set(Damaged, 10).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
@@ -1246,6 +1275,7 @@ class MessageTests {
 
 	@Test
 	query_on_withEightTerms_receivesAllValues() {
+		const sched = scheduler()
 		const C1 = component<number>('C1')
 		const C2 = component<number>('C2')
 		const C3 = component<number>('C3')
@@ -1256,7 +1286,7 @@ class MessageTests {
 		const C8 = component<number>('C8')
 		let seen: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(C1, C2, C3, C4, C5, C6, C7, C8)
 				.forEach((_msg, v1, v2, v3, v4, v5, v6, v7, v8) => {
@@ -1274,7 +1304,7 @@ class MessageTests {
 			.set(C7, 7)
 			.set(C8, 8)
 			.emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(seen.size(), 8, 'Expected all eight values to be received')
 		for (let i = 0; i < 8; i++) {
@@ -1284,10 +1314,11 @@ class MessageTests {
 
 	@Test
 	query_on_messageSequence_readsAllMessages() {
+		const sched = scheduler()
 		const Fired = component<number>('Fired')
 		const seen: number[] = []
 
-		scheduler.useSystem('update', () => {
+		sched.useSystem('update', () => {
 			query()
 				.on(Builtin.MessageSequence)
 				.forEach((_msg, sequence) => {
@@ -1298,7 +1329,7 @@ class MessageTests {
 		message().set(Fired, 1).emit()
 		message().set(Fired, 2).emit()
 		message().set(Fired, 3).emit()
-		tick()
+		sched.__tick()
 
 		Assert.equal(
 			seen.size(),
