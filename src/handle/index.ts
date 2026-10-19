@@ -349,9 +349,17 @@ export abstract class Handle {
 
 	/**
 	 * Gets the label assigned to this entity.
+	 *
+	 * @remarks
+	 * If the entity has been despawned, it will return a label indicating that.
 	 */
 	toString(): string {
-		return this.get(getBuiltin('Label'))!
+		const label = this.get(getBuiltin('Label'))
+		if (label !== undefined) return label
+
+		return this.exists()
+			? `Entity #${this.id}`
+			: `Entity #${this.id} (despawned)`
 	}
 
 	/**
