@@ -10,20 +10,20 @@ import {
 } from '@rbxts/toucan'
 import { clearWorld } from './helpers'
 
-class EntityTests {
+class HandleTests {
 	@BeforeEach
-	public reset() {
+	reset() {
 		clearWorld()
 	}
 
 	@Test
-	public entity_createsSuccessfully() {
+	entity_createsSuccessfully() {
 		const e = entity()
 		Assert.true(e.exists(), 'Expected a new entity to exist')
 	}
 
 	@Test
-	public entity_withLabel_setsToString() {
+	entity_withLabel_setsToString() {
 		const label = 'TestEntity'
 		const e = entity(label)
 		Assert.equal(
@@ -35,7 +35,7 @@ class EntityTests {
 	}
 
 	@Test
-	public despawn_removesEntity() {
+	despawn_removesEntity() {
 		const e = entity()
 		Assert.true(e.exists(), 'Expected entity to exist before despawn')
 		e.despawn()
@@ -43,7 +43,7 @@ class EntityTests {
 	}
 
 	@Test
-	public parent_returnsAssignedParent() {
+	parent_returnsAssignedParent() {
 		const parent = entity('Parent')
 		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
 		Assert.equal(
@@ -59,7 +59,7 @@ class EntityTests {
 	}
 
 	@Test
-	public children_returnsAssignedChildEntity() {
+	children_returnsAssignedChildEntity() {
 		const parent = entity('Parent')
 		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
 
@@ -77,7 +77,7 @@ class EntityTests {
 	}
 
 	@Test
-	public relationships_includesAssignedChildOfPair() {
+	relationships_includesAssignedChildOfPair() {
 		const parent = entity('Parent')
 		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
 
@@ -100,7 +100,7 @@ class EntityTests {
 	}
 
 	@Test
-	public resolveId_returnsCorrectEntity() {
+	resolveId_returnsCorrectEntity() {
 		const e = entity('Test')
 		const resolved = resolveId(e.id)
 		Assert.equal(
@@ -112,7 +112,7 @@ class EntityTests {
 	}
 
 	@Test
-	public remove_deletesComponent() {
+	remove_deletesComponent() {
 		const C = component()
 		const e = entity().set(C)
 		Assert.true(
@@ -127,7 +127,7 @@ class EntityTests {
 	}
 
 	@Test
-	public remove_throwsErrorWhenComponentIsPersistent() {
+	remove_throwsErrorWhenComponentIsPersistent() {
 		const e = entity()
 		Assert.true(
 			e.has(Builtin.Label),
@@ -141,7 +141,7 @@ class EntityTests {
 	}
 
 	@Test
-	public remove_throwsErrorWhenPairIsPersistent() {
+	remove_throwsErrorWhenPairIsPersistent() {
 		const Likes = component('Likes').set(Builtin.Persistent)
 
 		const bob = entity('bob')
@@ -155,7 +155,7 @@ class EntityTests {
 	}
 
 	@Test
-	public clear_removesAllComponentsAndPairs() {
+	clear_removesAllComponentsAndPairs() {
 		const C1 = component()
 		const C2 = component()
 		const p1 = pair(C1, C2)
@@ -176,7 +176,7 @@ class EntityTests {
 	}
 
 	@Test
-	public clear_doesNotRemovePersistentComponentsAndPairs() {
+	clear_doesNotRemovePersistentComponentsAndPairs() {
 		const Handsome = component('Handsome').set(Builtin.Persistent)
 		const Funny = component('Funny').set(Builtin.Persistent)
 		const Is = component('Is').set(Builtin.Persistent)
@@ -200,7 +200,7 @@ class EntityTests {
 	}
 
 	@Test
-	public components_returnsOnlyAssignedComponents() {
+	components_returnsOnlyAssignedComponents() {
 		const e = entity()
 		const comps = e.components()
 		Assert.equal(
@@ -216,7 +216,7 @@ class EntityTests {
 	}
 
 	@Test
-	public component_createsSuccessfully() {
+	component_createsSuccessfully() {
 		const C = component('TestComponent')
 		Assert.true(C.exists(), 'Expected the component entity to exist')
 		Assert.equal(
@@ -231,7 +231,7 @@ class EntityTests {
 	}
 
 	@Test
-	public get_returnsSetValueForComponent() {
+	get_returnsSetValueForComponent() {
 		const Health = component<number>('Health')
 		const e = entity().set(Health, 100)
 		const value = e.get(Health)
@@ -239,7 +239,7 @@ class EntityTests {
 	}
 
 	@Test
-	public set_updatesExistingComponentValue() {
+	set_updatesExistingComponentValue() {
 		const Health = component<number>()
 		const e = entity().set(Health, 100)
 		e.set(Health, 50)
@@ -251,7 +251,7 @@ class EntityTests {
 	}
 
 	@Test
-	public get_returnsMultipleComponentValues() {
+	get_returnsMultipleComponentValues() {
 		const Health = component<number>()
 		const Stamina = component<number>()
 		const e = entity().set(Health, 100).set(Stamina, 50)
@@ -261,7 +261,7 @@ class EntityTests {
 	}
 
 	@Test
-	public get_returnsUndefinedForMissingComponents() {
+	get_returnsUndefinedForMissingComponents() {
 		const Health = component<number>()
 		const Stamina = component<number>()
 		const e = entity().set(Health, 100)
@@ -275,7 +275,7 @@ class EntityTests {
 	}
 
 	@Test
-	public has_returnsTrueOnlyIfAllComponentsExist() {
+	has_returnsTrueOnlyIfAllComponentsExist() {
 		const C1 = component()
 		const C2 = component()
 		const C3 = component()
@@ -291,7 +291,7 @@ class EntityTests {
 	}
 
 	@Test
-	public get_returnsSetValueForPair() {
+	get_returnsSetValueForPair() {
 		const Owns = component<number>()
 		const car = entity('Car')
 		const alice = entity('Alice').set(pair(Owns, car), 5)
@@ -308,7 +308,7 @@ class EntityTests {
 	}
 
 	@Test
-	public has_returnsTrueForMultiplePairsWithSameRelation() {
+	has_returnsTrueForMultiplePairsWithSameRelation() {
 		const Likes = component()
 		const bob = entity('Bob')
 		const charlie = entity('Charlie')
@@ -331,7 +331,7 @@ class EntityTests {
 	}
 
 	@Test
-	public targetOf_returnsCorrectTargetForIndex() {
+	targetOf_returnsCorrectTargetForIndex() {
 		const Likes = component()
 		const bob = entity('Bob')
 		const charlie = entity('Charlie')
@@ -354,7 +354,7 @@ class EntityTests {
 	}
 
 	@Test
-	public targetOf_returnsUndefinedForOutOfBoundsIndex() {
+	targetOf_returnsUndefinedForOutOfBoundsIndex() {
 		const Likes = component()
 		const bob = entity('Bob')
 		const alice = entity('Alice').set(pair(Likes, bob))
@@ -367,7 +367,7 @@ class EntityTests {
 	}
 
 	@Test
-	public parent_returnsUndefinedWhenNoParentAssigned() {
+	parent_returnsUndefinedWhenNoParentAssigned() {
 		const e = entity()
 		const parent = e.parent()
 		Assert.equal(
@@ -378,7 +378,7 @@ class EntityTests {
 	}
 
 	@Test
-	public resolveId_returnsUndefinedForInvalidId() {
+	resolveId_returnsUndefinedForInvalidId() {
 		const resolved = resolveId(999999 as RawId)
 		Assert.equal(
 			resolved,
@@ -388,7 +388,7 @@ class EntityTests {
 	}
 
 	@Test
-	public children_returnsAllAssignedChildEntities() {
+	children_returnsAllAssignedChildEntities() {
 		const parent = entity('Parent')
 		const child1 = entity('Child1').set(pair(Builtin.ChildOf, parent))
 		const child2 = entity('Child2').set(pair(Builtin.ChildOf, parent))
@@ -409,7 +409,7 @@ class EntityTests {
 	}
 
 	@Test
-	public resource_createsSuccessfully() {
+	resource_createsSuccessfully() {
 		const GameState = resource('lobby', 'GameState')
 		Assert.true(GameState.exists(), 'Expected resource entity to exist')
 		Assert.equal(
@@ -424,7 +424,7 @@ class EntityTests {
 	}
 
 	@Test
-	public read_returnsCurrentResourceValue() {
+	read_returnsCurrentResourceValue() {
 		const GameState = resource('lobby', 'GameState')
 		const value = GameState.read()
 		Assert.equal(
@@ -435,7 +435,7 @@ class EntityTests {
 	}
 
 	@Test
-	public write_updatesResourceValue() {
+	write_updatesResourceValue() {
 		const GameState = resource('lobby', 'GameState')
 		GameState.write('in-game')
 		Assert.equal(
@@ -446,7 +446,7 @@ class EntityTests {
 	}
 
 	@Test
-	public resource_generatesFallbackLabelWhenOmitted() {
+	resource_generatesFallbackLabelWhenOmitted() {
 		const GameState = resource('test')
 		Assert.true(
 			GameState.exists(),
@@ -460,7 +460,7 @@ class EntityTests {
 	}
 
 	@Test
-	public changed_firesCallbackWhenResourceIsWritten() {
+	changed_firesCallbackWhenResourceIsWritten() {
 		const GameState = resource('lobby', 'GameState')
 		let called = false
 		let newValue: string | undefined
@@ -485,7 +485,7 @@ class EntityTests {
 	}
 
 	@Test
-	public relationships_returnsAllAssignedPairs() {
+	relationships_returnsAllAssignedPairs() {
 		const Likes = component()
 		const Hates = component()
 		const bob = entity('Bob')
@@ -505,7 +505,7 @@ class EntityTests {
 	}
 
 	@Test
-	public components_excludesRelationships() {
+	components_excludesRelationships() {
 		const Likes = component()
 		const bob = entity('Bob')
 		const alice = entity('Alice').set(pair(Likes, bob))
@@ -524,7 +524,7 @@ class EntityTests {
 	}
 
 	@Test
-	public set_supportsMethodChaining() {
+	set_supportsMethodChaining() {
 		const C1 = component()
 		const C2 = component()
 		const C3 = component()
@@ -536,7 +536,7 @@ class EntityTests {
 	}
 
 	@Test
-	public set_allowsSettingTagComponentMultipleTimes() {
+	set_allowsSettingTagComponentMultipleTimes() {
 		const Active = component()
 		const e = entity()
 		e.set(Active)
@@ -548,7 +548,7 @@ class EntityTests {
 	}
 
 	@Test
-	public clear_doesNothingWhenNoComponentsExist() {
+	clear_doesNothingWhenNoComponentsExist() {
 		const e = entity()
 		const before = e.components().size()
 		e.clear()
@@ -562,7 +562,7 @@ class EntityTests {
 	}
 
 	@Test
-	public get_returnsCorrectValuesForDifferentPairs() {
+	get_returnsCorrectValuesForDifferentPairs() {
 		const Owns = component<number>()
 		const car = entity()
 		const house = entity()
@@ -581,7 +581,7 @@ class EntityTests {
 	}
 
 	@Test
-	public despawn_throwsOnPersistentEntity() {
+	despawn_throwsOnPersistentEntity() {
 		const e = entity().set(Builtin.Persistent)
 		Assert.throws(
 			() => e.despawn(),
@@ -591,7 +591,7 @@ class EntityTests {
 	}
 
 	@Test
-	public toString_returnsFallbackForDespawnedEntity() {
+	toString_returnsFallbackForDespawnedEntity() {
 		const e = entity('TestEntity')
 		const id = e.id
 		e.despawn()
@@ -605,7 +605,7 @@ class EntityTests {
 
 	// This was an obscure bug due to how Jecs' `world.children` works internally.
 	@Test
-	public children_wildcardReturnsEmpty() {
+	children_wildcardReturnsEmpty() {
 		entity('child').set(pair(Builtin.ChildOf, entity('parent')))
 		Assert.equal(
 			Builtin.Wildcard.children().size(),
@@ -615,4 +615,4 @@ class EntityTests {
 	}
 }
 
-export = EntityTests
+export = HandleTests

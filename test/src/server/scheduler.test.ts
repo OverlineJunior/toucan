@@ -9,7 +9,7 @@ import {
 	query,
 	type Scheduler,
 	type Schedules,
-	scheduler,   
+	scheduler,
 	systemSet,
 } from '@rbxts/toucan'
 import { clearWorld } from './helpers'
