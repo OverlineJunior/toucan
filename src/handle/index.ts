@@ -528,6 +528,78 @@ export function entity(label?: string): EntityHandle {
  */
 export class ComponentHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
+
+	/**
+	 * Registers a callback that fires whenever this component is added to an entity.
+	 *
+	 * @example
+	 * ```ts
+	 * const Health = component<number>()
+	 *
+	 * Health.onAdded((entity, health) => {
+	 *     print(`${health}hp was added to entity ${entity.id}!`)
+	 * })
+	 * ```
+	 */
+	onAdded(callback: (entity: Handle, value: Value) => void): () => void {
+		return world.added(this.id, (id, _, value) => {
+			const e = resolveId(id)
+			if (!e) return
+
+			callback(e, value as Value)
+		})
+	}
+
+	/**
+	 * Registers a callback that fires whenever this component's value changes on an entity.
+	 *
+	 * @example
+	 * ```ts
+	 * const Health = component<number>()
+	 *
+	 * Health.onChanged((entity, newHealth, oldHealth) => {
+	 *     print(`Entity ${entity.id}'s health changed from ${oldHealth} to ${newHealth}!`)
+	 * })
+	 * ```
+	 */
+	onChanged(
+		callback: (entity: Handle, newValue: Value, oldValue: Value) => void,
+	): () => void {
+		return world.changed(this.id, (id, _, value) => {
+			const e = resolveId(id)
+			if (!e) return
+
+			callback(e, value as Value, entityHistory.get(id, this.id)! as Value)
+		})
+	}
+
+	/**
+	 * Registers a callback that fires whenever this component is removed from an
+	 * entity, or when the entity itself is despawned.
+	 *
+	 * @example
+	 * ```ts
+	 * const Health = component<number>()
+	 *
+	 * Health.onRemoved((entity, oldHealth, despawned) => {
+	 *     if (despawned) {
+	 *         print(`Entity ${entity.id} had ${oldHealth}hp before being despawned.`)
+	 *     } else {
+	 *         print(`Entity ${entity.id} had ${oldHealth}hp before losing Health.`)
+	 *     }
+	 * })
+	 * ```
+	 */
+	onRemoved(
+		callback: (entity: Handle, oldValue: Value, despawned: boolean) => void,
+	): () => void {
+		return world.removed(this.id, (id, _, despawned) => {
+			const e = resolveId(id)
+			if (!e) return
+
+			callback(e, entityHistory.get(id, this.id)! as Value, despawned ?? false)
+		})
+	}
 }
 
 /**
@@ -579,7 +651,7 @@ export function addDefaultComponentMetadata<C extends ComponentHandle>(
  *
  * @group Types
  */
-export class ResourceHandle<Value = unknown> extends Handle {
+export class ResourceHandle<Value = unknown> extends ComponentHandle<Value> {
 	declare [VALUE_SYMBOL]: Value
 
 	/**

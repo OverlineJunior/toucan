@@ -1,5 +1,5 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-import { Builtin, component, entity, pair, query } from '@rbxts/toucan'
+import { component, entity, pair, query } from '@rbxts/toucan'
 import { clearWorld } from './helpers'
 
 class QueryTests {
@@ -216,91 +216,6 @@ class QueryTests {
 			6,
 			'Expected reduce to accumulate the scores to a total of 6',
 		)
-	}
-
-	@Test
-	public onAdded_firesWhenComponentIsAddedToMatchingEntity() {
-		const Health = component<number>('Health')
-		const e = entity('Alice')
-
-		let called = false
-		const unsubscribe = query(Builtin.Label).onAdded(
-			Health,
-			(entity, _label, health) => {
-				called = true
-				Assert.equal(entity, e, 'Expected onAdded event to fire for Alice')
-				Assert.equal(
-					health,
-					100,
-					'Expected the added Health component value to be 100',
-				)
-			},
-		)
-
-		e.set(Health, 100)
-		unsubscribe()
-
-		Assert.true(called, 'Expected onAdded callback to be called')
-	}
-
-	@Test
-	public onChanged_firesWhenComponentValueChanges() {
-		const Health = component<number>('Health')
-		const e = entity('Alice').set(Health, 10)
-
-		let called = false
-		const unsubscribe = query(Builtin.Label).onChanged(
-			Health,
-			(entity, _label, newHealth, oldHealth) => {
-				called = true
-				Assert.equal(entity, e, 'Expected onChanged event to fire for Alice')
-				Assert.equal(
-					newHealth,
-					20,
-					'Expected the new Health component value to be 20',
-				)
-				Assert.equal(
-					oldHealth,
-					10,
-					'Expected the old Health component value to be 10',
-				)
-			},
-		)
-
-		e.set(Health, 20)
-		unsubscribe()
-
-		Assert.true(called, 'Expected onChanged callback to be called')
-	}
-
-	@Test
-	public onRemoved_firesWhenComponentIsRemoved() {
-		const Health = component<number>('Health')
-		const e = entity('Alice').set(Health, 10)
-
-		let called = false
-		const unsubscribe = query(Builtin.Label).onRemoved(
-			Health,
-			(entity, _label, oldHealth, despawned) => {
-				called = true
-				Assert.equal(entity, e, 'Expected onRemoved event to fire for Alice')
-				Assert.equal(
-					oldHealth,
-					10,
-					'Expected the old Health component value to be 10',
-				)
-				Assert.equal(
-					despawned,
-					false,
-					'Expected despawned flag to be false when component is removed manually',
-				)
-			},
-		)
-
-		e.remove(Health)
-		unsubscribe()
-
-		Assert.true(called, 'Expected onRemoved callback to be called')
 	}
 }
 

@@ -1,9 +1,7 @@
 import type * as jecs from '@rbxts/jecs'
-import { entityHistory } from './entityHistory'
 import {
 	type ComponentHandle,
 	type Handle,
-	type InferValue,
 	type InferValues,
 	resolveId,
 } from './handle'
@@ -55,8 +53,6 @@ type IterateFn = (
 type AnyIterateFn = (id: Handle, ...args: unknown[]) => boolean | void
 
 type RawQuery = jecs.Query<RawId[]> | jecs.CachedQuery<RawId[]>
-
-type DisconnectFn = () => void
 
 interface MessageSnapshot {
 	entity: Handle
@@ -357,122 +353,6 @@ export class Query<
 	}
 
 	/**
-	 * Registers a callback that fires whenever the specified component is added to an
-	 * entity that matches this query.
-	 *
-	 * The callback receives the entity, the values of the queried components, and the
-	 * newly added component's value.
-	 *
-	 * @example
-	 * ```ts
-	 * query(Player).onAdded(Health, (entity, player, health) => {
-	 *     print(`${health}hp was added to ${player}!`)
-	 * })
-	 * ```
-	 */
-	onAdded<C extends ComponentHandle>(
-		component: C,
-		callback: (
-			entity: Handle,
-			...componentValues: InferValues<[...Cs, C]>
-		) => void,
-	): DisconnectFn {
-		return world.added(component.id, (id, _, value) => {
-			const e = resolveId(id)
-			if (!e) return
-
-			const requiredValues = this.match(e)
-			if (!requiredValues) return
-
-			// Roblox-TS doesn't allow spreading function arguments unless they're last, and we wanna preserve order.
-			callback(e, ...[...requiredValues, value as InferValue<C>])
-		})
-	}
-
-	/**
-	 * Registers a callback that fires whenever the specified component's value changes
-	 * on an entity that matches this query.
-	 *
-	 * The callback receives the entity, the values of the queried components, the
-	 * new value of the changed component, and its previous value.
-	 *
-	 * @example
-	 * ```ts
-	 * query(Player).onChanged(Health, (entity, player, newHealth, oldHealth) => {
-	 *     print(`${player}'s health changed from ${oldHealth} to ${newHealth}!`)
-	 * })
-	 * ```
-	 */
-	onChanged<C extends ComponentHandle>(
-		component: C,
-		callback: (
-			entity: Handle,
-			...componentValues: InferValues<[...Cs, C, C]>
-		) => void,
-	): DisconnectFn {
-		return world.changed(component.id, (id, _, value) => {
-			const e = resolveId(id)
-			if (!e) return
-
-			const requiredValues = this.match(e)
-			if (!requiredValues) return
-
-			callback(
-				e,
-				...[
-					...requiredValues,
-					value as InferValue<C>,
-					entityHistory.get(id, component.id)! as InferValue<C>,
-				],
-			)
-		})
-	}
-
-	/**
-	 * Registers a callback that fires whenever the specified component is removed from
-	 * an entity that matches this query, or when the entity itself is despawned.
-	 *
-	 * The callback receives the entity, the values of the queried components, the
-	 * component's last known value before removal, and a boolean indicating if the
-	 * removal was caused by the entity despawning.
-	 *
-	 * @example
-	 * ```ts
-	 * query(Player).onRemoved(Health, (entity, player, oldHealth, despawned) => {
-	 *     if (despawned) {
-	 *         print(`${player} had ${oldHealth}hp before their entity was completely annihilated.`)
-	 *     } else {
-	 *         print(`${player} had ${oldHealth}hp before their Health component was removed.`)
-	 *     }
-	 * })
-	 * ```
-	 */
-	onRemoved<C extends ComponentHandle>(
-		component: C,
-		callback: (
-			entity: Handle,
-			...componentValues: [...InferValues<Cs>, InferValue<C>, boolean]
-		) => void,
-	): DisconnectFn {
-		return world.removed(component.id, (id, _, despawned) => {
-			const e = resolveId(id)
-			if (!e) return
-
-			const requiredValues = this.match(e)
-			if (!requiredValues) return
-
-			callback(
-				e,
-				...[
-					...requiredValues,
-					entityHistory.get(id, component.id)! as InferValue<C>,
-					despawned ?? false,
-				],
-			)
-		})
-	}
-
-	/**
 	 * Iterates the query, using the message-aware path when `on()` was called.
 	 */
 	private runQuery(callback: AnyIterateFn): void {
@@ -622,34 +502,6 @@ export class Query<
 		)
 	}
 
-	/**
-	 * Checks whether `e` satisfies _all_ of the query's criteria (required,
-	 * included and excluded ids, plus filters) outside of a jecs query iteration,
-	 * returning the values of the required components if it does.
-	 */
-	private match(e: Handle): InferValues<Cs> | undefined {
-		const requiredValues: defined[] = []
-
-		for (const compId of this.requiredIds) {
-			const v = world.get(e.id, compId)
-			if (v === undefined) return undefined
-
-			requiredValues.push(v as defined)
-		}
-
-		for (const compId of this.includedIds) {
-			if (!world.has(e.id, compId)) return undefined
-		}
-
-		for (const compId of this.excludedIds) {
-			if (world.has(e.id, compId)) return undefined
-		}
-
-		if (!this.passesFilters(e, ...requiredValues)) return undefined
-
-		return requiredValues as unknown as InferValues<Cs>
-	}
-
 	private passesFilters(
 		e: Handle,
 		v1?: unknown,
@@ -673,8 +525,7 @@ export class Query<
  *
  * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
  * excluding specific components) and offer various ways to consume the matching entities. You can
- * iterate over them (`forEach`, `map`), listen to their lifecycle events (`onAdded`, `onChanged`),
- * or bind them directly into optimized system callbacks (`bind`).
+ * iterate over them (`forEach`, `map`), or bind them directly into optimized system callbacks (`bind`).
  *
  * @example
  * ```ts

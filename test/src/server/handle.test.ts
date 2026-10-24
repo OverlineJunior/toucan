@@ -223,6 +223,82 @@ class HandleTests {
 	}
 
 	@Test
+	onAdded_firesWhenComponentIsAdded() {
+		const Health = component<number>('Health')
+		const e = entity('Alice')
+
+		let called = false
+		const unsubscribe = Health.onAdded((entity, health) => {
+			called = true
+			Assert.equal(entity, e, 'Expected onAdded event to fire for Alice')
+			Assert.equal(
+				health,
+				100,
+				'Expected the added Health component value to be 100',
+			)
+		})
+
+		e.set(Health, 100)
+		unsubscribe()
+
+		Assert.true(called, 'Expected onAdded callback to be called')
+	}
+
+	@Test
+	onChanged_firesWhenComponentValueChanges() {
+		const Health = component<number>('Health')
+		const e = entity('Alice').set(Health, 10)
+
+		let called = false
+		const unsubscribe = Health.onChanged((entity, newHealth, oldHealth) => {
+			called = true
+			Assert.equal(entity, e, 'Expected onChanged event to fire for Alice')
+			Assert.equal(
+				newHealth,
+				20,
+				'Expected the new Health component value to be 20',
+			)
+			Assert.equal(
+				oldHealth,
+				10,
+				'Expected the old Health component value to be 10',
+			)
+		})
+
+		e.set(Health, 20)
+		unsubscribe()
+
+		Assert.true(called, 'Expected onChanged callback to be called')
+	}
+
+	@Test
+	onRemoved_firesWhenComponentIsRemoved() {
+		const Health = component<number>('Health')
+		const e = entity('Alice').set(Health, 10)
+
+		let called = false
+		const unsubscribe = Health.onRemoved((entity, oldHealth, despawned) => {
+			called = true
+			Assert.equal(entity, e, 'Expected onRemoved event to fire for Alice')
+			Assert.equal(
+				oldHealth,
+				10,
+				'Expected the old Health component value to be 10',
+			)
+			Assert.equal(
+				despawned,
+				false,
+				'Expected despawned flag to be false when component is removed manually',
+			)
+		})
+
+		e.remove(Health)
+		unsubscribe()
+
+		Assert.true(called, 'Expected onRemoved callback to be called')
+	}
+
+	@Test
 	get_returnsSetValueForComponent() {
 		const Health = component<number>('Health')
 		const e = entity().set(Health, 100)
