@@ -1,4 +1,4 @@
-import { Component, Internal, MessageSequence, Resource } from './handle/builtins'
+import { Component, MessageSequence, Resource } from './handle/builtins'
 import type { RawId } from './id'
 
 /*
@@ -7,6 +7,5 @@ import type { RawId } from './id'
 export const hiddenComponentIds: RawId[] = [
 	Component.id,
 	Resource.id,
-    MessageSequence.id,
-	Internal.id,
+	MessageSequence.id,
 ]
