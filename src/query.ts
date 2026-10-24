@@ -11,6 +11,7 @@ import { MessageSequence } from './handle/builtins'
 import type { Pair } from './handle/pair'
 import type { RawId } from './id'
 import { advanceMessageCursor, getCurrentMessageSequence } from './message'
+import { hiddenComponentIds } from './queryHidden'
 import type { SystemFn } from './scheduler'
 import { getActiveSystemEntity } from './scheduler/systemContext'
 import type { OneUpToEight, ZeroUpToEight } from './util'
@@ -78,6 +79,9 @@ export class Query<
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
+	private readonly anyIds: RawId[] = []
+	private readonly shownIds: RawId[] = []
+	private showAllFlag = false
 	private readonly filters: ((
 		entity: Handle,
 		...components: unknown[]
@@ -105,6 +109,7 @@ export class Query<
 	 * Does not append the values of these components to the results.
 	 */
 	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
+		components.forEach((c) => this.anyIds.push(c.id))
 		this.filters.push((e) => components.some((c) => e.has(c)))
 		return this
 	}
@@ -137,6 +142,16 @@ export class Query<
 				...components: unknown[]
 			) => boolean,
 		)
+		return this
+	}
+
+	show(...hiddenComponents: ComponentHandle[]): Query<Cs, Ms> {
+		hiddenComponents.forEach((c) => this.shownIds.push(c.id))
+		return this
+	}
+
+	showAll(): Query<Cs, Ms> {
+		this.showAllFlag = true
 		return this
 	}
 
@@ -583,24 +598,27 @@ export class Query<
 	}
 
 	private makeRawQuery(): jecs.Query<RawId[]> {
-		return (
-			world
-				.query(...this.requiredIds)
-				.with(...this.includedIds)
-				// Messages are only readable through `on()` or by explicitly
-				// requiring `MessageSequence`.
-				.without(
-					...(this.isMessageQuery()
-						? this.excludedIds
-						: [...this.excludedIds, MessageSequence.id]),
-				)
-		)
+		const excluded = [
+			...this.excludedIds,
+			...hiddenComponentIds.filter((id) => !this.isIdShown(id)),
+		]
+
+		return world
+			.query(...this.requiredIds)
+			.with(...this.includedIds)
+			.without(...excluded)
 	}
 
-	private isMessageQuery(): boolean {
+	/**
+	 * Whether the query mentions `id` (or shows everything), so `id` shouldn't be hidden.
+	 */
+	private isIdShown(id: RawId): boolean {
 		return (
-			this.requiredIds.includes(MessageSequence.id) ||
-			this.includedIds.includes(MessageSequence.id)
+			this.showAllFlag ||
+			this.requiredIds.includes(id) ||
+			this.includedIds.includes(id) ||
+			this.anyIds.includes(id) ||
+			this.shownIds.includes(id)
 		)
 	}
 
@@ -610,10 +628,6 @@ export class Query<
 	 * returning the values of the required components if it does.
 	 */
 	private match(e: Handle): InferValues<Cs> | undefined {
-		// Messages are only readable through `on()` or by requiring `MessageSequence`.
-		if (!this.isMessageQuery() && world.has(e.id, MessageSequence.id))
-			return undefined
-
 		const requiredValues: defined[] = []
 
 		for (const compId of this.requiredIds) {
