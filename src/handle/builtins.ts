@@ -47,6 +47,28 @@ export const Internal = registerBuiltin(
 	new ComponentHandle<undefined>(world.component()),
 )
 
+/**
+ * Built-in component that marks other components as hidden from queries.
+ *
+ * Entities with a component marked with `QueryHidden` are excluded from queries
+ * by default. Use {@link Query.allow} or {@link Query.allowAll} to include them.
+ *
+ * The default hidden components are `Component`, `Resource` and `MessageSequence`.
+ * That means queries can only see regular entities by default.
+ *
+ * @example
+ * ```ts
+ * const Marker = component()
+ * const Hidden = component().set(Builtin.QueryHidden)
+ *
+ * entity().set(Marker).set(Hidden)
+ *
+ * query(Marker) // Excluded by default.
+ * query(Marker).allow(Hidden) // Included.
+ * ```
+ *
+ * @group Built-ins
+ */
 export const QueryHidden = registerBuiltin(
 	'QueryHidden',
 	new ComponentHandle<undefined>(world.component()),

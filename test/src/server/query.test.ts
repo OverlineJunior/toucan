@@ -225,7 +225,7 @@ class QueryTests {
 		const entt = entity().set(Marker).set(Hidden)
 
 		const regular = query(Marker).collect()
-		const allowed = query(Marker).show(Hidden).collect()
+		const allowed = query(Marker).allow(Hidden).collect()
 
 		Assert.equal(
 			regular.size(),
@@ -273,7 +273,7 @@ class QueryTests {
 	}
 
 	@Test
-	public queryHidden_requiresShowingEveryHiddenComponent() {
+	public queryHidden_requiresAllowingEveryHiddenComponent() {
 		const Marker = component('Marker')
 		const HiddenA = component('HiddenA').set(Builtin.QueryHidden)
 		const HiddenB = component('HiddenB').set(Builtin.QueryHidden)
@@ -285,21 +285,21 @@ class QueryTests {
 			'Expected an entity with two hidden components to be excluded by default',
 		)
 		Assert.equal(
-			query(Marker).show(HiddenA).collect().size(),
+			query(Marker).allow(HiddenA).collect().size(),
 			0,
-			'Expected showing only one hidden component to still exclude the entity',
+			'Expected allowing only one hidden component to still exclude the entity',
 		)
 		Assert.equal(
-			query(Marker).show(HiddenB).collect().size(),
+			query(Marker).allow(HiddenB).collect().size(),
 			0,
-			'Expected showing only the other hidden component to still exclude the entity',
+			'Expected allowing only the other hidden component to still exclude the entity',
 		)
 
-		const results = query(Marker).show(HiddenA, HiddenB).collect()
+		const results = query(Marker).allow(HiddenA, HiddenB).collect()
 		Assert.equal(
 			results.size(),
 			1,
-			'Expected showing every hidden component to include the entity',
+			'Expected allowing every hidden component to include the entity',
 		)
 		Assert.equal(
 			results[0][0],
@@ -309,27 +309,27 @@ class QueryTests {
 	}
 
 	@Test
-	public queryHidden_showAllIncludesHiddenEntities() {
+	public queryHidden_allowAllIncludesHiddenEntities() {
 		const Marker = component('Marker')
 		const HiddenA = component('HiddenA').set(Builtin.QueryHidden)
 		const HiddenB = component('HiddenB').set(Builtin.QueryHidden)
 		const entt = entity().set(Marker).set(HiddenA).set(HiddenB)
 
-		const results = query(Marker).showAll().collect()
+		const results = query(Marker).allowAll().collect()
 		Assert.equal(
 			results.size(),
 			1,
-			'Expected showAll to include entities with hidden components',
+			'Expected allowAll to include entities with hidden components',
 		)
 		Assert.equal(
 			results[0][0],
 			entt,
-			'Expected showAll to include the entity with both hidden components',
+			'Expected allowAll to include the entity with both hidden components',
 		)
 	}
 
 	@Test
-	public queryHidden_requiredComponentIsImplicitlyShown() {
+	public queryHidden_requiredComponentIsImplicitlyAllowed() {
 		const Hidden = component('Hidden').set(Builtin.QueryHidden)
 		const entt = entity().set(Hidden)
 
@@ -337,7 +337,7 @@ class QueryTests {
 		Assert.equal(
 			results.size(),
 			1,
-			'Expected requiring a hidden component to implicitly show it',
+			'Expected requiring a hidden component to implicitly allow it',
 		)
 		Assert.equal(
 			results[0][0],
@@ -347,7 +347,7 @@ class QueryTests {
 	}
 
 	@Test
-	public queryHidden_withAndWithAnyImplicitlyShowComponent() {
+	public queryHidden_withAndWithAnyImplicitlyAllowComponent() {
 		const Marker = component('Marker')
 		const Hidden = component('Hidden').set(Builtin.QueryHidden)
 		const entt = entity().set(Marker).set(Hidden)
@@ -356,7 +356,7 @@ class QueryTests {
 		Assert.equal(
 			withResults.size(),
 			1,
-			'Expected with to implicitly show the hidden component',
+			'Expected with to implicitly allow the hidden component',
 		)
 		Assert.equal(
 			withResults[0][0],
@@ -368,7 +368,7 @@ class QueryTests {
 		Assert.equal(
 			withAnyResults.size(),
 			1,
-			'Expected withAny to implicitly show the hidden component',
+			'Expected withAny to implicitly allow the hidden component',
 		)
 		Assert.equal(
 			withAnyResults[0][0],

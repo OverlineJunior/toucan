@@ -76,8 +76,8 @@ export class Query<
 	private readonly includedIds: RawId[] = []
 	private readonly excludedIds: RawId[] = []
 	private readonly anyIds: RawId[] = []
-	private readonly shownIds: RawId[] = []
-	private showAllFlag = false
+	private readonly allowedIds: RawId[] = []
+	private allowAllFlag = false
 	private readonly filters: ((
 		entity: Handle,
 		...components: unknown[]
@@ -141,13 +141,50 @@ export class Query<
 		return this
 	}
 
-	show(...hiddenComponents: ComponentHandle[]): Query<Cs, Ms> {
-		hiddenComponents.forEach((c) => this.shownIds.push(c.id))
+	/**
+	 * Allows entities with the specified hidden components to appear in the query's results.
+	 *
+	 * See {@link QueryHidden} for more details.
+	 *
+	 * @example
+	 * ```ts
+	 * // We add Description to both entities and components, and we wanna query from both.
+	 * query(Description)
+	 *     .allow(Builtin.Component)
+	 *     .forEach(...)
+	 * ```
+	 */
+	allow(...hiddenComponents: ComponentHandle[]): Query<Cs, Ms> {
+		hiddenComponents.forEach((c) => this.allowedIds.push(c.id))
 		return this
 	}
 
-	showAll(): Query<Cs, Ms> {
-		this.showAllFlag = true
+	/**
+	 * Allows entities with any hidden components to appear in the query's results.
+	 *
+	 * See {@link QueryHidden} for more details.
+	 *
+	 * @example
+	 * ```ts
+	 * function forceDespawn(e: Handle) {
+	 *     e.remove(Builtin.Persistent)
+	 *     e.despawn()
+	 * }
+	 *
+	 * const allEntityKinds = [
+	 *     Builtin.Entity,
+	 *     Builtin.Component,
+	 *     Builtin.Resource,
+	 * ]
+	 *
+	 * // Despawn every single entity, no matter what.
+	 * for (const enttKind of allEntityKinds) {
+	 *     query(enttKind).forEach((e) => forceDespawn(e))
+	 * }
+	 * ```
+	 */
+	allowAll(): Query<Cs, Ms> {
+		this.allowAllFlag = true
 		return this
 	}
 
@@ -480,7 +517,7 @@ export class Query<
 	private makeRawQuery(): jecs.Query<RawId[]> {
 		const excluded = [
 			...this.excludedIds,
-			...hiddenComponentIds.filter((id) => !this.isIdShown(id)),
+			...hiddenComponentIds.filter((id) => !this.isIdAllowed(id)),
 		]
 
 		return world
@@ -490,15 +527,15 @@ export class Query<
 	}
 
 	/**
-	 * Whether the query mentions `id` (or shows everything), so `id` shouldn't be hidden.
+	 * Whether the query mentions `id` (or allows everything), so `id` shouldn't be hidden.
 	 */
-	private isIdShown(id: RawId): boolean {
+	private isIdAllowed(id: RawId): boolean {
 		return (
-			this.showAllFlag ||
+			this.allowAllFlag ||
 			this.requiredIds.includes(id) ||
 			this.includedIds.includes(id) ||
 			this.anyIds.includes(id) ||
-			this.shownIds.includes(id)
+			this.allowedIds.includes(id)
 		)
 	}
 
