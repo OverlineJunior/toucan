@@ -112,7 +112,7 @@ export class Query<
 	}
 
 	/**
-	 * Excludes entities with _all_ of the specified components from the query's results.
+	 * Excludes entities with _any_ of the specified components from the query's results.
 	 */
 	without(...components: (Component | Pair)[]): Query<Cs, Ms> {
 		components.forEach((c) => this.excludedIds.push(c.id))
@@ -120,10 +120,10 @@ export class Query<
 	}
 
 	/**
-	 * Excludes entities with _any_ of the specified components from the query's results.
+	 * Excludes entities with _all_ of the specified components from the query's results.
 	 */
-	withoutAny(...components: (Component | Pair)[]): Query<Cs, Ms> {
-		this.filters.push((e) => components.every((c) => !e.has(c)))
+	withoutAll(...components: (Component | Pair)[]): Query<Cs, Ms> {
+		this.filters.push((e) => components.some((c) => !e.has(c)))
 		return this
 	}
 

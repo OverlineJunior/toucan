@@ -164,7 +164,7 @@ class QueryTests {
 	}
 
 	@Test
-	public withAnyAndWithoutAny_workTogether() {
+	public withAnyAndWithout_workTogether() {
 		const Health = component<number>('Health')
 		const Stamina = component<number>('Stamina')
 		const Poisoned = component('Poisoned')
@@ -173,7 +173,7 @@ class QueryTests {
 
 		const results = query(Health)
 			.withAny(Stamina, Poisoned)
-			.withoutAny(Poisoned)
+			.without(Poisoned)
 			.collect()
 
 		Assert.equal(
