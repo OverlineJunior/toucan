@@ -1,6 +1,3 @@
-import { Builtin as BuiltinComponents } from './entities/builtins'
-import { Plugin, ScheduleComponent as Schedule, System } from './scheduler'
-
 export {
 	type Component,
 	component,
@@ -13,6 +10,7 @@ export {
 	resolveId,
 	resource,
 } from './entities'
+export { Builtin } from './entities/builtins'
 export { type Pair, pair } from './entities/pair'
 export { __simulateThirdParty } from './entities/thirdParty'
 export type { RawId } from './id'
@@ -33,13 +31,3 @@ export {
 	systemSet,
 	type UpdateSchedules,
 } from './scheduler'
-
-/**
- * A collection of built-in {@link EntityLike}s.
- */
-export const Builtin = {
-	...BuiltinComponents,
-	Plugin,
-	System,
-	Schedule,
-}

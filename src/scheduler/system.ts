@@ -1,7 +1,6 @@
-import { component, type Entity, type InferValue } from '../entities'
-import { Builtin } from '../entities/builtins'
+import type { Entity, InferValue } from '../entities'
+import type { Builtin } from '../entities/builtins'
 import { normalizeToArray } from '../util'
-import type { Schedules } from './scheduler'
 
 /**
  * A function that represents a system.
@@ -14,7 +13,7 @@ export type SystemFn<Args extends unknown[] = unknown[]> = (
 
 export type RunCondition = () => boolean
 
-export type SystemData = InferValue<typeof System>
+export type SystemData = InferValue<typeof Builtin.System>
 
 /**
  * Configuration options for a system registered with {@link Scheduler.useSystem}.
@@ -71,38 +70,6 @@ export interface NormalizedSetConfig {
 	after: (SystemFn | SystemSet)[]
 	runIf: RunCondition[]
 }
-
-/**
- * Built-in component used to distinguish entities that represent systems.
- *
- * @group Built-ins
- */
-export const System = component<{
-	fn: SystemFn
-	args: unknown[]
-	schedule: Schedules
-	before: (SystemFn | SystemSet)[]
-	after: (SystemFn | SystemSet)[]
-	runIfs: RunCondition[]
-	runtimeMs: number
-	/**
-	 * A system's message cursors, keyed by a signature of the terms it reads
-	 * messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
-	 * message sequence that the system hasn't read yet.
-	 *
-	 * Created lazily the first time the system reads messages with `on()`.
-	 */
-	cursors?: Map<string, number>
-	/**
-	 * System sets are ephemeral information for the scheduler - they all get
-	 * reduced into systems at runtime.
-	 *
-	 * @internal
-	 */
-	_inSets: SystemSet[]
-}>('System')
-	.set(Builtin.Internal)
-	.set(Builtin.Persistent)
 
 export function inferSystemName(system: SystemFn, e?: Entity): string {
 	const defaultLabel = e === undefined ? `System ${system}` : `System #${e.id}`

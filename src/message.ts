@@ -2,7 +2,7 @@ import { type Component, entity, type InferValue } from './entities'
 import { Builtin } from './entities/builtins'
 import type { Pair } from './entities/pair'
 import type { RawId } from './id'
-import { System, type SystemData } from './scheduler/system'
+import type { SystemData } from './scheduler/system'
 import { world } from './world'
 
 type Term = Component | Pair
@@ -25,7 +25,9 @@ export function advanceMessageCursor(
 	signature: string,
 	now: number,
 ): number {
-	const sysData = world.get(systemRawId, System.id) as SystemData | undefined
+	const sysData = world.get(systemRawId, Builtin.System.id) as
+		| SystemData
+		| undefined
 	if (sysData === undefined) {
 		return 0
 	}

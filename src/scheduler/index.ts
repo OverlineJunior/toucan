@@ -1,7 +1,5 @@
-export { ScheduleComponent } from './schedule'
 export {
 	__despawnScheduler,
-	Plugin,
 	type PluginFn,
 	type RunServiceSchedules,
 	type Scheduler,
@@ -12,7 +10,6 @@ export {
 } from './scheduler'
 export {
 	type SetConfig,
-	System,
 	type SystemConfig,
 	type SystemFn,
 	type SystemSet,

@@ -1,6 +1,5 @@
 import { RunService } from '@rbxts/services'
 import {
-	component,
 	type Entity,
 	type EntityLike,
 	entity,
@@ -12,14 +11,13 @@ import { clearStaleMessages } from '../message'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
 import { setActivePluginEntity } from './pluginContext'
-import { Schedule, ScheduleComponent } from './schedule'
-import {
-	type SetConfig,
-	System,
-	type SystemConfig,
-	type SystemData,
-	type SystemFn,
-	type SystemSet,
+import { Schedule } from './schedule'
+import type {
+	SetConfig,
+	SystemConfig,
+	SystemData,
+	SystemFn,
+	SystemSet,
 } from './system'
 import { setActiveSystemEntity } from './systemContext'
 
@@ -59,19 +57,6 @@ export type RunServiceSchedules =
  */
 export type Schedules = StartupSchedules | UpdateSchedules | RunServiceSchedules
 
-/**
- * Built-in component used to distinguish entities that represent plugins.
- *
- * @group Built-ins
- */
-export const Plugin = component<{
-	fn: PluginFn
-	args: unknown[]
-	built: boolean
-}>('Plugin')
-	.set(Builtin.Internal)
-	.set(Builtin.Persistent)
-
 let existingScheduler: Scheduler | undefined
 
 function findParentPlugin(): Entity | undefined {
@@ -89,7 +74,7 @@ function findParentPlugin(): Entity | undefined {
 		}
 	}
 
-	return query(Plugin).find((_, p) => hasFnInCallStack(p.fn))?.[0] as
+	return query(Builtin.Plugin).find((_, p) => hasFnInCallStack(p.fn))?.[0] as
 		| Entity
 		| undefined
 }
@@ -261,7 +246,7 @@ export class Scheduler {
 			)
 		}
 
-		const pluginEntity = entity(label).set(Plugin, {
+		const pluginEntity = entity(label).set(Builtin.Plugin, {
 			fn: pluginFn as PluginFn,
 			args,
 			built: false,
@@ -353,9 +338,9 @@ export class Scheduler {
 			e.remove(Builtin.Persistent)
 			e.despawn()
 		}
-		query(System).forEach(forceDespawn)
-		query(Plugin).forEach(forceDespawn)
-		query(ScheduleComponent).forEach(forceDespawn)
+		query(Builtin.System).forEach(forceDespawn)
+		query(Builtin.Plugin).forEach(forceDespawn)
+		query(Builtin.Schedule).forEach(forceDespawn)
 	}
 
 	private runSchedule(schedule: Schedules): void {
@@ -363,7 +348,7 @@ export class Scheduler {
 			.get(schedule)!
 			.getSortedSystems()
 			.forEach((sys) => {
-				const data = sys.get(System)!
+				const data = sys.get(Builtin.System)!
 				if (data.runIfs.every((cond) => cond())) this.runSystem(sys, data)
 			})
 	}
@@ -381,14 +366,14 @@ export class Scheduler {
 		}
 
 		const runtimeMs = (os.clock() - start) * 1000
-		sysEntt.set(System, {
+		sysEntt.set(Builtin.System, {
 			...sysData,
 			runtimeMs,
 		})
 	}
 
 	private buildPlugins(): void {
-		let pendingPlugins = query(Plugin)
+		let pendingPlugins = query(Builtin.Plugin)
 			.collect()
 			.filter(([, p]) => !p.built)
 
@@ -400,9 +385,9 @@ export class Scheduler {
 
 		const shouldBuild = (
 			_incomingEnt: EntityLike,
-			_incomingData: InferValue<typeof Plugin>,
+			_incomingData: InferValue<typeof Builtin.Plugin>,
 		): boolean => {
-			const _existing = query(Plugin)
+			const _existing = query(Builtin.Plugin)
 				.collect()
 				.find(([, p]) => p.built === true && p.fn === _incomingData.fn)
 			if (!_existing) return true
@@ -463,7 +448,10 @@ export class Scheduler {
 			error('Unreachable')
 		}
 
-		const buildPlugin = (e: EntityLike, p: InferValue<typeof Plugin>) => {
+		const buildPlugin = (
+			e: EntityLike,
+			p: InferValue<typeof Builtin.Plugin>,
+		) => {
 			if (!shouldBuild(e, p)) {
 				e.despawn()
 				return
@@ -485,7 +473,7 @@ export class Scheduler {
 				.sort(([p1], [p2]) => sortUserFirst(p1, p2))
 				.forEach(([e, p]) => buildPlugin(e, p))
 
-			pendingPlugins = query(Plugin)
+			pendingPlugins = query(Builtin.Plugin)
 				.collect()
 				.filter(([, p]) => !p.built)
 		}

@@ -1,4 +1,6 @@
 import * as Jecs from '@rbxts/jecs'
+import type { PluginFn, Schedules, SystemFn, SystemSet } from '../scheduler'
+import type { RunCondition } from '../scheduler/system'
 import { world } from '../world'
 import { addDefaultComponentMetadata, Component } from '.'
 import { bootstrapBuiltins, registerBuiltin } from './builtinRegistry'
@@ -150,6 +152,63 @@ export const Builtin = {
 	Entity: registerBuiltin(
 		'Entity',
 		new Component<undefined>(world.component()),
+	),
+
+	/**
+	 * Built-in component used to distinguish entities that represent plugins.
+	 *
+	 * @group Built-ins
+	 */
+	Plugin: registerBuiltin(
+		'Plugin',
+		new Component<{
+			fn: PluginFn
+			args: unknown[]
+			built: boolean
+		}>(world.component()),
+	),
+
+	/**
+	 * Built-in component used to distinguish entities that represent schedules.
+	 *
+	 * @group Built-ins
+	 */
+	Schedule: registerBuiltin(
+		'Schedule',
+		new Component<{ kind: Schedules }>(world.component()),
+	),
+
+	/**
+	 * Built-in component used to distinguish entities that represent systems.
+	 *
+	 * @group Built-ins
+	 */
+	System: registerBuiltin(
+		'System',
+		new Component<{
+			fn: SystemFn
+			args: unknown[]
+			schedule: Schedules
+			before: (SystemFn | SystemSet)[]
+			after: (SystemFn | SystemSet)[]
+			runIfs: RunCondition[]
+			runtimeMs: number
+			/**
+			 * A system's message cursors, keyed by a signature of the terms it reads
+			 * messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
+			 * message sequence that the system hasn't read yet.
+			 *
+			 * Created lazily the first time the system reads messages with `on()`.
+			 */
+			cursors?: Map<string, number>
+			/**
+			 * System sets are ephemeral information for the scheduler - they all get
+			 * reduced into systems at runtime.
+			 *
+			 * @internal
+			 */
+			_inSets: SystemSet[]
+		}>(world.component()),
 	),
 }
 

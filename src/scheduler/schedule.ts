@@ -1,4 +1,4 @@
-import { component, type Entity, entity } from '../entities'
+import { type Entity, entity } from '../entities'
 import { Builtin } from '../entities/builtins'
 import { pair } from '../entities/pair'
 import { query } from '../query'
@@ -14,21 +14,11 @@ import {
 	normalizeSetConfig,
 	normalizeSystemConfig,
 	type SetConfig,
-	System,
 	type SystemConfig,
 	type SystemData,
 	type SystemFn,
 	type SystemSet,
 } from './system'
-
-/**
- * Built-in component used to distinguish entities that represent schedules.
- *
- * @group Built-ins
- */
-export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
-	.set(Builtin.Internal)
-	.set(Builtin.Persistent)
 
 function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 	if (res.ok) return
@@ -58,7 +48,7 @@ export class Schedule {
 	constructor(name: Schedules) {
 		this.name = name
 		this.entity = entity(`${name}Schedule`)
-			.set(ScheduleComponent, { kind: name })
+			.set(Builtin.Schedule, { kind: name })
 			.set(Builtin.Internal)
 			.set(Builtin.Persistent)
 	}
@@ -66,7 +56,9 @@ export class Schedule {
 	useSystem(systemFn: SystemFn, config?: SystemConfig): this {
 		this.sortedCache = undefined
 
-		const existing = query(System).find((_e, sys) => sys.fn === systemFn)
+		const existing = query(Builtin.System).find(
+			(_e, sys) => sys.fn === systemFn,
+		)
 		if (existing !== undefined) {
 			error(
 				`System '${config?.label ?? systemFn}' has already registered in schedule '${this.name}'`,
@@ -78,7 +70,7 @@ export class Schedule {
 
 		const systemEntity = entity()
 		systemEntity
-			.set(System, {
+			.set(Builtin.System, {
 				fn: systemFn,
 				args,
 				schedule: this.name,
@@ -144,10 +136,12 @@ export class Schedule {
 
 		const systems: SystemData[] = []
 		const enttByFn = new Map<SystemFn, Entity>()
-		query(System, pair(Builtin.ChildOf, this.entity)).forEach((e, data) => {
-			systems.push(data)
-			enttByFn.set(data.fn, e as Entity)
-		})
+		query(Builtin.System, pair(Builtin.ChildOf, this.entity)).forEach(
+			(e, data) => {
+				systems.push(data)
+				enttByFn.set(data.fn, e as Entity)
+			},
+		)
 
 		// Group systems by their set membership.
 		const systemsInSet = new Map<SystemSet, SystemFn[]>()
@@ -202,13 +196,13 @@ export class Schedule {
 		// which stays the single source of truth.
 		this.sortedCache = graph.sorted().map((fn) => {
 			const sysEntt = enttByFn.get(fn)!
-			const sysData = sysEntt.get(System)!
+			const sysData = sysEntt.get(Builtin.System)!
 
 			const setRunIfs = flatMap(
 				sysData._inSets,
 				(set) => this.setConfigs.get(set)?.runIf ?? [],
 			)
-			sysEntt.set(System, {
+			sysEntt.set(Builtin.System, {
 				...sysData,
 				runIfs: [...sysData.runIfs, ...setRunIfs],
 			})
