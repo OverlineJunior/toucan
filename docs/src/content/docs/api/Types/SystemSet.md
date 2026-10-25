@@ -5,7 +5,7 @@ prev: false
 title: "SystemSet"
 ---
 
-Defined in: [scheduler/system.ts:130](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L130)
+Defined in: [scheduler/system.ts:97](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L97)
 
 A type for system sets created with [systemSet](/toucan/api/core/systemset/).
 
@@ -15,4 +15,4 @@ A type for system sets created with [systemSet](/toucan/api/core/systemset/).
 
 > `readonly` **name**: `string`
 
-Defined in: [scheduler/system.ts:133](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L133)
+Defined in: [scheduler/system.ts:100](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L100)

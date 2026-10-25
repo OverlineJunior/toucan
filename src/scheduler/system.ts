@@ -25,7 +25,7 @@ export type SystemConfig<Args extends unknown[] = unknown[]> = {
 	label?: string
 	/**
 	 * Runs this system before the given target(s).
-	 * When a `SystemSet` is given, this system runs before every system in that set.
+	 * When a {@link SystemSet} is given, this system runs before every system in that set.
 	 */
 	before?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
 	/** Symmetric to `before`. */
@@ -53,7 +53,7 @@ export interface NormalizedSystemConfig {
 export interface SetConfig {
 	/**
 	 * Runs every system in this set before the given target(s).
-	 * When a `SystemSet` is given, expands to all systems in that set.
+	 * When a {@link SystemSet} is given, expands to all systems in that set.
 	 */
 	before?: SystemFn | SystemSet | (SystemFn | SystemSet)[]
 	/** Symmetric to `before`. */

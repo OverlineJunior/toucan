@@ -7,4 +7,4 @@ title: "RunServiceSchedules"
 
 > **RunServiceSchedules** = `"preRender"` \| `"preAnimation"` \| `"preSimulation"` \| `"postSimulation"`
 
-Defined in: [scheduler/scheduler.ts:52](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L52)
+Defined in: [scheduler/scheduler.ts:50](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L50)

@@ -4,7 +4,7 @@ import type { Component, Entity, EntityLike } from '.'
 import { VALUE_SYMBOL } from '.'
 
 /**
- * A special value for relationship pairs created with `pair()`.
+ * A special value for relationship pairs created with {@link pair}.
  *
  * @group Types
  */

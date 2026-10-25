@@ -94,7 +94,7 @@ export abstract class EntityLike {
 		 * instance's attribute, which cannot hold complex data structures.
 		 *
 		 * In order to get back the appropriate entity-like value from an ID, use the
-		 * `resolveId` function.
+		 * {@link resolveId} function.
 		 */
 		public readonly id: RawId,
 	) {
@@ -225,7 +225,7 @@ export abstract class EntityLike {
 	 * Removes a component or relationship pair from this entity.
 	 *
 	 * Throws an error if trying to remove a component or relationship pair
-	 * with the `Persistent` component (i.e. most built-in components).
+	 * with the {@link Builtin.Persistent} component (i.e. most built-in components).
 	 */
 	remove(componentOrPair: Component | Pair): this {
 		const targetId = isPairId(componentOrPair.id)
@@ -248,7 +248,7 @@ export abstract class EntityLike {
 	 * Clears all components and relationship pairs from this entity,
 	 * but does not despawn the entity.
 	 *
-	 * Components and relationship pairs with the `Persistent` component
+	 * Components and relationship pairs with the {@link Builtin.Persistent} component
 	 * (i.e. most built-in components) will not be removed.
 	 */
 	clear(): this {
@@ -328,7 +328,7 @@ export abstract class EntityLike {
 	}
 
 	/**
-	 * Gets the parent (the target of a `ChildOf` relationship) for this entity, if such a relationship exists.
+	 * Gets the parent (the target of a {@link Builtin.ChildOf} relationship) for this entity, if such a relationship exists.
 	 *
 	 * @example
 	 * ```ts
@@ -344,7 +344,7 @@ export abstract class EntityLike {
 	}
 
 	/**
-	 * Gets all children (the sources of `ChildOf` relationships) for this entity.
+	 * Gets all children (the sources of {@link Builtin.ChildOf} relationships) for this entity.
 	 *
 	 * @example
 	 * ```ts
@@ -481,7 +481,7 @@ export abstract class EntityLike {
 // -----------------------------------------------------------------------------
 
 /**
- * An entity spawned with `entity()`.
+ * An entity spawned with {@link entity}.
  *
  * @group Types
  */
@@ -536,7 +536,7 @@ function subscribeToChanges<Value>(
 // -----------------------------------------------------------------------------
 
 /**
- * A component spawned with `component()`.
+ * A component spawned with {@link component}.
  *
  * @group Types
  */
@@ -654,7 +654,7 @@ export function addDefaultComponentMetadata<C extends Component>(
 // -----------------------------------------------------------------------------
 
 /**
- * A resource spawned with `resource()`.
+ * A resource spawned with {@link resource}.
  *
  * @group Types
  */
@@ -664,7 +664,7 @@ export class Resource<Value = unknown> extends EntityLike {
 	/**
 	 * Returns the current value of this resource.
 	 *
-	 * Not to be confused with `get`, which can be used to retrieve the value of
+	 * Not to be confused with {@link EntityLike.get}, which can be used to retrieve the value of
 	 * components attached to resources, just like with entities.
 	 */
 	read(): Value {
@@ -674,7 +674,7 @@ export class Resource<Value = unknown> extends EntityLike {
 	/**
 	 * Updates the value of the resource.
 	 *
-	 * Not to be confused with `set`, which can be used to set the value of
+	 * Not to be confused with {@link EntityLike.set}, which can be used to set the value of
 	 * components attached to resources, just like with entities.
 	 */
 	write(value: Value): this {

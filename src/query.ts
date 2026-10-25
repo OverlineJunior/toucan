@@ -200,7 +200,7 @@ export class Query<
 	 * Messages can be read even by systems that run before they're emitted, at the cost of a one-frame delay.
 	 *
 	 * @remarks
-	 * - The query's own terms never match message entities unless `MessageSequence`
+	 * - The query's own terms never match message entities unless {@link Builtin.MessageSequence}
 	 *   is explicitly required; `on()` is the cursor-aware way to read them.
 	 * - Calling `on()` more than once will throw an error.
 	 * - Iterating a query with `on()` outside of a system will throw an error.
@@ -568,7 +568,7 @@ export class Query<
  *
  * Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
  * excluding specific components) and offer various ways to consume the matching entities. You can
- * iterate over them (`forEach`, `map`), or bind them directly into optimized system callbacks (`bind`).
+ * iterate over them ({@link Query.forEach}, {@link Query.map}), or bind them directly into optimized system callbacks ({@link Query.bind}).
  *
  * @example
  * ```ts

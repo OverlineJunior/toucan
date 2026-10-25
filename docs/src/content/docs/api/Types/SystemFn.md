@@ -7,7 +7,7 @@ title: "SystemFn"
 
 > **SystemFn**\<`Args`\> = (...`args`) => `void`
 
-Defined in: [scheduler/system.ts:11](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L11)
+Defined in: [scheduler/system.ts:10](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L10)
 
 A function that represents a system.
 

@@ -7,9 +7,9 @@ title: "Builtin"
 
 > `const` **Builtin**: `object`
 
-Defined in: [index.ts:40](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L40)
+Defined in: [entities/builtins.ts:11](https://github.com/OverlineJunior/toucan/blob/master/src/entities/builtins.ts#L11)
 
-A collection of built-in [EntityLike](/toucan/api/types/entitylike/)s.
+A collection of built-in [Component](/toucan/api/types/component/)s.
 
 ## Type Declaration
 
@@ -77,7 +77,7 @@ query(Builtin.MessageSequence).forEach((message, sequence) => {
 
 #### Remarks
 
-Prefer `on()` to read messages, as it handles frame lifetime and per-system
+Prefer [Query.on](/toucan/api/types/query/#on) to read messages, as it handles frame lifetime and per-system
 cursors for you.
 
 ### Persistent
@@ -103,7 +103,7 @@ Built-in component that marks other components as hidden from queries.
 Entities with a component marked with `QueryHidden` are excluded from queries
 by default. Use [Query.allow](/toucan/api/types/query/#allow) or [Query.allowAll](/toucan/api/types/query/#allowall) to include them.
 
-The default hidden components are `Component`, `Resource` and `MessageSequence`.
+The default hidden components are [Builtin.Component](/toucan/api/variables/builtin/#component), [Builtin.Resource](/toucan/api/variables/builtin/#resource) and [Builtin.MessageSequence](/toucan/api/variables/builtin/#messagesequence).
 That means queries can only see regular entities by default.
 
 #### Example
@@ -132,7 +132,7 @@ Built-in component used to distinguish entities that represent schedules.
 
 ### System
 
-> **System**: [`Component`](/toucan/api/types/component/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `cursors?`: `Map`\<`string`, `number`\>; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `runtimeMs`: `number`; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
+> **System**: [`Component`](/toucan/api/types/component/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]; `cursors?`: `Map`\<`string`, `number`\>; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `runtimeMs`: `number`; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
 
 Built-in component used to distinguish entities that represent systems.
 

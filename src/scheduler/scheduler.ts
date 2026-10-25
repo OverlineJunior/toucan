@@ -120,12 +120,12 @@ export class Scheduler {
 	/**
 	 * Schedules a system to run in the specified `schedule` with the provided arguments.
 	 *
-	 * Optionally, a `SystemConfig` can be passed to configure the system, such as specifying when it should run or
+	 * Optionally, a {@link SystemConfig} can be passed to configure the system, such as specifying when it should run or
 	 * in which system set it should belong.
 	 *
 	 * @remarks
 	 * It cannot be assumed that two systems scheduled in the same phase will run in the order they were registered.
-	 * Instead, consider using `useSystemChain`.
+	 * Instead, consider using {@link Scheduler.useSystemChain}.
 	 *
 	 * @example
 	 * ```ts
@@ -137,7 +137,7 @@ export class Scheduler {
 	 *
 	 * #### Introspection
 	 *
-	 * After a system is scheduled, it becomes an entity with the `System` component.
+	 * After a system is scheduled, it becomes an entity with the {@link Builtin.System} component.
 	 * This allows you to inspect metadata about the system and manipulate it.
 	 *
 	 * Additionally, the system is automatically made a child of its schedule
@@ -155,7 +155,7 @@ export class Scheduler {
 
 	/**
 	 * Schedules a chain of systems to run in order in the specified `schedule`,
-	 * with an optional `SystemConfig` for each system.
+	 * with an optional {@link SystemConfig} for each system.
 	 *
 	 * @example
 	 * ```ts
@@ -181,7 +181,7 @@ export class Scheduler {
 	}
 
 	/**
-	 * Configures a `SystemSet` for the specified `schedule` with the given `config`.
+	 * Configures a {@link SystemSet} for the specified `schedule` with the given `config`.
 	 *
 	 * @remarks
 	 * System set configuration is per schedule, meaning the same system set can be configured
@@ -226,7 +226,7 @@ export class Scheduler {
 	 *
 	 * #### Introspection
 	 *
-	 * After a plugin is built, it becomes an entity with the `Plugin` component.
+	 * After a plugin is built, it becomes an entity with the {@link Builtin.Plugin} component.
 	 * This allows you to inspect metadata about the plugin and manipulate it.
 	 *
 	 * Additionally, every entity spawned within a plugin is automatically given
@@ -264,7 +264,7 @@ export class Scheduler {
 	 * Builds all plugins and then initializes every schedule.
 	 *
 	 * @remarks
-	 * Throws if `run` is called while the scheduler is already running.
+	 * Throws if {@link Scheduler.run} is called while the scheduler is already running.
 	 *
 	 * When a schedule is initialized, an entity representing it is spawned and all
 	 * related systems are made children of it.
@@ -493,7 +493,7 @@ export class Scheduler {
  * It is responsible for running systems, building plugins and configuring system sets.
  *
  * @remarks
- * Only one scheduler can exist at a time. Calling `scheduler()` multiple times will throw an error.
+ * Only one scheduler can exist at a time. Calling {@link scheduler} multiple times will throw an error.
  *
  * @example
  * ```ts

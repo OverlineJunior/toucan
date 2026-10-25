@@ -33,7 +33,7 @@ export const Builtin = {
 	 * Entities with a component marked with `QueryHidden` are excluded from queries
 	 * by default. Use {@link Query.allow} or {@link Query.allowAll} to include them.
 	 *
-	 * The default hidden components are `Component`, `Resource` and `MessageSequence`.
+	 * The default hidden components are {@link Builtin.Component}, {@link Builtin.Resource} and {@link Builtin.MessageSequence}.
 	 * That means queries can only see regular entities by default.
 	 *
 	 * @example
@@ -138,7 +138,7 @@ export const Builtin = {
 	 * ```
 	 *
 	 * @remarks
-	 * Prefer `on()` to read messages, as it handles frame lifetime and per-system
+	 * Prefer {@link Query.on} to read messages, as it handles frame lifetime and per-system
 	 * cursors for you.
 	 */
 	MessageSequence: registerBuiltin(
@@ -198,7 +198,7 @@ export const Builtin = {
 			 * messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
 			 * message sequence that the system hasn't read yet.
 			 *
-			 * Created lazily the first time the system reads messages with `on()`.
+			 * Created lazily the first time the system reads messages with {@link Query.on}.
 			 */
 			cursors?: Map<string, number>
 			/**

@@ -282,7 +282,7 @@ Messages can be read even by systems that run before they're emitted, at the cos
 
 ##### NewMs
 
-`NewMs` *extends* `OneUpToEight`\<[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
+`NewMs` *extends* `OneUpToEight`\<[`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>\>
 
 #### Parameters
 
@@ -296,7 +296,7 @@ Messages can be read even by systems that run before they're emitted, at the cos
 
 #### Remarks
 
-- The query's own terms never match message entities unless `MessageSequence`
+- The query's own terms never match message entities unless [Builtin.MessageSequence](/toucan/api/variables/builtin/#messagesequence)
   is explicitly required; `on()` is the cursor-aware way to read them.
 - Calling `on()` more than once will throw an error.
 - Iterating a query with `on()` outside of a system will throw an error.
@@ -369,7 +369,7 @@ Does not append the values of these components to the results.
 
 ##### components
 
-...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -391,7 +391,7 @@ Does not append the values of these components to the results.
 
 ##### components
 
-...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -411,7 +411,7 @@ Excludes entities with _all_ of the specified components from the query's result
 
 ##### components
 
-...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -431,7 +431,7 @@ Excludes entities with _any_ of the specified components from the query's result
 
 ##### components
 
-...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>)[]
 
 #### Returns
 

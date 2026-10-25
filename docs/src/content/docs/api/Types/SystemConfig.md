@@ -7,7 +7,7 @@ title: "SystemConfig"
 
 > **SystemConfig**\<`Args`\> = `object` & \[\] *extends* `Args` ? `object` : `object`
 
-Defined in: [scheduler/system.ts:24](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L24)
+Defined in: [scheduler/system.ts:23](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L23)
 
 Configuration options for a system registered with [Scheduler.useSystem](/toucan/api/types/scheduler/#usesystem).
 
@@ -24,7 +24,7 @@ Symmetric to `before`.
 > `optional` **before?**: [`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/) \| ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]
 
 Runs this system before the given target(s).
-When a `SystemSet` is given, this system runs before every system in that set.
+When a [SystemSet](/toucan/api/types/systemset/) is given, this system runs before every system in that set.
 
 ### inSet?
 

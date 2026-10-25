@@ -7,7 +7,7 @@ title: "message"
 
 > **message**(): `MessageBuilder`
 
-Defined in: [message.ts:96](https://github.com/OverlineJunior/toucan/blob/master/src/message.ts#L96)
+Defined in: [message.ts:98](https://github.com/OverlineJunior/toucan/blob/master/src/message.ts#L98)
 
 ## Returns
 

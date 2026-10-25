@@ -7,7 +7,7 @@ title: "Entity"
 
 Defined in: [entities/index.ts:488](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L488)
 
-An entity spawned with `entity()`.
+An entity spawned with [entity](/toucan/api/core/entity/).
 
 ## Extends
 
@@ -28,7 +28,7 @@ its numerical ID instead. For example, storing an entity's ID in an
 instance's attribute, which cannot hold complex data structures.
 
 In order to get back the appropriate entity-like value from an ID, use the
-`resolveId` function.
+[resolveId](/toucan/api/core/resolveid/) function.
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ In order to get back the appropriate entity-like value from an ID, use the
 
 Defined in: [entities/index.ts:358](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L358)
 
-Gets all children (the sources of `ChildOf` relationships) for this entity.
+Gets all children (the sources of [Builtin.ChildOf](/toucan/api/variables/builtin/#childof) relationships) for this entity.
 
 #### Returns
 
@@ -73,7 +73,7 @@ Defined in: [entities/index.ts:254](https://github.com/OverlineJunior/toucan/blo
 Clears all components and relationship pairs from this entity,
 but does not despawn the entity.
 
-Components and relationship pairs with the `Persistent` component
+Components and relationship pairs with the [Builtin.Persistent](/toucan/api/variables/builtin/#persistent) component
 (i.e. most built-in components) will not be removed.
 
 #### Returns
@@ -157,7 +157,7 @@ Missing components or pairs will return `undefined`.
 
 ##### Args
 
-`Args` *extends* `OneUpToFour`\<[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
+`Args` *extends* `OneUpToFour`\<[`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>\>
 
 #### Parameters
 
@@ -200,7 +200,7 @@ A maximum of 4 components or pairs can be checked at once.
 
 ##### componentsOrPairs
 
-...`OneUpToFour`\<[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
+...`OneUpToFour`\<[`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>\>
 
 #### Returns
 
@@ -234,7 +234,7 @@ if (bob.has(IsDead, pair(Owns, house))) {
 
 Defined in: [entities/index.ts:341](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L341)
 
-Gets the parent (the target of a `ChildOf` relationship) for this entity, if such a relationship exists.
+Gets the parent (the target of a [Builtin.ChildOf](/toucan/api/variables/builtin/#childof) relationship) for this entity, if such a relationship exists.
 
 #### Returns
 
@@ -282,13 +282,13 @@ Defined in: [entities/index.ts:230](https://github.com/OverlineJunior/toucan/blo
 Removes a component or relationship pair from this entity.
 
 Throws an error if trying to remove a component or relationship pair
-with the `Persistent` component (i.e. most built-in components).
+with the [Builtin.Persistent](/toucan/api/variables/builtin/#persistent) component (i.e. most built-in components).
 
 #### Parameters
 
 ##### componentOrPair
 
-[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>
+[`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>
 
 #### Returns
 

@@ -5,7 +5,7 @@ prev: false
 title: "SetConfig"
 ---
 
-Defined in: [scheduler/system.ts:54](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L54)
+Defined in: [scheduler/system.ts:53](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L53)
 
 Configuration options for a system set registered with [Scheduler.configureSet](/toucan/api/types/scheduler/#configureset).
 
@@ -13,9 +13,9 @@ Configuration options for a system set registered with [Scheduler.configureSet](
 
 ### after?
 
-> `optional` **after?**: [`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/) \| ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]
+> `optional` **after?**: [`SystemSet`](/toucan/api/types/systemset/) \| [`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| ([`SystemSet`](/toucan/api/types/systemset/) \| [`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\>)[]
 
-Defined in: [scheduler/system.ts:61](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L61)
+Defined in: [scheduler/system.ts:60](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L60)
 
 Symmetric to `before`.
 
@@ -23,12 +23,12 @@ Symmetric to `before`.
 
 ### before?
 
-> `optional` **before?**: [`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/) \| ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]
+> `optional` **before?**: [`SystemSet`](/toucan/api/types/systemset/) \| [`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| ([`SystemSet`](/toucan/api/types/systemset/) \| [`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\>)[]
 
-Defined in: [scheduler/system.ts:59](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L59)
+Defined in: [scheduler/system.ts:58](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L58)
 
 Runs every system in this set before the given target(s).
-When a `SystemSet` is given, expands to all systems in that set.
+When a [SystemSet](/toucan/api/types/systemset/) is given, expands to all systems in that set.
 
 ***
 
@@ -36,7 +36,7 @@ When a `SystemSet` is given, expands to all systems in that set.
 
 > `optional` **runIf?**: `RunCondition` \| `RunCondition`[]
 
-Defined in: [scheduler/system.ts:66](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L66)
+Defined in: [scheduler/system.ts:65](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/system.ts#L65)
 
 One or more conditions inherited by every system in the set,
 where all must return `true` for the systems to run.

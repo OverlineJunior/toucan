@@ -7,7 +7,7 @@ title: "scheduler"
 
 > **scheduler**(): [`Scheduler`](/toucan/api/types/scheduler/)
 
-Defined in: [scheduler/scheduler.ts:532](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L532)
+Defined in: [scheduler/scheduler.ts:520](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L520)
 
 Returns a new [Scheduler](/toucan/api/types/scheduler/), the starting point of a game made with Toucan.
 
@@ -19,7 +19,7 @@ It is responsible for running systems, building plugins and configuring system s
 
 ## Remarks
 
-Only one scheduler can exist at a time. Calling `scheduler()` multiple times will throw an error.
+Only one scheduler can exist at a time. Calling [scheduler](/toucan/api/core/scheduler/) multiple times will throw an error.
 
 ## Example
 

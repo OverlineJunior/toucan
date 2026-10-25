@@ -5,7 +5,7 @@ prev: false
 title: "Scheduler"
 ---
 
-Defined in: [scheduler/scheduler.ts:102](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L102)
+Defined in: [scheduler/scheduler.ts:87](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L87)
 
 The type for the scheduler created with [scheduler](/toucan/api/core/scheduler/).
 
@@ -15,7 +15,7 @@ The type for the scheduler created with [scheduler](/toucan/api/core/scheduler/)
 
 > **\_\_runSchedule**(`schedule`): `void`
 
-Defined in: [scheduler/scheduler.ts:328](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L328)
+Defined in: [scheduler/scheduler.ts:313](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L313)
 
 Simulates a single run of the specified `schedule`.
 
@@ -39,7 +39,7 @@ This is primarily used for testing - use at your own risk.
 
 > **\_\_tick**(): `void`
 
-Defined in: [scheduler/scheduler.ts:338](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L338)
+Defined in: [scheduler/scheduler.ts:323](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L323)
 
 Simulates a `first -> preUpdate -> update -> postUpdate -> last` tick of the scheduler.
 
@@ -57,9 +57,9 @@ This is primarily used for testing - use at your own risk.
 
 > **configureSet**(`schedule`, `set`, `config`): `this`
 
-Defined in: [scheduler/scheduler.ts:218](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L218)
+Defined in: [scheduler/scheduler.ts:203](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L203)
 
-Configures a `SystemSet` for the specified `schedule` with the given `config`.
+Configures a [SystemSet](/toucan/api/types/systemset/) for the specified `schedule` with the given `config`.
 
 #### Parameters
 
@@ -104,7 +104,7 @@ scheduler()
 
 > **run**(): `void`
 
-Defined in: [scheduler/scheduler.ts:287](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L287)
+Defined in: [scheduler/scheduler.ts:272](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L272)
 
 Builds all plugins and then initializes every schedule.
 
@@ -114,7 +114,7 @@ Builds all plugins and then initializes every schedule.
 
 #### Remarks
 
-Throws if `run` is called while the scheduler is already running.
+Throws if [Scheduler.run](/toucan/api/types/scheduler/#run) is called while the scheduler is already running.
 
 When a schedule is initialized, an entity representing it is spawned and all
 related systems are made children of it.
@@ -125,7 +125,7 @@ related systems are made children of it.
 
 > **usePlugin**\<`Args`\>(`pluginFn`, ...`args`): `this`
 
-Defined in: [scheduler/scheduler.ts:250](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L250)
+Defined in: [scheduler/scheduler.ts:235](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L235)
 
 Registers a plugin function to be run before the scheduler starts. This function is
 given the scheduler and anything else passed in `...args`.
@@ -168,7 +168,7 @@ scheduler()
 
 #### Introspection
 
-After a plugin is built, it becomes an entity with the `Plugin` component.
+After a plugin is built, it becomes an entity with the [Builtin.Plugin](/toucan/api/variables/builtin/#plugin) component.
 This allows you to inspect metadata about the plugin and manipulate it.
 
 Additionally, every entity spawned within a plugin is automatically given
@@ -180,11 +180,11 @@ the `pair(AddedByPlugin, pluginEntity)` relationship.
 
 > **useSystem**\<`Args`\>(`schedule`, `systemFn`, `config?`): `this`
 
-Defined in: [scheduler/scheduler.ts:161](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L161)
+Defined in: [scheduler/scheduler.ts:146](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L146)
 
 Schedules a system to run in the specified `schedule` with the provided arguments.
 
-Optionally, a `SystemConfig` can be passed to configure the system, such as specifying when it should run or
+Optionally, a [SystemConfig](/toucan/api/types/systemconfig/) can be passed to configure the system, such as specifying when it should run or
 in which system set it should belong.
 
 #### Type Parameters
@@ -214,7 +214,7 @@ in which system set it should belong.
 #### Remarks
 
 It cannot be assumed that two systems scheduled in the same phase will run in the order they were registered.
-Instead, consider using `useSystemChain`.
+Instead, consider using [Scheduler.useSystemChain](/toucan/api/types/scheduler/#usesystemchain).
 
 #### Example
 
@@ -227,7 +227,7 @@ scheduler()
 
 #### Introspection
 
-After a system is scheduled, it becomes an entity with the `System` component.
+After a system is scheduled, it becomes an entity with the [Builtin.System](/toucan/api/variables/builtin/#system) component.
 This allows you to inspect metadata about the system and manipulate it.
 
 Additionally, the system is automatically made a child of its schedule
@@ -239,10 +239,10 @@ Additionally, the system is automatically made a child of its schedule
 
 > **useSystemChain**\<`T`\>(`schedule`, `systemFns`): `this`
 
-Defined in: [scheduler/scheduler.ts:185](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L185)
+Defined in: [scheduler/scheduler.ts:170](https://github.com/OverlineJunior/toucan/blob/master/src/scheduler/scheduler.ts#L170)
 
 Schedules a chain of systems to run in order in the specified `schedule`,
-with an optional `SystemConfig` for each system.
+with an optional [SystemConfig](/toucan/api/types/systemconfig/) for each system.
 
 #### Type Parameters
 

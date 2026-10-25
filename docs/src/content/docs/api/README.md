@@ -5,6 +5,10 @@ prev: false
 title: "@rbxts/toucan"
 ---
 
+## Type Aliases
+
+- [Builtin](/toucan/api/type_aliases/builtin/)
+
 ## Variables
 
 - [Builtin](/toucan/api/variables/builtin/)

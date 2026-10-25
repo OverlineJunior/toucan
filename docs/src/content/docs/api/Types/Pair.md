@@ -7,7 +7,7 @@ title: "Pair"
 
 Defined in: [entities/pair.ts:11](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L11)
 
-A special value for relationship pairs created with `pair()`.
+A special value for relationship pairs created with [pair](/toucan/api/core/pair/).
 
 ## Type Parameters
 

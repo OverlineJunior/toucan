@@ -13,13 +13,13 @@ Creates a [Query](/toucan/api/types/query/), which represents a set of criteria 
 
 Queries provide a fluent, chainable API to define strict matching rules (such as requiring or
 excluding specific components) and offer various ways to consume the matching entities. You can
-iterate over them (`forEach`, `map`), or bind them directly into optimized system callbacks (`bind`).
+iterate over them ([Query.forEach](/toucan/api/types/query/#foreach), [Query.map](/toucan/api/types/query/#map)), or bind them directly into optimized system callbacks ([Query.bind](/toucan/api/types/query/#bind)).
 
 ## Type Parameters
 
 ### Cs
 
-`Cs` *extends* `ZeroUpToEight`\<[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
+`Cs` *extends* `ZeroUpToEight`\<[`Pair`](/toucan/api/types/pair/)\<`unknown`\> \| [`Component`](/toucan/api/types/component/)\<`unknown`\>\>
 
 ## Parameters
 
