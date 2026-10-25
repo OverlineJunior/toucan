@@ -9,24 +9,24 @@
 // Other files can safely import directly from `builtins.ts`, skipping this registry.
 
 import type { Component } from '.'
-import type { BuiltinComponentLabels, BuiltinComponentMap } from './builtins'
+import type { Builtin } from './builtins'
 
-const registry = new Map<BuiltinComponentLabels, Component>()
+const registry = new Map<keyof Builtin, Component>()
 
 /**
  * Registers a built-in component so `index.ts` can safely access it with `getBuiltin`.
  *
  * ⚠️ **After all built-in components have been registered, you must call `bootstrapBuiltins`.**
  */
-export function registerBuiltin<L extends BuiltinComponentLabels>(
-	label: L,
-	component: BuiltinComponentMap[L],
-): BuiltinComponentMap[L] {
-	if (registry.has(label)) {
+export function registerBuiltin<C extends Component>(
+	label: string,
+	component: C,
+): C {
+	if (registry.has(label as keyof Builtin)) {
 		error(`Built-in component '${label}' is already registered`)
 	}
 
-	registry.set(label, component)
+	registry.set(label as keyof Builtin, component)
 	return component
 }
 
@@ -34,16 +34,14 @@ export function registerBuiltin<L extends BuiltinComponentLabels>(
  * Returns the built-in component with the given label without having to
  * import it directly, avoiding a circular dependency.
  */
-export function getBuiltin<L extends BuiltinComponentLabels>(
-	label: L,
-): BuiltinComponentMap[L] {
+export function getBuiltin<L extends keyof Builtin>(label: L): Builtin[L] {
 	if (!registry.has(label)) {
 		error(
 			`Built-in component '${label}' is not registered. This should not happen`,
 		)
 	}
 
-	return registry.get(label) as BuiltinComponentMap[L]
+	return registry.get(label) as Builtin[L]
 }
 
 /**
@@ -53,7 +51,7 @@ export function getBuiltin<L extends BuiltinComponentLabels>(
  * ⚠️ **Must be called after all built-in components have been registered.**
  */
 export function bootstrapBuiltins(
-	bootstrapper: (component: Component, label: BuiltinComponentLabels) => void,
+	bootstrapper: (component: Component, label: keyof Builtin) => void,
 ): void {
 	for (const [label, component] of pairs(registry)) {
 		bootstrapper(component, label)
