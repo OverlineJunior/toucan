@@ -7,7 +7,7 @@ title: "Builtin"
 
 > `const` **Builtin**: `object`
 
-Defined in: [index.ts:53](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L53)
+Defined in: [index.ts:40](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L40)
 
 A collection of built-in [EntityLike](/toucan/api/types/entitylike/)s.
 
@@ -35,11 +35,15 @@ assert(bob.parent() === alice)
 
 ### Component
 
-> **Component**: [`Component`](/toucan/api/types/component/)\<`undefined`\> = `ComponentBuiltin`
+> **Component**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
+
+Built-in component used to distinguish entities that represent components.
 
 ### Entity
 
-> **Entity**: [`Component`](/toucan/api/types/component/)\<`undefined`\> = `EntityBuiltin`
+> **Entity**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
+
+Built-in component used to distinguish regular entities from components and resources.
 
 ### Internal
 
@@ -116,7 +120,9 @@ query(Marker).allow(Hidden) // Included.
 
 ### Resource
 
-> **Resource**: [`Component`](/toucan/api/types/component/)\<`undefined`\> = `ResourceBuiltin`
+> **Resource**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
+
+Built-in component used to distinguish entities that represent resources.
 
 ### Schedule
 

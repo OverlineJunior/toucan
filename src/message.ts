@@ -1,5 +1,5 @@
 import { type Component, entity, type InferValue } from './entities'
-import { MessageSequence } from './entities/builtins'
+import { Builtin } from './entities/builtins'
 import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import { System, type SystemData } from './scheduler/system'
@@ -58,7 +58,7 @@ export function clearStaleMessages() {
 	frameFirstSequence = nextSequence
 
 	const staleIds: RawId[] = []
-	for (const [id, seq] of world.query(MessageSequence.id)) {
+	for (const [id, seq] of world.query(Builtin.MessageSequence.id)) {
 		if ((seq as number) < threshold) staleIds.push(id)
 	}
 	// TODO! Might be able to do directly in the previous loop.
@@ -85,7 +85,7 @@ class MessageBuilder {
 
 		// TODO! Creating a raw entity would be more performant.
 		// Or better yet, optimizing `entity()` so that's not needed.
-		const e = entity().set(MessageSequence, nextSequence++)
+		const e = entity().set(Builtin.MessageSequence, nextSequence++)
 
 		for (const [t, v] of this.termValues) {
 			e.set(t as Component, v)

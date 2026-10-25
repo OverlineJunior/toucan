@@ -7,7 +7,7 @@ title: "InferValue"
 
 > **InferValue**\<`T`\> = `T` *extends* `object` ? `V` : `never`
 
-Defined in: entities/index.ts:20
+Defined in: [entities/index.ts:20](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L20)
 
 Extracts the value type from a component/resource/pair type.
 

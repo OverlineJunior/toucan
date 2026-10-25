@@ -1,17 +1,4 @@
-import {
-	AddedByPlugin,
-	ChildOf,
-	ComponentBuiltin,
-	EntityBuiltin,
-	Internal,
-	Label,
-	MessageSequence,
-	Persistent,
-	QueryHidden,
-	ResourceBuiltin,
-	ThirdParty,
-	Wildcard,
-} from './entities/builtins'
+import { Builtin as BuiltinComponents } from './entities/builtins'
 import { Plugin, ScheduleComponent as Schedule, System } from './scheduler'
 
 export {
@@ -51,19 +38,8 @@ export {
  * A collection of built-in {@link EntityLike}s.
  */
 export const Builtin = {
-	ChildOf,
-	Component: ComponentBuiltin,
-	ThirdParty,
-	Internal,
-	Label,
-	Persistent,
-	Resource: ResourceBuiltin,
-	Wildcard,
-	AddedByPlugin,
+	...BuiltinComponents,
 	Plugin,
 	System,
 	Schedule,
-	MessageSequence,
-	Entity: EntityBuiltin,
-	QueryHidden,
 }

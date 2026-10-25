@@ -1,5 +1,5 @@
 import { component, type Entity, entity } from '../entities'
-import { ChildOf, Internal, Label, Persistent } from '../entities/builtins'
+import { Builtin } from '../entities/builtins'
 import { pair } from '../entities/pair'
 import { query } from '../query'
 import { flatMap, getOrInit, normalizeToArray } from '../util'
@@ -27,8 +27,8 @@ import {
  * @group Built-ins
  */
 export const ScheduleComponent = component<{ kind: Schedules }>('Schedule')
-	.set(Internal)
-	.set(Persistent)
+	.set(Builtin.Internal)
+	.set(Builtin.Persistent)
 
 function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 	if (res.ok) return
@@ -59,8 +59,8 @@ export class Schedule {
 		this.name = name
 		this.entity = entity(`${name}Schedule`)
 			.set(ScheduleComponent, { kind: name })
-			.set(Internal)
-			.set(Persistent)
+			.set(Builtin.Internal)
+			.set(Builtin.Persistent)
 	}
 
 	useSystem(systemFn: SystemFn, config?: SystemConfig): this {
@@ -88,8 +88,8 @@ export class Schedule {
 				runtimeMs: 0,
 				_inSets: inSets,
 			})
-			.set(Label, label ?? inferSystemName(systemFn, systemEntity))
-			.set(pair(ChildOf, this.entity))
+			.set(Builtin.Label, label ?? inferSystemName(systemFn, systemEntity))
+			.set(pair(Builtin.ChildOf, this.entity))
 
 		return this
 	}
@@ -144,7 +144,7 @@ export class Schedule {
 
 		const systems: SystemData[] = []
 		const enttByFn = new Map<SystemFn, Entity>()
-		query(System, pair(ChildOf, this.entity)).forEach((e, data) => {
+		query(System, pair(Builtin.ChildOf, this.entity)).forEach((e, data) => {
 			systems.push(data)
 			enttByFn.set(data.fn, e as Entity)
 		})

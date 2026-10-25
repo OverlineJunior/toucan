@@ -1,5 +1,5 @@
 import { component, type Entity, type InferValue } from '../entities'
-import { Internal, Persistent } from '../entities/builtins'
+import { Builtin } from '../entities/builtins'
 import { normalizeToArray } from '../util'
 import type { Schedules } from './scheduler'
 
@@ -101,8 +101,8 @@ export const System = component<{
 	 */
 	_inSets: SystemSet[]
 }>('System')
-	.set(Internal)
-	.set(Persistent)
+	.set(Builtin.Internal)
+	.set(Builtin.Persistent)
 
 export function inferSystemName(system: SystemFn, e?: Entity): string {
 	const defaultLabel = e === undefined ? `System ${system}` : `System #${e.id}`

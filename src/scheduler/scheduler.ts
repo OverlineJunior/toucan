@@ -6,7 +6,7 @@ import {
 	entity,
 	type InferValue,
 } from '../entities'
-import { ChildOf, Internal, Persistent, ThirdParty } from '../entities/builtins'
+import { Builtin } from '../entities/builtins'
 import { pair } from '../entities/pair'
 import { clearStaleMessages } from '../message'
 import { query } from '../query'
@@ -69,8 +69,8 @@ export const Plugin = component<{
 	args: unknown[]
 	built: boolean
 }>('Plugin')
-	.set(Internal)
-	.set(Persistent)
+	.set(Builtin.Internal)
+	.set(Builtin.Persistent)
 
 let existingScheduler: Scheduler | undefined
 
@@ -269,7 +269,7 @@ export class Scheduler {
 
 		const parentPlugin = findParentPlugin()
 		if (parentPlugin) {
-			pluginEntity.set(pair(ChildOf, parentPlugin))
+			pluginEntity.set(pair(Builtin.ChildOf, parentPlugin))
 		}
 
 		return this
@@ -350,7 +350,7 @@ export class Scheduler {
 		this.connections.forEach((c) => c.Disconnect())
 
 		const forceDespawn = (e: EntityLike) => {
-			e.remove(Persistent)
+			e.remove(Builtin.Persistent)
 			e.despawn()
 		}
 		query(System).forEach(forceDespawn)
@@ -393,8 +393,8 @@ export class Scheduler {
 			.filter(([, p]) => !p.built)
 
 		const sortUserFirst = (a: EntityLike, b: EntityLike) => {
-			const isAThirdParty = a.has(ThirdParty)
-			const isBThirdParty = b.has(ThirdParty)
+			const isAThirdParty = a.has(Builtin.ThirdParty)
+			const isBThirdParty = b.has(Builtin.ThirdParty)
 			return isAThirdParty === isBThirdParty ? false : !isAThirdParty
 		}
 
@@ -411,15 +411,15 @@ export class Scheduler {
 			// From here on, we know incoming is a duplicate.
 			const [duplicateEnt, duplicateData] = [_incomingEnt, _incomingData]
 
-			const existingOrigin = existingEnt.has(ThirdParty)
+			const existingOrigin = existingEnt.has(Builtin.ThirdParty)
 				? 'third-party'
-				: existingEnt.has(Internal)
+				: existingEnt.has(Builtin.Internal)
 					? 'internal'
 					: 'user'
 			if (existingOrigin === 'internal') {
 				error(`Internal plugin duplication found - this should never happen`)
 			}
-			const duplicateOrigin = duplicateEnt.has(ThirdParty)
+			const duplicateOrigin = duplicateEnt.has(Builtin.ThirdParty)
 				? 'third-party'
 				: 'user'
 

@@ -5,7 +5,7 @@ import {
 	type InferValues,
 	resolveId,
 } from './entities'
-import { MessageSequence } from './entities/builtins'
+import { Builtin as BuiltinComponents } from './entities/builtins'
 import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import type { Builtin } from './index'
@@ -407,7 +407,9 @@ export class Query<
 	}
 
 	private makeMessageRawQuery(): jecs.Query<RawId[]> {
-		return world.query(...this.onTermIds).with(MessageSequence.id)
+		return world
+			.query(...this.onTermIds)
+			.with(BuiltinComponents.MessageSequence.id)
 	}
 
 	/**
@@ -501,7 +503,10 @@ export class Query<
 		const snapshots: MessageSnapshot[] = []
 
 		for (const [rawId, v1, v2, v3, v4, v5, v6, v7, v8] of msgRawQuery) {
-			const sequence = world.get(rawId, MessageSequence.id) as number
+			const sequence = world.get(
+				rawId,
+				BuiltinComponents.MessageSequence.id,
+			) as number
 			if (sequence < cursor || sequence >= now) continue
 
 			snapshots.push({
