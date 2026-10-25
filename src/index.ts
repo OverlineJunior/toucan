@@ -1,33 +1,33 @@
 import {
 	AddedByPlugin,
 	ChildOf,
-	Component,
-	Entity,
+	ComponentBuiltin,
+	EntityBuiltin,
 	Internal,
 	Label,
 	MessageSequence,
 	Persistent,
 	QueryHidden,
-	Resource,
+	ResourceBuiltin,
 	ThirdParty,
 	Wildcard,
-} from './handle/builtins'
+} from './entities/builtins'
 import { Plugin, ScheduleComponent as Schedule, System } from './scheduler'
 
 export {
-	type ComponentHandle,
+	type Component,
 	component,
-	type EntityHandle,
+	type Entity,
+	EntityLike,
 	entity,
-	Handle,
 	type InferValue,
 	type InferValues,
-	type ResourceHandle,
+	type Resource,
 	resolveId,
 	resource,
-} from './handle'
-export { type Pair, pair } from './handle/pair'
-export { __simulateThirdParty } from './handle/thirdParty'
+} from './entities'
+export { type Pair, pair } from './entities/pair'
+export { __simulateThirdParty } from './entities/thirdParty'
 export type { RawId } from './id'
 export { message } from './message'
 export { type Query, query } from './query'
@@ -48,22 +48,22 @@ export {
 } from './scheduler'
 
 /**
- * A collection of built-in {@link Handle}s.
+ * A collection of built-in {@link EntityLike}s.
  */
 export const Builtin = {
 	ChildOf,
-	Component,
+	Component: ComponentBuiltin,
 	ThirdParty,
 	Internal,
 	Label,
 	Persistent,
-	Resource,
+	Resource: ResourceBuiltin,
 	Wildcard,
 	AddedByPlugin,
 	Plugin,
 	System,
 	Schedule,
 	MessageSequence,
-	Entity,
+	Entity: EntityBuiltin,
 	QueryHidden,
 }

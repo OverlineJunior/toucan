@@ -1,6 +1,6 @@
-import { component, type EntityHandle, entity } from '../handle'
-import { ChildOf, Internal, Label, Persistent } from '../handle/builtins'
-import { pair } from '../handle/pair'
+import { component, type Entity, entity } from '../entities'
+import { ChildOf, Internal, Label, Persistent } from '../entities/builtins'
+import { pair } from '../entities/pair'
 import { query } from '../query'
 import { flatMap, getOrInit, normalizeToArray } from '../util'
 import {
@@ -50,10 +50,10 @@ function assertAddEdgeResult(res: AddEdgeResult<SystemFn>): void {
 
 export class Schedule {
 	public readonly name: Schedules
-	private readonly entity: EntityHandle
+	private readonly entity: Entity
 	private readonly setConfigs = new Map<SystemSet, NormalizedSetConfig>()
 	// `getSortedSystems` is called multiple times a frame, so we cache the result.
-	private sortedCache?: EntityHandle[]
+	private sortedCache?: Entity[]
 
 	constructor(name: Schedules) {
 		this.name = name
@@ -139,14 +139,14 @@ export class Schedule {
 		return this
 	}
 
-	getSortedSystems(): EntityHandle[] {
+	getSortedSystems(): Entity[] {
 		if (this.sortedCache !== undefined) return this.sortedCache
 
 		const systems: SystemData[] = []
-		const enttByFn = new Map<SystemFn, EntityHandle>()
+		const enttByFn = new Map<SystemFn, Entity>()
 		query(System, pair(ChildOf, this.entity)).forEach((e, data) => {
 			systems.push(data)
-			enttByFn.set(data.fn, e as EntityHandle)
+			enttByFn.set(data.fn, e as Entity)
 		})
 
 		// Group systems by their set membership.

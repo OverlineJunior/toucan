@@ -31,7 +31,7 @@
 
 **Naming**
 
-- Component/resource handles are PascalCase nouns (`Age`, `Health`, `System`, `Plugin`).
+- Components and resources are PascalCase nouns (`Age`, `Health`, `System`, `Plugin`).
 - Anything outside the public API is `_`-prefixed (`_simulateThirdParty`, `_despawn`, `_inSets`).
 
 **Scope of changes**
@@ -66,7 +66,7 @@
 
 **Circular dependencies**
 
-- Imports must flow one direction; break cycles with dedicated context/registry modules instead of back-imports (e.g. `handle/builtinRegistry.ts`, `scheduler/pluginContext.ts`, `scheduler/systemContext.ts`).
+- Imports must flow one direction; break cycles with dedicated context/registry modules instead of back-imports (e.g. `entities/builtinRegistry.ts`, `scheduler/pluginContext.ts`, `scheduler/systemContext.ts`).
 - `import type` is safe across a cycle (erased at compile time); value imports are not.
 
 ## Testing

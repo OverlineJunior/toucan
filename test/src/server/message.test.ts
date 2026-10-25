@@ -3,8 +3,8 @@ import { Each } from '@rbxts/lunit/out/lib/decorator'
 import {
 	Builtin,
 	component,
+	type EntityLike,
 	entity,
-	type Handle,
 	message,
 	pair,
 	query,
@@ -22,7 +22,7 @@ class MessageTests {
 	message_emit_withComponent_isReadByOnQuery() {
 		const sched = scheduler()
 		const Fired = component<number>('Fired')
-		let seenEntity: Handle | undefined
+		let seenEntity: EntityLike | undefined
 		let seenValue: number | undefined
 
 		sched.useSystem('update', () => {
@@ -187,7 +187,7 @@ class MessageTests {
 	message_emit_multipleMessagesInSameFrame_preservesOrder() {
 		const sched = scheduler()
 		const Fired = component<number>('Fired')
-		const seen: [Handle, number][] = []
+		const seen: [EntityLike, number][] = []
 
 		sched.useSystem('update', () => {
 			query()
@@ -218,7 +218,7 @@ class MessageTests {
 	query_on_withNoRequiredComponents_receivesMessageAndValues() {
 		const sched = scheduler()
 		const Fired = component<number>('Fired')
-		let seenEntity: Handle | undefined
+		let seenEntity: EntityLike | undefined
 		let seenValue: number | undefined
 
 		sched.useSystem('update', () => {
@@ -243,9 +243,9 @@ class MessageTests {
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
-		let seenEntity: Handle | undefined
+		let seenEntity: EntityLike | undefined
 		let seenHealth: number | undefined
-		let seenMessage: Handle | undefined
+		let seenMessage: EntityLike | undefined
 		let seenDamage: number | undefined
 
 		sched.useSystem('update', () => {
@@ -275,7 +275,7 @@ class MessageTests {
 		const B = component<number>('B')
 		const Msg = component<number>('Msg')
 		const e = entity('E').set(A, 1).set(B, 2)
-		let seen: [Handle, number, number, Handle, number] | undefined
+		let seen: [EntityLike, number, number, EntityLike, number] | undefined
 
 		sched.useSystem('update', () => {
 			query(A, B)
@@ -420,7 +420,7 @@ class MessageTests {
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
 		const bob = entity('Bob').set(Health, 50)
-		const seen: [Handle, number, Handle, number][] = []
+		const seen: [EntityLike, number, EntityLike, number][] = []
 
 		sched.useSystem('update', () => {
 			query(Health)
@@ -480,7 +480,7 @@ class MessageTests {
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
-		const seen: Handle[] = []
+		const seen: EntityLike[] = []
 
 		sched.useSystem('update', () => {
 			query(Health)
@@ -508,7 +508,7 @@ class MessageTests {
 		entity('Bob').set(Health, 100).set(Stamina, 50).set(Stunned)
 		entity('Charlie').set(Health, 100)
 		entity('Dave').set(Health, 5).set(Stamina, 50)
-		const seen: Handle[] = []
+		const seen: EntityLike[] = []
 
 		sched.useSystem('update', () => {
 			query(Health)
@@ -800,7 +800,7 @@ class MessageTests {
 		const Damaged = component<number>('Damaged')
 		entity('Alice').set(Health, 100)
 		entity('Bob').set(Health, 50)
-		const seen: [Handle, number][] = []
+		const seen: [EntityLike, number][] = []
 
 		sched.useSystem('update', () => {
 			query(Health)
@@ -925,7 +925,7 @@ class MessageTests {
 	message_entity_isDespawnedAfterTwoFrames() {
 		const sched = scheduler()
 		const Fired = component<number>('Fired')
-		let messageEntity: Handle | undefined
+		let messageEntity: EntityLike | undefined
 		let emitted = false
 
 		function emit() {
@@ -1125,7 +1125,7 @@ class MessageTests {
 	query_on_collect_returnsAllMessagesInOrder() {
 		const sched = scheduler()
 		const Fired = component<number>('Fired')
-		const seen: [Handle, number][] = []
+		const seen: [EntityLike, number][] = []
 
 		sched.useSystem('update', () => {
 			query()
@@ -1176,7 +1176,7 @@ class MessageTests {
 		const Health = component<number>('Health')
 		const Damaged = component<number>('Damaged')
 		const alice = entity('Alice').set(Health, 100)
-		const seen: [Handle, number, Handle, number][] = []
+		const seen: [EntityLike, number, EntityLike, number][] = []
 		const bound = query(Health)
 			.on(Damaged)
 			.bind((e, health, msg, damage) => {

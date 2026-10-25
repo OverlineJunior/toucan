@@ -16,11 +16,11 @@ terms passed to [Query.on](/toucan/api/types/query/#on) (empty when the query do
 
 ### Cs
 
-`Cs` *extends* ([`ComponentHandle`](/toucan/api/types/componenthandle/) \| [`Pair`](/toucan/api/types/pair/))[]
+`Cs` *extends* ([`Component`](/toucan/api/types/component/) \| [`Pair`](/toucan/api/types/pair/))[]
 
 ### Ms
 
-`Ms` *extends* ([`ComponentHandle`](/toucan/api/types/componenthandle/) \| [`Pair`](/toucan/api/types/pair/))[] = \[\]
+`Ms` *extends* ([`Component`](/toucan/api/types/component/) \| [`Pair`](/toucan/api/types/pair/))[] = \[\]
 
 ## Methods
 
@@ -38,7 +38,7 @@ See [Builtin.QueryHidden](/toucan/api/variables/builtin/#queryhidden) for more d
 
 ##### hiddenComponents
 
-...[`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\>[]
+...[`Component`](/toucan/api/types/component/)\<`unknown`\>[]
 
 #### Returns
 
@@ -72,7 +72,7 @@ See [Builtin.QueryHidden](/toucan/api/variables/builtin/#queryhidden) for more d
 #### Example
 
 ```ts
-function forceDespawn(e: Handle) {
+function forceDespawn(e: EntityLike) {
     e.remove(Builtin.Persistent)
     e.despawn()
 }
@@ -282,7 +282,7 @@ Messages can be read even by systems that run before they're emitted, at the cos
 
 ##### NewMs
 
-`NewMs` *extends* `OneUpToEight`\<[`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
+`NewMs` *extends* `OneUpToEight`\<[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
 
 #### Parameters
 
@@ -369,7 +369,7 @@ Does not append the values of these components to the results.
 
 ##### components
 
-...([`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -391,7 +391,7 @@ Does not append the values of these components to the results.
 
 ##### components
 
-...([`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -411,7 +411,7 @@ Excludes entities with _all_ of the specified components from the query's result
 
 ##### components
 
-...([`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
 
 #### Returns
 
@@ -431,7 +431,7 @@ Excludes entities with _any_ of the specified components from the query's result
 
 ##### components
 
-...([`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
+...([`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>)[]
 
 #### Returns
 

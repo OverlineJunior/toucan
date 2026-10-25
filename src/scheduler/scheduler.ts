@@ -1,13 +1,13 @@
 import { RunService } from '@rbxts/services'
 import {
 	component,
-	type EntityHandle,
+	type Entity,
+	type EntityLike,
 	entity,
-	type Handle,
 	type InferValue,
-} from '../handle'
-import { ChildOf, Internal, Persistent, ThirdParty } from '../handle/builtins'
-import { pair } from '../handle/pair'
+} from '../entities'
+import { ChildOf, Internal, Persistent, ThirdParty } from '../entities/builtins'
+import { pair } from '../entities/pair'
 import { clearStaleMessages } from '../message'
 import { query } from '../query'
 import { deepEqual, joinUnknown } from '../util'
@@ -74,7 +74,7 @@ export const Plugin = component<{
 
 let existingScheduler: Scheduler | undefined
 
-function findParentPlugin(): EntityHandle | undefined {
+function findParentPlugin(): Entity | undefined {
 	// Traverses the call stack to find the first function matching the given callback.
 	function hasFnInCallStack(fn: Callback): boolean {
 		let depth = 2
@@ -90,7 +90,7 @@ function findParentPlugin(): EntityHandle | undefined {
 	}
 
 	return query(Plugin).find((_, p) => hasFnInCallStack(p.fn))?.[0] as
-		| EntityHandle
+		| Entity
 		| undefined
 }
 
@@ -349,7 +349,7 @@ export class Scheduler {
 
 		this.connections.forEach((c) => c.Disconnect())
 
-		const forceDespawn = (e: Handle) => {
+		const forceDespawn = (e: EntityLike) => {
 			e.remove(Persistent)
 			e.despawn()
 		}
@@ -368,7 +368,7 @@ export class Scheduler {
 			})
 	}
 
-	private runSystem(sysEntt: EntityHandle, sysData: SystemData): void {
+	private runSystem(sysEntt: Entity, sysData: SystemData): void {
 		const start = os.clock()
 
 		setActiveSystemEntity(sysEntt)
@@ -392,14 +392,14 @@ export class Scheduler {
 			.collect()
 			.filter(([, p]) => !p.built)
 
-		const sortUserFirst = (a: Handle, b: Handle) => {
+		const sortUserFirst = (a: EntityLike, b: EntityLike) => {
 			const isAThirdParty = a.has(ThirdParty)
 			const isBThirdParty = b.has(ThirdParty)
 			return isAThirdParty === isBThirdParty ? false : !isAThirdParty
 		}
 
 		const shouldBuild = (
-			_incomingEnt: Handle,
+			_incomingEnt: EntityLike,
 			_incomingData: InferValue<typeof Plugin>,
 		): boolean => {
 			const _existing = query(Plugin)
@@ -463,13 +463,13 @@ export class Scheduler {
 			error('Unreachable')
 		}
 
-		const buildPlugin = (e: Handle, p: InferValue<typeof Plugin>) => {
+		const buildPlugin = (e: EntityLike, p: InferValue<typeof Plugin>) => {
 			if (!shouldBuild(e, p)) {
 				e.despawn()
 				return
 			}
 
-			setActivePluginEntity(e as EntityHandle)
+			setActivePluginEntity(e as Entity)
 			// We use a try-finally block to ensure the active plugin entity is always cleared, even if the plugin throws an error.
 			try {
 				p.fn(this, ...p.args)

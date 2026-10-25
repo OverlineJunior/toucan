@@ -5,9 +5,9 @@ prev: false
 title: "Pair"
 ---
 
-Defined in: [handle/pair.ts:11](https://github.com/OverlineJunior/toucan/blob/master/src/handle/pair.ts#L11)
+Defined in: entities/pair.ts:11
 
-A special handle for relationship pairs created with `pair()`.
+A special value for relationship pairs created with `pair()`.
 
 ## Type Parameters
 
@@ -21,15 +21,15 @@ A special handle for relationship pairs created with `pair()`.
 
 > **\[VALUE\_SYMBOL\]**: `Value`
 
-Defined in: [handle/pair.ts:12](https://github.com/OverlineJunior/toucan/blob/master/src/handle/pair.ts#L12)
+Defined in: entities/pair.ts:12
 
 ***
 
 ### relation
 
-> `readonly` **relation**: [`Handle`](/toucan/api/types/handle/)
+> `readonly` **relation**: [`EntityLike`](/toucan/api/types/entitylike/)
 
-Defined in: [handle/pair.ts:17](https://github.com/OverlineJunior/toucan/blob/master/src/handle/pair.ts#L17)
+Defined in: entities/pair.ts:17
 
 The relation entity of this pair.
 
@@ -37,9 +37,9 @@ The relation entity of this pair.
 
 ### target
 
-> `readonly` **target**: [`Handle`](/toucan/api/types/handle/)
+> `readonly` **target**: [`EntityLike`](/toucan/api/types/entitylike/)
 
-Defined in: [handle/pair.ts:21](https://github.com/OverlineJunior/toucan/blob/master/src/handle/pair.ts#L21)
+Defined in: entities/pair.ts:21
 
 The target entity of this pair.
 
@@ -49,7 +49,7 @@ The target entity of this pair.
 
 > **toString**(): `string`
 
-Defined in: [handle/pair.ts:37](https://github.com/OverlineJunior/toucan/blob/master/src/handle/pair.ts#L37)
+Defined in: entities/pair.ts:37
 
 Returns a string representation of this pair.
 

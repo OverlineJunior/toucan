@@ -3,7 +3,7 @@ import { Each } from '@rbxts/lunit/out/lib/decorator'
 import * as Toucan from '@rbxts/toucan'
 import {
 	Builtin,
-	type EntityHandle,
+	type Entity,
 	entity,
 	pair,
 	query,
@@ -677,7 +677,7 @@ class SchedulerTests {
 		)!
 
 		Assert.true(
-			systemEntity.has(pair(Builtin.ChildOf, startupEntity as EntityHandle)),
+			systemEntity.has(pair(Builtin.ChildOf, startupEntity as Entity)),
 			'Expected system entity to be a child of the startup schedule',
 		)
 	}
@@ -826,21 +826,21 @@ class SchedulerTests {
 
 		Assert.true(
 			spawnedEntity.has(
-				pair(Builtin.AddedByPlugin, parentPluginEntity as EntityHandle),
+				pair(Builtin.AddedByPlugin, parentPluginEntity as Entity),
 			),
 			"Expected spawned entity to have a 'pair(AddedByPlugin, parentPluginEntity)' relationship",
 		)
 
 		Assert.true(
 			childPluginEntity.has(
-				pair(Builtin.AddedByPlugin, parentPluginEntity as EntityHandle),
+				pair(Builtin.AddedByPlugin, parentPluginEntity as Entity),
 			),
 			"Expected child plugin entity to have a 'pair(AddedByPlugin, parentPluginEntity)' relationship",
 		)
 
 		Assert.true(
 			systemEntity.has(
-				pair(Builtin.AddedByPlugin, childPluginEntity as EntityHandle),
+				pair(Builtin.AddedByPlugin, childPluginEntity as Entity),
 			),
 			"Expected system entity to have a 'pair(AddedByPlugin, childPluginEntity)' relationship",
 		)

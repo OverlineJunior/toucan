@@ -1,4 +1,4 @@
-import { Component, QueryHidden } from './handle/builtins'
+import { ComponentBuiltin, QueryHidden } from './entities/builtins'
 import type { RawId } from './id'
 import { world } from './world'
 
@@ -13,13 +13,13 @@ for (const [id] of world.query(QueryHidden.id)) {
 }
 
 QueryHidden.onAdded((e) => {
-	if (!e.has(Component)) return
+	if (!e.has(ComponentBuiltin)) return
 
 	hiddenComponentIds.push(e.id)
 })
 
 QueryHidden.onRemoved((e) => {
-	if (!e.has(Component)) return
+	if (!e.has(ComponentBuiltin)) return
 
 	const index = hiddenComponentIds.indexOf(e.id)
 	if (index !== -1) hiddenComponentIds.remove(index)

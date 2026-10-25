@@ -5,11 +5,11 @@ prev: false
 title: "resolveId"
 ---
 
-> **resolveId**(`rawId`): [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`EntityHandle`](/toucan/api/types/entityhandle/) \| [`ResourceHandle`](/toucan/api/types/resourcehandle/)\<`unknown`\>
+> **resolveId**(`rawId`): [`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Entity`](/toucan/api/types/entity/) \| [`Resource`](/toucan/api/types/resource/)\<`unknown`\>
 
-Defined in: [handle/index.ts:44](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L44)
+Defined in: entities/index.ts:44
 
-Returns the appropriate handle for `rawId`, or `undefined` if it does not exist in the world.
+Returns the appropriate entity-like value for `rawId`, or `undefined` if it does not exist in the world.
 
 ## Parameters
 
@@ -19,4 +19,4 @@ Returns the appropriate handle for `rawId`, or `undefined` if it does not exist 
 
 ## Returns
 
-[`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`EntityHandle`](/toucan/api/types/entityhandle/) \| [`ResourceHandle`](/toucan/api/types/resourcehandle/)\<`unknown`\>
+[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Entity`](/toucan/api/types/entity/) \| [`Resource`](/toucan/api/types/resource/)\<`unknown`\>

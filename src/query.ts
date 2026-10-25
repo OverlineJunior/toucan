@@ -1,12 +1,12 @@
 import type * as jecs from '@rbxts/jecs'
 import {
-	type ComponentHandle,
-	type Handle,
+	type Component,
+	type EntityLike,
 	type InferValues,
 	resolveId,
-} from './handle'
-import { MessageSequence } from './handle/builtins'
-import type { Pair } from './handle/pair'
+} from './entities'
+import { MessageSequence } from './entities/builtins'
+import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import type { Builtin } from './index'
 import { advanceMessageCursor, getCurrentMessageSequence } from './message'
@@ -17,13 +17,13 @@ import type { OneUpToEight, ZeroUpToEight } from './util'
 import { world } from './world'
 
 export type QueryResult<
-	Cs extends (ComponentHandle | Pair)[],
-	Ms extends (ComponentHandle | Pair)[] = [],
+	Cs extends (Component | Pair)[],
+	Ms extends (Component | Pair)[] = [],
 > = [] extends Ms
-	? [Handle, ...InferValues<Cs>]
+	? [EntityLike, ...InferValues<Cs>]
 	: [] extends Cs
-		? [Handle, ...InferValues<Ms>]
-		: [Handle, ...InferValues<Cs>, Handle, ...InferValues<Ms>]
+		? [EntityLike, ...InferValues<Ms>]
+		: [EntityLike, ...InferValues<Cs>, EntityLike, ...InferValues<Ms>]
 
 /**
  * The type of the callback passed to a query's consumers (e.g. {@link Query.forEach}).
@@ -34,13 +34,13 @@ export type QueryResult<
  * @group Types
  */
 export type QueryCallback<
-	Cs extends (ComponentHandle | Pair)[],
-	Ms extends (ComponentHandle | Pair)[] = [],
+	Cs extends (Component | Pair)[],
+	Ms extends (Component | Pair)[] = [],
 	Ret = void,
 > = (...args: QueryResult<Cs, Ms>) => Ret
 
 type IterateFn = (
-	id: Handle,
+	id: EntityLike,
 	v1?: unknown,
 	v2?: unknown,
 	v3?: unknown,
@@ -51,12 +51,12 @@ type IterateFn = (
 	v8?: unknown,
 ) => boolean | void
 
-type AnyIterateFn = (id: Handle, ...args: unknown[]) => boolean | void
+type AnyIterateFn = (id: EntityLike, ...args: unknown[]) => boolean | void
 
 type RawQuery = jecs.Query<RawId[]> | jecs.CachedQuery<RawId[]>
 
 interface MessageSnapshot {
-	entity: Handle
+	entity: EntityLike
 	sequence: number
 	values: unknown[]
 }
@@ -70,8 +70,8 @@ interface MessageSnapshot {
  * @group Types
  */
 export class Query<
-	Cs extends (ComponentHandle | Pair)[],
-	Ms extends (ComponentHandle | Pair)[] = [],
+	Cs extends (Component | Pair)[],
+	Ms extends (Component | Pair)[] = [],
 > {
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
@@ -80,7 +80,7 @@ export class Query<
 	private readonly allowedIds: RawId[] = []
 	private allowAllFlag = false
 	private readonly filters: ((
-		entity: Handle,
+		entity: EntityLike,
 		...components: unknown[]
 	) => boolean)[] = []
 	private onTermIds: RawId[] = []
@@ -95,7 +95,7 @@ export class Query<
 	 *
 	 * Does not append the values of these components to the results.
 	 */
-	with(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
+	with(...components: (Component | Pair)[]): Query<Cs, Ms> {
 		components.forEach((c) => this.includedIds.push(c.id))
 		return this
 	}
@@ -105,7 +105,7 @@ export class Query<
 	 *
 	 * Does not append the values of these components to the results.
 	 */
-	withAny(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
+	withAny(...components: (Component | Pair)[]): Query<Cs, Ms> {
 		components.forEach((c) => this.anyIds.push(c.id))
 		this.filters.push((e) => components.some((c) => e.has(c)))
 		return this
@@ -114,7 +114,7 @@ export class Query<
 	/**
 	 * Excludes entities with _all_ of the specified components from the query's results.
 	 */
-	without(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
+	without(...components: (Component | Pair)[]): Query<Cs, Ms> {
 		components.forEach((c) => this.excludedIds.push(c.id))
 		return this
 	}
@@ -122,7 +122,7 @@ export class Query<
 	/**
 	 * Excludes entities with _any_ of the specified components from the query's results.
 	 */
-	withoutAny(...components: (ComponentHandle | Pair)[]): Query<Cs, Ms> {
+	withoutAny(...components: (Component | Pair)[]): Query<Cs, Ms> {
 		this.filters.push((e) => components.every((c) => !e.has(c)))
 		return this
 	}
@@ -131,11 +131,11 @@ export class Query<
 	 * Adds a filter predicate to the query that entities must satisfy in order to be queried.
 	 */
 	filter(
-		predicate: (entity: Handle, ...components: InferValues<Cs>) => boolean,
+		predicate: (entity: EntityLike, ...components: InferValues<Cs>) => boolean,
 	): Query<Cs, Ms> {
 		this.filters.push(
 			predicate as unknown as (
-				entity: Handle,
+				entity: EntityLike,
 				...components: unknown[]
 			) => boolean,
 		)
@@ -155,7 +155,7 @@ export class Query<
 	 *     .forEach(...)
 	 * ```
 	 */
-	allow(...hiddenComponents: ComponentHandle[]): Query<Cs, Ms> {
+	allow(...hiddenComponents: Component[]): Query<Cs, Ms> {
 		hiddenComponents.forEach((c) => this.allowedIds.push(c.id))
 		return this
 	}
@@ -167,7 +167,7 @@ export class Query<
 	 *
 	 * @example
 	 * ```ts
-	 * function forceDespawn(e: Handle) {
+	 * function forceDespawn(e: EntityLike) {
 	 *     e.remove(Builtin.Persistent)
 	 *     e.despawn()
 	 * }
@@ -226,7 +226,7 @@ export class Query<
 	 * }
 	 * ```
 	 */
-	on<NewMs extends OneUpToEight<ComponentHandle | Pair>>(
+	on<NewMs extends OneUpToEight<Component | Pair>>(
 		...terms: NewMs
 	): Query<Cs, NewMs> {
 		if (this.onSignature !== undefined)
@@ -258,10 +258,10 @@ export class Query<
 		predicate: QueryCallback<Cs, Ms, boolean>,
 	): QueryResult<Cs, Ms> | undefined {
 		const fn = predicate as unknown as (
-			e: Handle,
+			e: EntityLike,
 			...args: unknown[]
 		) => boolean
-		let result: [Handle, ...unknown[]] | undefined
+		let result: [EntityLike, ...unknown[]] | undefined
 
 		this.runQuery((e, ...args) => {
 			if (!fn(e, ...args)) return
@@ -282,7 +282,7 @@ export class Query<
 	 * used sparingly in performance-critical code.
 	 */
 	map<const R extends defined>(mapper: QueryCallback<Cs, Ms, R>): R[] {
-		const fn = mapper as unknown as (e: Handle, ...args: unknown[]) => R
+		const fn = mapper as unknown as (e: EntityLike, ...args: unknown[]) => R
 		const results: R[] = []
 
 		this.runQuery((e, ...args) => {
@@ -302,7 +302,7 @@ export class Query<
 	): R {
 		const fn = reducer as unknown as (
 			acc: R,
-			e: Handle,
+			e: EntityLike,
 			...args: unknown[]
 		) => R
 		let accumulator = initialValue
@@ -323,7 +323,7 @@ export class Query<
 	 * used sparingly in performance-critical code.
 	 */
 	collect(): QueryResult<Cs, Ms>[] {
-		const results: [Handle, ...unknown[]][] = []
+		const results: [EntityLike, ...unknown[]][] = []
 
 		this.runQuery((e, ...args) => {
 			results.push([e, ...args])
@@ -541,7 +541,7 @@ export class Query<
 	}
 
 	private passesFilters(
-		e: Handle,
+		e: EntityLike,
 		v1?: unknown,
 		v2?: unknown,
 		v3?: unknown,
@@ -581,7 +581,7 @@ export class Query<
  *
  * @group Core
  */
-export function query<Cs extends ZeroUpToEight<ComponentHandle | Pair>>(
+export function query<Cs extends ZeroUpToEight<Component | Pair>>(
 	...components: Cs
 ): Query<Cs> {
 	return new Query<Cs>(...components)

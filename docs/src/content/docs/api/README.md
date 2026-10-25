@@ -28,12 +28,12 @@ title: "@rbxts/toucan"
 
 ## Types
 
-- [Handle](/toucan/api/types/handle/)
-- [ComponentHandle](/toucan/api/types/componenthandle/)
-- [EntityHandle](/toucan/api/types/entityhandle/)
+- [EntityLike](/toucan/api/types/entitylike/)
+- [Component](/toucan/api/types/component/)
+- [Entity](/toucan/api/types/entity/)
 - [Pair](/toucan/api/types/pair/)
 - [Query](/toucan/api/types/query/)
-- [ResourceHandle](/toucan/api/types/resourcehandle/)
+- [Resource](/toucan/api/types/resource/)
 - [Scheduler](/toucan/api/types/scheduler/)
 - [SetConfig](/toucan/api/types/setconfig/)
 - [SystemSet](/toucan/api/types/systemset/)

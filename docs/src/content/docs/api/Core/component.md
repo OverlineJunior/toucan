@@ -5,11 +5,11 @@ prev: false
 title: "component"
 ---
 
-> **component**\<`Value`\>(`label?`): [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`Value`\>
+> **component**\<`Value`\>(`label?`): [`Component`](/toucan/api/types/component/)\<`Value`\>
 
-Defined in: [handle/index.ts:621](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L621)
+Defined in: entities/index.ts:631
 
-Creates a new [ComponentHandle](/toucan/api/types/componenthandle/).
+Creates a new [Component](/toucan/api/types/component/).
 
 Additionally, a `label` can be provided for easier identification.
 
@@ -27,7 +27,7 @@ Additionally, a `label` can be provided for easier identification.
 
 ## Returns
 
-[`ComponentHandle`](/toucan/api/types/componenthandle/)\<`Value`\>
+[`Component`](/toucan/api/types/component/)\<`Value`\>
 
 ## Example
 

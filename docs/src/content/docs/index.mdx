@@ -16,21 +16,26 @@ hero:
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid } from "@astrojs/starlight/components";
 
 ## Features
 
 <CardGrid>
-	<Card title="Fluent API" icon="pencil">
-		Entity handles provide chainable methods that abstract away the process of imperatively manipulating entities.
-	</Card>
-	<Card title="Advanced Queries" icon="magnifier">
-		Query entities whose component just changed, filter it, map it to something useful, you name it.
-	</Card>
-	<Card title="Plugins" icon="puzzle">
-		Organize your components and systems by grouping them together in a plugin, which in turn also allows for third-party plugins that are easy to integrate.
-	</Card>
-	<Card title="Everything is an Entity" icon="seti:config">
-		Components, resources, systems and plugins are also entities, allowing you to assign them metadata and inspect them.
-	</Card>
+  <Card title="Fluent API" icon="pencil">
+    Entities provide chainable methods that abstract away the process of
+    imperatively manipulating entities.
+  </Card>
+  <Card title="Advanced Queries" icon="magnifier">
+    Query entities whose component just changed, filter it, map it to something
+    useful, you name it.
+  </Card>
+  <Card title="Plugins" icon="puzzle">
+    Organize your components and systems by grouping them together in a plugin,
+    which in turn also allows for third-party plugins that are easy to
+    integrate.
+  </Card>
+  <Card title="Everything is an Entity" icon="seti:config">
+    Components, resources, systems and plugins are also entities, allowing you
+    to assign them metadata and inspect them.
+  </Card>
 </CardGrid>

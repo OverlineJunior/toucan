@@ -5,11 +5,11 @@ prev: false
 title: "resource"
 ---
 
-> **resource**\<`Value`\>(`value`, `label?`): [`ResourceHandle`](/toucan/api/types/resourcehandle/)\<`Value`\>
+> **resource**\<`Value`\>(`value`, `label?`): [`Resource`](/toucan/api/types/resource/)\<`Value`\>
 
-Defined in: [handle/index.ts:712](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L712)
+Defined in: entities/index.ts:728
 
-Creates a new [ResourceHandle](/toucan/api/types/resourcehandle/) with the given initial `value`.
+Creates a new [Resource](/toucan/api/types/resource/) with the given initial `value`.
 
 Resources exist independently of entities (and cannot be attached to them).
 They are useful to represent global state, such as game state, settings and so on.
@@ -34,7 +34,7 @@ Additionally, a `label` can be provided for easier identification.
 
 ## Returns
 
-[`ResourceHandle`](/toucan/api/types/resourcehandle/)\<`Value`\>
+[`Resource`](/toucan/api/types/resource/)\<`Value`\>
 
 ## Example
 

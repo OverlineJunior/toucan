@@ -5,11 +5,11 @@ prev: false
 title: "entity"
 ---
 
-> **entity**(`label?`): [`EntityHandle`](/toucan/api/types/entityhandle/)
+> **entity**(`label?`): [`Entity`](/toucan/api/types/entity/)
 
-Defined in: [handle/index.ts:502](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L502)
+Defined in: entities/index.ts:500
 
-Spawns a new, empty [EntityHandle](/toucan/api/types/entityhandle/) and returns it.
+Spawns a new, empty [Entity](/toucan/api/types/entity/) and returns it.
 
 Additionally, a `label` can be provided for easier identification.
 
@@ -21,4 +21,4 @@ Additionally, a `label` can be provided for easier identification.
 
 ## Returns
 
-[`EntityHandle`](/toucan/api/types/entityhandle/)
+[`Entity`](/toucan/api/types/entity/)

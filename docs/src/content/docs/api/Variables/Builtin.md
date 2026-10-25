@@ -9,19 +9,19 @@ title: "Builtin"
 
 Defined in: [index.ts:53](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L53)
 
-A collection of built-in [Handle](/toucan/api/types/handle/)s.
+A collection of built-in [EntityLike](/toucan/api/types/entitylike/)s.
 
 ## Type Declaration
 
 ### AddedByPlugin
 
-> **AddedByPlugin**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **AddedByPlugin**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component used as a relation for entities spawned within plugins.
 
 ### ChildOf
 
-> **ChildOf**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **ChildOf**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component used to represent parent-child relationships between entities.
 
@@ -35,31 +35,27 @@ assert(bob.parent() === alice)
 
 ### Component
 
-> **Component**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
-
-Built-in component used to distinguish entities that represent components.
+> **Component**: [`Component`](/toucan/api/types/component/)\<`undefined`\> = `ComponentBuiltin`
 
 ### Entity
 
-> **Entity**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
-
-Built-in component used to distinguish regular entities from components and resources.
+> **Entity**: [`Component`](/toucan/api/types/component/)\<`undefined`\> = `EntityBuiltin`
 
 ### Internal
 
-> **Internal**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **Internal**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component used to distinguish entities created internally by Toucan.
 
 ### Label
 
-> **Label**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`string`\>
+> **Label**: [`Component`](/toucan/api/types/component/)\<`string`\>
 
 Built-in component used by Toucan to assign human-readable labels to entities.
 
 ### MessageSequence
 
-> **MessageSequence**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`number`\>
+> **MessageSequence**: [`Component`](/toucan/api/types/component/)\<`number`\>
 
 Built-in component that marks an entity as a message and stores its monotonic
 sequence number, used to guarantee emission order.
@@ -82,7 +78,7 @@ cursors for you.
 
 ### Persistent
 
-> **Persistent**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **Persistent**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component used to...
 1. Mark entities that cannot be despawned by any means;
@@ -90,13 +86,13 @@ Built-in component used to...
 
 ### Plugin
 
-> **Plugin**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<\{ `args`: `unknown`[]; `built`: `boolean`; `fn`: [`PluginFn`](/toucan/api/types/pluginfn/); \}\>
+> **Plugin**: [`Component`](/toucan/api/types/component/)\<\{ `args`: `unknown`[]; `built`: `boolean`; `fn`: [`PluginFn`](/toucan/api/types/pluginfn/); \}\>
 
 Built-in component used to distinguish entities that represent plugins.
 
 ### QueryHidden
 
-> **QueryHidden**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **QueryHidden**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component that marks other components as hidden from queries.
 
@@ -120,31 +116,29 @@ query(Marker).allow(Hidden) // Included.
 
 ### Resource
 
-> **Resource**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
-
-Built-in component used to distinguish entities that represent resources.
+> **Resource**: [`Component`](/toucan/api/types/component/)\<`undefined`\> = `ResourceBuiltin`
 
 ### Schedule
 
-> **Schedule**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<\{ `kind`: [`Schedules`](/toucan/api/types/schedules/); \}\>
+> **Schedule**: [`Component`](/toucan/api/types/component/)\<\{ `kind`: [`Schedules`](/toucan/api/types/schedules/); \}\>
 
 Built-in component used to distinguish entities that represent schedules.
 
 ### System
 
-> **System**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `cursors?`: `Map`\<`string`, `number`\>; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `runtimeMs`: `number`; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
+> **System**: [`Component`](/toucan/api/types/component/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/)\<`unknown`[]\> \| [`SystemSet`](/toucan/api/types/systemset/))[]; `cursors?`: `Map`\<`string`, `number`\>; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `runtimeMs`: `number`; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
 
 Built-in component used to distinguish entities that represent systems.
 
 ### ThirdParty
 
-> **ThirdParty**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **ThirdParty**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component used to distinguish entities created by third-party packages.
 
 ### Wildcard
 
-> **Wildcard**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+> **Wildcard**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component that acts as a wildcard in relationship pairs.
 

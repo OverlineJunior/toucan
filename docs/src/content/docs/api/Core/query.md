@@ -19,7 +19,7 @@ iterate over them (`forEach`, `map`), or bind them directly into optimized syste
 
 ### Cs
 
-`Cs` *extends* `ZeroUpToEight`\<[`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
+`Cs` *extends* `ZeroUpToEight`\<[`Component`](/toucan/api/types/component/)\<`unknown`\> \| [`Pair`](/toucan/api/types/pair/)\<`unknown`\>\>
 
 ## Parameters
 

@@ -1,7 +1,12 @@
-import { __despawnScheduler, Builtin, type Handle, query } from '@rbxts/toucan'
+import {
+	__despawnScheduler,
+	Builtin,
+	type EntityLike,
+	query,
+} from '@rbxts/toucan'
 
 export function clearWorld(): void {
-	const forceDespawn = (e: Handle) => {
+	const forceDespawn = (e: EntityLike) => {
 		e.remove(Builtin.Persistent)
 		e.despawn()
 	}

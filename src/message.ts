@@ -1,11 +1,11 @@
-import { type ComponentHandle, entity, type InferValue } from './handle'
-import { MessageSequence } from './handle/builtins'
-import type { Pair } from './handle/pair'
+import { type Component, entity, type InferValue } from './entities'
+import { MessageSequence } from './entities/builtins'
+import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import { System, type SystemData } from './scheduler/system'
 import { world } from './world'
 
-type Term = ComponentHandle | Pair
+type Term = Component | Pair
 
 // Sequence number given to the next emitted message. Never reused.
 let nextSequence = 0
@@ -69,8 +69,8 @@ export function clearStaleMessages() {
 class MessageBuilder {
 	private readonly termValues: [Term, unknown][] = []
 
-	set(tagComponent: ComponentHandle<undefined>): this
-	set<C extends ComponentHandle>(component: C, value: InferValue<C>): this
+	set(tagComponent: Component<undefined>): this
+	set<C extends Component>(component: C, value: InferValue<C>): this
 	set(tagPair: Pair<undefined>): this
 	set<P extends Pair>(pair: P, value: InferValue<P>): this
 	set(term: Term, value?: unknown): this {
@@ -88,7 +88,7 @@ class MessageBuilder {
 		const e = entity().set(MessageSequence, nextSequence++)
 
 		for (const [t, v] of this.termValues) {
-			e.set(t as ComponentHandle, v)
+			e.set(t as Component, v)
 		}
 	}
 }
