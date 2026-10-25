@@ -1,0 +1,706 @@
+import { Assert, BeforeEach, Test } from '@rbxts/lunit'
+import {
+	Builtin,
+	component,
+	type EntityLike,
+	entity,
+	pair,
+	query,
+	type RawId,
+	resolveId,
+	resource,
+	scheduler,
+} from '@rbxts/toucan'
+import { clearWorld } from './helpers'
+
+class EntitiesTests {
+	@BeforeEach
+	reset() {
+		clearWorld()
+	}
+
+	@Test
+	entity_createsSuccessfully() {
+		const e = entity('TestEntity')
+		Assert.true(e.exists(), 'Expected a new entity to exist')
+		Assert.equal(e.toString(), 'TestEntity', 'Expected entity label to match')
+		Assert.true(
+			e.has(Builtin.Entity),
+			'Expected the entity to have the internal Entity tag',
+		)
+	}
+
+	@Test
+	entity_withLabel_setsToString() {
+		const label = 'TestEntity'
+		const e = entity(label)
+		Assert.equal(
+			e.toString(),
+			label,
+			'Expected entity label to match the provided string',
+		)
+		Assert.true(e.exists(), 'Expected labeled entity to exist')
+	}
+
+	@Test
+	despawn_removesEntity() {
+		const e = entity()
+		Assert.true(e.exists(), 'Expected entity to exist before despawn')
+		e.despawn()
+		Assert.false(e.exists(), 'Expected entity to no longer exist after despawn')
+	}
+
+	@Test
+	parent_returnsAssignedParent() {
+		const parent = entity('Parent')
+		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
+		Assert.equal(
+			child.parent(),
+			parent,
+			'Expected parent() to return the entity assigned via ChildOf',
+		)
+		Assert.equal(
+			child.targetOf(Builtin.ChildOf),
+			parent,
+			'Expected targetOf(ChildOf) to return the parent entity',
+		)
+	}
+
+	@Test
+	children_returnsAssignedChildEntity() {
+		const parent = entity('Parent')
+		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
+
+		const children = parent.children()
+		Assert.equal(
+			children.size(),
+			1,
+			'Expected parent to have exactly one child',
+		)
+		Assert.equal(
+			children[0],
+			child,
+			'Expected the child entity to match the one assigned',
+		)
+	}
+
+	@Test
+	relationships_includesAssignedChildOfPair() {
+		const parent = entity('Parent')
+		const child = entity('Child').set(pair(Builtin.ChildOf, parent))
+
+		const relationships = child.relationships()
+		Assert.equal(
+			relationships.size(),
+			1,
+			'Expected child to have exactly one relationship',
+		)
+		Assert.equal(
+			relationships[0].relation,
+			Builtin.ChildOf,
+			'Expected the relationship relation to be ChildOf',
+		)
+		Assert.equal(
+			relationships[0].target,
+			parent,
+			'Expected the relationship target to be the parent entity',
+		)
+	}
+
+	@Test
+	resolveId_returnsCorrectEntity() {
+		const e = entity('Test')
+		const resolved = resolveId(e.id)
+		Assert.equal(
+			resolved,
+			e,
+			'Expected resolveId to return the same entity instance',
+		)
+		Assert.true(resolved?.exists(), 'Expected the resolved entity to exist')
+	}
+
+	@Test
+	remove_deletesComponent() {
+		const C = component()
+		const e = entity().set(C)
+		Assert.true(
+			e.has(C),
+			'Expected entity to have the component after setting it',
+		)
+		e.remove(C)
+		Assert.false(
+			e.has(C),
+			'Expected entity to no longer have the component after removal',
+		)
+	}
+
+	@Test
+	remove_throwsErrorWhenComponentIsPersistent() {
+		const e = entity()
+		Assert.true(
+			e.has(Builtin.Label),
+			'Expected entity to have persistent Label component',
+		)
+		Assert.throws(
+			() => e.remove(Builtin.Label),
+			undefined,
+			'Expected remove(Label) to throw because it is persistent',
+		)
+	}
+
+	@Test
+	remove_throwsErrorWhenPairIsPersistent() {
+		const Likes = component('Likes').set(Builtin.Persistent)
+
+		const bob = entity('bob')
+		const alice = entity('alice').set(pair(Likes, bob))
+
+		Assert.throws(
+			() => alice.remove(pair(Likes, bob)),
+			undefined,
+			'Expected remove(pair(Likes, bob)) to throw because it is persistent',
+		)
+	}
+
+	@Test
+	clear_removesAllComponentsAndPairs() {
+		const C1 = component()
+		const C2 = component()
+		const p1 = pair(C1, C2)
+		const p2 = pair(C2, C1)
+
+		const e = entity().set(C1).set(C2).set(p1).set(p2)
+		e.clear()
+
+		Assert.false(
+			e.has(C1) || e.has(C2),
+			'Expected all non-persistent components to be removed after clear',
+		)
+
+		Assert.false(
+			e.has(p1) || e.has(p2),
+			'Expected all non-persistent pairs to be removed after clear',
+		)
+	}
+
+	@Test
+	clear_doesNotRemovePersistentComponentsAndPairs() {
+		const Handsome = component('Handsome').set(Builtin.Persistent)
+		const Funny = component('Funny').set(Builtin.Persistent)
+		const Is = component('Is').set(Builtin.Persistent)
+		const IsNot = component('IsNot').set(Builtin.Persistent)
+
+		const p1 = pair(Is, Handsome)
+		const p2 = pair(IsNot, Funny)
+
+		const bob = entity('bob').set(Handsome).set(Funny).set(p1).set(p2)
+		bob.clear()
+
+		Assert.true(
+			bob.has(Handsome) && bob.has(Funny),
+			'Expected persistent components to remain after clear',
+		)
+
+		Assert.true(
+			bob.has(p1) && bob.has(p2),
+			'Expected persistent pairs to remain after clear',
+		)
+	}
+
+	@Test
+	component_createsSuccessfully() {
+		const C = component('TestComponent')
+		Assert.true(C.exists(), 'Expected the component entity to exist')
+		Assert.equal(
+			C.toString(),
+			'TestComponent',
+			'Expected component name to match',
+		)
+		Assert.true(
+			C.has(Builtin.Component),
+			'Expected the entity to have the internal Component tag',
+		)
+	}
+
+	@Test
+	onAdded_firesWhenComponentIsAdded() {
+		const Health = component<number>('Health')
+		const e = entity('Alice')
+
+		let called = false
+		const unsubscribe = Health.onAdded((entity, health) => {
+			called = true
+			Assert.equal(entity, e, 'Expected onAdded event to fire for Alice')
+			Assert.equal(
+				health,
+				100,
+				'Expected the added Health component value to be 100',
+			)
+		})
+
+		e.set(Health, 100)
+		unsubscribe()
+
+		Assert.true(called, 'Expected onAdded callback to be called')
+	}
+
+	@Test
+	onChanged_firesWhenComponentValueChanges() {
+		const Health = component<number>('Health')
+		const e = entity('Alice').set(Health, 10)
+
+		let called = false
+		const unsubscribe = Health.onChanged((entity, newHealth, oldHealth) => {
+			called = true
+			Assert.equal(entity, e, 'Expected onChanged event to fire for Alice')
+			Assert.equal(
+				newHealth,
+				20,
+				'Expected the new Health component value to be 20',
+			)
+			Assert.equal(
+				oldHealth,
+				10,
+				'Expected the old Health component value to be 10',
+			)
+		})
+
+		e.set(Health, 20)
+		unsubscribe()
+
+		Assert.true(called, 'Expected onChanged callback to be called')
+	}
+
+	@Test
+	onRemoved_firesWhenComponentIsRemoved() {
+		const Health = component<number>('Health')
+		const e = entity('Alice').set(Health, 10)
+
+		let called = false
+		const unsubscribe = Health.onRemoved((entity, oldHealth, despawned) => {
+			called = true
+			Assert.equal(entity, e, 'Expected onRemoved event to fire for Alice')
+			Assert.equal(
+				oldHealth,
+				10,
+				'Expected the old Health component value to be 10',
+			)
+			Assert.equal(
+				despawned,
+				false,
+				'Expected despawned flag to be false when component is removed manually',
+			)
+		})
+
+		e.remove(Health)
+		unsubscribe()
+
+		Assert.true(called, 'Expected onRemoved callback to be called')
+	}
+
+	@Test
+	get_returnsSetValueForComponent() {
+		const Health = component<number>('Health')
+		const e = entity().set(Health, 100)
+		const value = e.get(Health)
+		Assert.equal(value, 100, 'Expected get to return the value that was set')
+	}
+
+	@Test
+	set_updatesExistingComponentValue() {
+		const Health = component<number>()
+		const e = entity().set(Health, 100)
+		e.set(Health, 50)
+		Assert.equal(
+			e.get(Health),
+			50,
+			'Expected the component value to be updated to the new value',
+		)
+	}
+
+	@Test
+	get_returnsMultipleComponentValues() {
+		const Health = component<number>()
+		const Stamina = component<number>()
+		const e = entity().set(Health, 100).set(Stamina, 50)
+		const [h, s] = e.get(Health, Stamina)
+		Assert.equal(h, 100, 'Expected the first returned value to match Health')
+		Assert.equal(s, 50, 'Expected the second returned value to match Stamina')
+	}
+
+	@Test
+	get_returnsUndefinedForMissingComponents() {
+		const Health = component<number>()
+		const Stamina = component<number>()
+		const e = entity().set(Health, 100)
+		const [h, s] = e.get(Health, Stamina)
+		Assert.equal(h, 100, 'Expected defined component value to be returned')
+		Assert.equal(
+			s,
+			undefined,
+			'Expected missing component value to be undefined',
+		)
+	}
+
+	@Test
+	has_returnsTrueOnlyIfAllComponentsExist() {
+		const C1 = component()
+		const C2 = component()
+		const C3 = component()
+		const e = entity().set(C1).set(C2)
+		Assert.true(
+			e.has(C1, C2),
+			'Expected has() to be true when all components are present',
+		)
+		Assert.false(
+			e.has(C1, C3),
+			'Expected has() to be false when at least one component is missing',
+		)
+	}
+
+	@Test
+	get_returnsSetValueForPair() {
+		const Owns = component<number>()
+		const car = entity('Car')
+		const alice = entity('Alice').set(pair(Owns, car), 5)
+		Assert.true(
+			alice.has(pair(Owns, car)),
+			'Expected entity to have the relationship pair',
+		)
+		const value = alice.get(pair(Owns, car))
+		Assert.equal(
+			value,
+			5,
+			'Expected relationship value to match the value that was set',
+		)
+	}
+
+	@Test
+	has_returnsTrueForMultiplePairsWithSameRelation() {
+		const Likes = component()
+		const bob = entity('Bob')
+		const charlie = entity('Charlie')
+		const alice = entity('Alice')
+			.set(pair(Likes, bob))
+			.set(pair(Likes, charlie))
+		Assert.equal(
+			alice.targetsOf(Likes).size(),
+			2,
+			'Expected entity to have two targets for the relation',
+		)
+		Assert.true(
+			alice.has(pair(Likes, bob)),
+			'Expected entity to have a relationship with Bob',
+		)
+		Assert.true(
+			alice.has(pair(Likes, charlie)),
+			'Expected entity to have a relationship with Charlie',
+		)
+	}
+
+	@Test
+	targetOf_returnsCorrectTargetForIndex() {
+		const Likes = component()
+		const bob = entity('Bob')
+		const charlie = entity('Charlie')
+		const alice = entity('Alice')
+			.set(pair(Likes, bob))
+			.set(pair(Likes, charlie))
+
+		const target1 = alice.targetOf(Likes, 0)
+		const target2 = alice.targetOf(Likes, 1)
+
+		Assert.true(target1 !== undefined, 'Expected first target to be defined')
+		Assert.true(target2 !== undefined, 'Expected second target to be defined')
+
+		const targets = [target1!, target2!]
+		Assert.true(targets.includes(bob), 'Expected targets to include Bob')
+		Assert.true(
+			targets.includes(charlie),
+			'Expected targets to include Charlie',
+		)
+	}
+
+	@Test
+	targetOf_returnsUndefinedForOutOfBoundsIndex() {
+		const Likes = component()
+		const bob = entity('Bob')
+		const alice = entity('Alice').set(pair(Likes, bob))
+		const target = alice.targetOf(Likes, 5)
+		Assert.equal(
+			target,
+			undefined,
+			'Expected out of bounds target index to return undefined',
+		)
+	}
+
+	@Test
+	parent_returnsUndefinedWhenNoParentAssigned() {
+		const e = entity()
+		const parent = e.parent()
+		Assert.equal(
+			parent,
+			undefined,
+			'Expected parent() to be undefined for an orphaned entity',
+		)
+	}
+
+	@Test
+	resolveId_returnsUndefinedForInvalidId() {
+		const resolved = resolveId(999999 as RawId)
+		Assert.equal(
+			resolved,
+			undefined,
+			'Expected resolveId to return undefined for a non-existent ID',
+		)
+	}
+
+	@Test
+	children_returnsAllAssignedChildEntities() {
+		const parent = entity('Parent')
+		const child1 = entity('Child1').set(pair(Builtin.ChildOf, parent))
+		const child2 = entity('Child2').set(pair(Builtin.ChildOf, parent))
+		const children = parent.children()
+		Assert.equal(
+			children.size(),
+			2,
+			'Expected parent to have exactly two children',
+		)
+		Assert.true(
+			children.find((c) => c === child1) !== undefined,
+			'Expected Child1 to be in the children list',
+		)
+		Assert.true(
+			children.find((c) => c === child2) !== undefined,
+			'Expected Child2 to be in the children list',
+		)
+	}
+
+	@Test
+	resource_createsSuccessfully() {
+		const GameState = resource('lobby', 'GameState')
+		Assert.true(GameState.exists(), 'Expected resource entity to exist')
+		Assert.equal(
+			GameState.toString(),
+			'GameState',
+			'Expected resource name to match the label provided',
+		)
+		Assert.true(
+			GameState.has(Builtin.Resource),
+			'Expected the resource entity to have the Resource tag',
+		)
+	}
+
+	@Test
+	read_returnsCurrentResourceValue() {
+		const GameState = resource('lobby', 'GameState')
+		const value = GameState.read()
+		Assert.equal(
+			value,
+			'lobby',
+			'Expected read() to return the current resource value',
+		)
+	}
+
+	@Test
+	write_updatesResourceValue() {
+		const GameState = resource('lobby', 'GameState')
+		GameState.write('in-game')
+		Assert.equal(
+			GameState.read(),
+			'in-game',
+			'Expected read() to return the updated resource value',
+		)
+	}
+
+	@Test
+	resource_generatesFallbackLabelWhenOmitted() {
+		const GameState = resource('test')
+		Assert.true(
+			GameState.exists(),
+			'Expected resource without explicit label to exist',
+		)
+		Assert.equal(
+			GameState.toString(),
+			`Resource #${GameState.id}`,
+			'Expected fallback label to use the resource ID',
+		)
+	}
+
+	@Test
+	onChanged_reportsPreviousValueWhenResourceIsWritten() {
+		const GameState = resource('lobby', 'GameState')
+		let oldValue: string | undefined
+		let newValue: string | undefined
+
+		const unsubscribe = GameState.onChanged((newV, oldV) => {
+			newValue = newV
+			oldValue = oldV
+		})
+
+		GameState.write('in-game')
+		unsubscribe()
+
+		Assert.equal(
+			oldValue,
+			'lobby',
+			'Expected onChanged to report the initial value as the old value',
+		)
+		Assert.equal(
+			newValue,
+			'in-game',
+			'Expected onChanged to report the written value as the new value',
+		)
+	}
+
+	@Test
+	relationships_returnsAllAssignedPairs() {
+		const Likes = component()
+		const Hates = component()
+		const bob = entity('Bob')
+		const charlie = entity('Charlie')
+		const alice = entity('Alice')
+			.set(pair(Likes, bob))
+			.set(pair(Likes, charlie))
+			.set(pair(Hates, bob))
+
+		const rels = alice.relationships()
+		Assert.equal(rels.size(), 3, 'Expected total relationship count to be 3')
+
+		const likes = rels.filter((r) => r.relation === Likes)
+		const hates = rels.filter((r) => r.relation === Hates)
+		Assert.equal(likes.size(), 2, 'Expected 2 Likes relationships')
+		Assert.equal(hates.size(), 1, 'Expected 1 Hates relationship')
+	}
+
+	@Test
+	components_excludesRelationships() {
+		const Likes = component()
+		const bob = entity('Bob')
+		const withoutPair = entity('Alice')
+		const withPair = entity('Alice').set(pair(Likes, bob))
+
+		Assert.equal(
+			withPair.components().size(),
+			withoutPair.components().size(),
+			'Expected components() to exclude relationships',
+		)
+	}
+
+	@Test
+	set_supportsMethodChaining() {
+		const C1 = component()
+		const C2 = component()
+		const C3 = component()
+		const e = entity().set(C1).set(C2).set(C3)
+		Assert.true(
+			e.has(C1, C2, C3),
+			'Expected entity to have all components set via method chaining',
+		)
+	}
+
+	@Test
+	set_allowsSettingTagComponentMultipleTimes() {
+		const Active = component()
+		const e = entity()
+		e.set(Active)
+		e.set(Active)
+		Assert.true(
+			e.has(Active),
+			'Expected entity to still have the tag after multiple sets',
+		)
+	}
+
+	@Test
+	clear_doesNothingWhenNoComponentsExist() {
+		const e = entity()
+		const before = e.components().size()
+		e.clear()
+		const after = e.components().size()
+		Assert.equal(
+			before,
+			after,
+			'Expected component count to remain unchanged for an empty entity',
+		)
+		Assert.true(e.has(Builtin.Label), 'Expected Label to still be present')
+	}
+
+	@Test
+	get_returnsCorrectValuesForDifferentPairs() {
+		const Owns = component<number>()
+		const car = entity()
+		const house = entity()
+		const alice = entity().set(pair(Owns, car), 1).set(pair(Owns, house), 2)
+
+		Assert.equal(
+			alice.get(pair(Owns, car)),
+			1,
+			'Expected correct value for car pair',
+		)
+		Assert.equal(
+			alice.get(pair(Owns, house)),
+			2,
+			'Expected correct value for house pair',
+		)
+	}
+
+	@Test
+	despawn_throwsOnPersistentEntity() {
+		const e = entity().set(Builtin.Persistent)
+		Assert.throws(
+			() => e.despawn(),
+			undefined,
+			'Expected despawn to throw on persistent entity',
+		)
+	}
+
+	@Test
+	toString_returnsFallbackForDespawnedEntity() {
+		const e = entity('TestEntity')
+		const id = e.id
+		e.despawn()
+
+		Assert.equal(
+			tostring(e),
+			`Entity #${id} (despawned)`,
+			'Expected tostring to return a fallback label for a despawned entity',
+		)
+	}
+
+	@Test
+	everyEntity_hasExactlyOneKindTag() {
+		const kinds = [Builtin.Entity, Builtin.Component, Builtin.Resource]
+
+		// We spawn the scheduler so we also have the schedule entities to test against.
+		scheduler()
+
+		const everything: EntityLike[] = []
+		for (const kind of kinds) {
+			query(kind)
+				.collect()
+				.forEach(([e]) => everything.push(e))
+		}
+
+		for (const e of everything) {
+			const kindCount = kinds.filter((kind) => e.has(kind)).size()
+			Assert.equal(
+				kindCount,
+				1,
+				`Expected ${tostring(e)} to have exactly one of Entity, Component or Resource`,
+			)
+		}
+	}
+
+	// This was an obscure bug due to how Jecs' `world.children` works internally.
+	@Test
+	children_wildcardReturnsEmpty() {
+		entity('child').set(pair(Builtin.ChildOf, entity('parent')))
+		Assert.equal(
+			Builtin.Wildcard.children().size(),
+			0,
+			'Expected Wildcard.children() to return nothing even when children exist',
+		)
+	}
+}
+
+export = EntitiesTests
