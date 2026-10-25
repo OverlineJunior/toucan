@@ -7,6 +7,7 @@ import {
 	Label,
 	MessageSequence,
 	Persistent,
+	QueryHidden,
 	Resource,
 	ThirdParty,
 	Wildcard,
@@ -64,4 +65,5 @@ export const Builtin = {
 	Schedule,
 	MessageSequence,
 	Entity,
+	QueryHidden,
 }

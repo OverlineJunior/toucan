@@ -15,6 +15,7 @@ export interface BuiltinComponentHandleMap {
 	AddedByPlugin: ComponentHandle<undefined>
 	MessageSequence: ComponentHandle<number>
 	Entity: ComponentHandle<undefined>
+	QueryHidden: ComponentHandle<undefined>
 }
 
 export type BuiltinComponentLabels = keyof BuiltinComponentHandleMap
@@ -46,6 +47,11 @@ export const Internal = registerBuiltin(
 	new ComponentHandle<undefined>(world.component()),
 )
 
+export const QueryHidden = registerBuiltin(
+	'QueryHidden',
+	new ComponentHandle<undefined>(world.component()),
+)
+
 /**
  * Built-in component used to distinguish entities created by third-party packages.
  *
@@ -74,7 +80,7 @@ export const Label = registerBuiltin(
 export const Component = registerBuiltin(
 	'Component',
 	new ComponentHandle<undefined>(world.component()),
-)
+).set(QueryHidden)
 
 // We reuse Jecs' built-in Wildcard component because it uses it internally.
 /**
@@ -125,7 +131,7 @@ export const ChildOf = registerBuiltin(
 export const Resource = registerBuiltin(
 	'Resource',
 	new ComponentHandle<undefined>(world.component()),
-)
+).set(QueryHidden)
 
 /**
  * Built-in component used as a relation for entities spawned within plugins.
@@ -160,7 +166,7 @@ export const AddedByPlugin = registerBuiltin(
 export const MessageSequence = registerBuiltin(
 	'MessageSequence',
 	new ComponentHandle(world.component()),
-)
+).set(QueryHidden)
 
 /**
  * Built-in component used to distinguish regular entities from components and resources.

@@ -1,5 +1,5 @@
 import { Assert, BeforeEach, Test } from '@rbxts/lunit'
-import { component, entity, pair, query } from '@rbxts/toucan'
+import { Builtin, component, entity, pair, query } from '@rbxts/toucan'
 import { clearWorld } from './helpers'
 
 class QueryTests {
@@ -215,6 +215,192 @@ class QueryTests {
 			total,
 			6,
 			'Expected reduce to accumulate the scores to a total of 6',
+		)
+	}
+
+	@Test
+	public queryHidden_doesNotShowUpInQuery() {
+		const Marker = component('Marker')
+		const Hidden = component('Hidden').set(Builtin.QueryHidden)
+		const entt = entity().set(Marker).set(Hidden)
+
+		const regular = query(Marker).collect()
+		const allowed = query(Marker).show(Hidden).collect()
+
+		Assert.equal(
+			regular.size(),
+			0,
+			'Expected regular query to skip over entities with Hidden',
+		)
+		Assert.equal(
+			allowed.size(),
+			1,
+			'Expected allowed query to contain a single entity',
+		)
+		Assert.true(
+			allowed[0][0] === entt,
+			"Expected allowed query's entity to be the spawned entity",
+		)
+	}
+
+	@Test
+	public queryHidden_onRemovedUnhidesComponent() {
+		const Marker = component('Marker')
+		const Hidden = component('Hidden').set(Builtin.QueryHidden)
+		const entt = entity().set(Marker).set(Hidden)
+
+		Assert.equal(
+			query(Marker).collect().size(),
+			0,
+			'Expected the entity to be hidden while QueryHidden is set on its component',
+		)
+
+		Builtin.QueryHidden.remove(Builtin.Persistent)
+		Hidden.remove(Builtin.QueryHidden)
+		Builtin.QueryHidden.set(Builtin.Persistent)
+
+		const results = query(Marker).collect()
+		Assert.equal(
+			results.size(),
+			1,
+			'Expected the entity to show up after QueryHidden is removed from its component',
+		)
+		Assert.equal(
+			results[0][0],
+			entt,
+			'Expected the previously hidden entity to be the one that shows up',
+		)
+	}
+
+	@Test
+	public queryHidden_requiresShowingEveryHiddenComponent() {
+		const Marker = component('Marker')
+		const HiddenA = component('HiddenA').set(Builtin.QueryHidden)
+		const HiddenB = component('HiddenB').set(Builtin.QueryHidden)
+		const entt = entity().set(Marker).set(HiddenA).set(HiddenB)
+
+		Assert.equal(
+			query(Marker).collect().size(),
+			0,
+			'Expected an entity with two hidden components to be excluded by default',
+		)
+		Assert.equal(
+			query(Marker).show(HiddenA).collect().size(),
+			0,
+			'Expected showing only one hidden component to still exclude the entity',
+		)
+		Assert.equal(
+			query(Marker).show(HiddenB).collect().size(),
+			0,
+			'Expected showing only the other hidden component to still exclude the entity',
+		)
+
+		const results = query(Marker).show(HiddenA, HiddenB).collect()
+		Assert.equal(
+			results.size(),
+			1,
+			'Expected showing every hidden component to include the entity',
+		)
+		Assert.equal(
+			results[0][0],
+			entt,
+			'Expected the included entity to be the one with both hidden components',
+		)
+	}
+
+	@Test
+	public queryHidden_showAllIncludesHiddenEntities() {
+		const Marker = component('Marker')
+		const HiddenA = component('HiddenA').set(Builtin.QueryHidden)
+		const HiddenB = component('HiddenB').set(Builtin.QueryHidden)
+		const entt = entity().set(Marker).set(HiddenA).set(HiddenB)
+
+		const results = query(Marker).showAll().collect()
+		Assert.equal(
+			results.size(),
+			1,
+			'Expected showAll to include entities with hidden components',
+		)
+		Assert.equal(
+			results[0][0],
+			entt,
+			'Expected showAll to include the entity with both hidden components',
+		)
+	}
+
+	@Test
+	public queryHidden_requiredComponentIsImplicitlyShown() {
+		const Hidden = component('Hidden').set(Builtin.QueryHidden)
+		const entt = entity().set(Hidden)
+
+		const results = query(Hidden).collect()
+		Assert.equal(
+			results.size(),
+			1,
+			'Expected requiring a hidden component to implicitly show it',
+		)
+		Assert.equal(
+			results[0][0],
+			entt,
+			'Expected the entity with the required hidden component to match',
+		)
+	}
+
+	@Test
+	public queryHidden_withAndWithAnyImplicitlyShowComponent() {
+		const Marker = component('Marker')
+		const Hidden = component('Hidden').set(Builtin.QueryHidden)
+		const entt = entity().set(Marker).set(Hidden)
+
+		const withResults = query(Marker).with(Hidden).collect()
+		Assert.equal(
+			withResults.size(),
+			1,
+			'Expected with to implicitly show the hidden component',
+		)
+		Assert.equal(
+			withResults[0][0],
+			entt,
+			'Expected the entity with the with-hidden component to match',
+		)
+
+		const withAnyResults = query(Marker).withAny(Hidden).collect()
+		Assert.equal(
+			withAnyResults.size(),
+			1,
+			'Expected withAny to implicitly show the hidden component',
+		)
+		Assert.equal(
+			withAnyResults[0][0],
+			entt,
+			'Expected the entity with the withAny-hidden component to match',
+		)
+	}
+
+	@Test
+	public queryHidden_markingComponentHidesExistingEntities() {
+		const Marker = component('Marker')
+		const Hidden = component('Hidden')
+		const entt = entity().set(Marker).set(Hidden)
+
+		const visible = query(Marker).collect()
+		Assert.equal(
+			visible.size(),
+			1,
+			'Expected the entity to be visible before its component is marked as hidden',
+		)
+		Assert.equal(
+			visible[0][0],
+			entt,
+			'Expected the visible entity to be the one with the unmarked component',
+		)
+
+		Hidden.set(Builtin.QueryHidden)
+
+		Assert.equal(
+			query(Marker).collect().size(),
+			0,
+			'Expected the entity to be hidden after its component is marked as hidden',
 		)
 	}
 }
