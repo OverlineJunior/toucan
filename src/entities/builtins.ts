@@ -11,8 +11,8 @@ import { bootstrapBuiltins, registerBuiltin } from './builtinRegistry'
 export const Builtin = {
 	/**
 	 * Built-in component used to...
-	 * 1. Mark entities that cannot be despawned by any means;
-	 * 2. Mark components that cannot be removed by any means.
+	 * 1. Mark entities that cannot be despawned;
+	 * 2. Mark components that cannot be removed.
 	 */
 	Persistent: registerBuiltin(
 		'Persistent',
@@ -82,10 +82,11 @@ export const Builtin = {
 	 *
 	 * @example
 	 * ```ts
-	 * // Query all entities that are children of any other entity.
-	 * query(pair(ChildOf, Wildcard)).forEach((child) => {
-	 *     const parent = child.targetOf(ChildOf)
-	 * })
+	 * // Query all entities that are children of another.
+	 * query(pair(Builtin.ChildOf, Builtin.Wildcard))
+	 *     .forEach((child) => {
+	 *         const parent = child.targetOf(ChildOf)
+	 *     })
 	 * ```
 	 */
 	Wildcard: registerBuiltin(
@@ -101,7 +102,7 @@ export const Builtin = {
 	 * @example
 	 * ```ts
 	 * const alice = entity()
-	 * const bob = entity().set(pair(ChildOf, alice))
+	 * const bob = entity().set(pair(Builtin.ChildOf, alice))
 	 * assert(bob.parent() === alice)
 	 * ```
 	 */

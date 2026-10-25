@@ -180,7 +180,11 @@ export class Query<
 	 *
 	 * // Despawn every single entity, no matter what.
 	 * for (const enttKind of allEntityKinds) {
-	 *     query(enttKind).forEach((e) => forceDespawn(e))
+	 *     query(enttKind)
+	 *         // Allows the query to traverse entities
+	 *         // with any hidden component.
+	 *         .allowAll()
+	 *         .forEach((e) => forceDespawn(e))
 	 * }
 	 * ```
 	 */

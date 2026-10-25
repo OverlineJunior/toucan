@@ -162,7 +162,7 @@ export class Scheduler {
 	 * scheduler()
 	 *     .useSystemChain('update', [
 	 *         gatherInput, // Implicitly runs before `drawUI`.
-	 *         [drawUI, { runIf: !inCinematicMode }],
+	 *         [drawUI, { runIf: () => !inCinematicMode }],
 	 *     ])
 	 *     .run()
 	 * ```
@@ -189,9 +189,9 @@ export class Scheduler {
 	 *
 	 * @example
 	 * ```ts
-	 * const sense = new SystemSet('sense')
-	 * const think = new SystemSet('think')
-	 * const act = new SystemSet('act')
+	 * const sense = systemSet('sense')
+	 * const think = systemSet('think')
+	 * const act = systemSet('act')
 	 *
 	 * scheduler()
 	 *     // System sets that don't need configuration don't need to be configured.

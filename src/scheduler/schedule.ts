@@ -119,7 +119,7 @@ export class Schedule {
 			}
 		}
 
-		// Always register the last element so it is present in the descriptor map.
+		// We gotta register the last element manually.
 		// This also covers the edge case of a single-element chain.
 		const last = systems[systems.size() - 1]
 		if (typeIs(last, 'function')) {

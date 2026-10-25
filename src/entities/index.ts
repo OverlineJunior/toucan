@@ -328,12 +328,14 @@ export abstract class EntityLike {
 	}
 
 	/**
-	 * Gets the parent (the target of a {@link Builtin.ChildOf} relationship) for this entity, if such a relationship exists.
+	 * Gets the parent (the target of a {@link Builtin.ChildOf} relationship) for this entity,
+	 * if such a relationship exists.
 	 *
 	 * @example
 	 * ```ts
 	 * const alice = entity()
-	 * const charlie = entity().set(pair(ChildOf, alice))
+	 * const charlie = entity()
+	 *     .set(pair(Builtin.ChildOf, alice))
 	 *
 	 * const parent = charlie.parent() // alice
 	 * ```
@@ -349,8 +351,10 @@ export abstract class EntityLike {
 	 * @example
 	 * ```ts
 	 * const alice = entity()
-	 * const charlie = entity().set(pair(ChildOf, alice))
-	 * const bob = entity().set(pair(ChildOf,  alice))
+	 * const charlie = entity()
+	 *     .set(pair(Builtin.ChildOf, alice))
+	 * const bob = entity()
+	 *     .set(pair(Builtin.ChildOf, alice))
 	 *
 	 * const children = alice.children() // [charlie, bob]
 	 * ```
@@ -690,7 +694,7 @@ export class Resource<Value = unknown> extends EntityLike {
 	 * ```ts
 	 * const GameState = resource('lobby')
 	 *
-	 * GameState.onChanged((resource, newState, oldState) => {
+	 * GameState.onChanged((newState, oldState) => {
 	 *     print(`Game state changed from ${oldState} to ${newState}!`)
 	 * })
 	 * ```
