@@ -5,7 +5,7 @@ prev: false
 title: "Query"
 ---
 
-Defined in: [query.ts:74](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L74)
+Defined in: [query.ts:71](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L71)
 
 The type for queries created with [query](/toucan/api/core/query/).
 
@@ -24,11 +24,78 @@ terms passed to [Query.on](/toucan/api/types/query/#on) (empty when the query do
 
 ## Methods
 
+### allow()
+
+> **allow**(...`hiddenComponents`): `Query`\<`Cs`, `Ms`\>
+
+Defined in: [query.ts:156](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L156)
+
+Allows entities with the specified hidden components to appear in the query's results.
+
+The default hidden components are `Component`, `Resource` and `MessageSequence`. That
+means queries can only see regular entities by default.
+
+#### Parameters
+
+##### hiddenComponents
+
+...[`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\>[]
+
+#### Returns
+
+`Query`\<`Cs`, `Ms`\>
+
+#### Example
+
+```ts
+// We add Description to both entities and components, and we wanna query from both.
+query(Description).allow(Builtin.Component).forEach(...)
+```
+
+***
+
+### allowAll()
+
+> **allowAll**(): `Query`\<`Cs`, `Ms`\>
+
+Defined in: [query.ts:186](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L186)
+
+Allows entities with any hidden components to appear in the query's results.
+
+The default hidden components are `Component`, `Resource` and `MessageSequence`. That
+means queries can only see regular entities by default.
+
+#### Returns
+
+`Query`\<`Cs`, `Ms`\>
+
+#### Example
+
+```ts
+function forceDespawn(e: Handle) {
+    e.remove(Builtin.Persistent)
+    e.despawn()
+}
+
+const allEntityKinds = [
+    Builtin.Entity,
+    Builtin.Component,
+    Builtin.Resource,
+]
+
+// Despawn every single entity, no matter what.
+for (const enttKind of allEntityKinds) {
+    query(enttKind).forEach((e) => forceDespawn(e))
+}
+```
+
+***
+
 ### bind()
 
 > **bind**(`callback`): [`SystemFn`](/toucan/api/types/systemfn/)\<\[\]\>
 
-Defined in: [query.ts:318](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L318)
+Defined in: [query.ts:369](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L369)
 
 Converts the query into a callback that can be scheduled just like a regular system function.
 
@@ -81,7 +148,7 @@ scheduler()
 
 > **collect**(): `QueryResult`\<`Cs`, `Ms`\>[]
 
-Defined in: [query.ts:273](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L273)
+Defined in: [query.ts:324](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L324)
 
 Collects all entities that match the query, returning an array of the entities
 themselves and their corresponding component values.
@@ -101,7 +168,7 @@ used sparingly in performance-critical code.
 
 > **filter**(`predicate`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:131](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L131)
+Defined in: [query.ts:132](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L132)
 
 Adds a filter predicate to the query that entities must satisfy in order to be queried.
 
@@ -121,7 +188,7 @@ Adds a filter predicate to the query that entities must satisfy in order to be q
 
 > **find**(`predicate`): `QueryResult`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:205](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L205)
+Defined in: [query.ts:256](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L256)
 
 Finds the first entity that matches the query _and_ satisfies the provided
 `predicate` function, returning the entity itself and its corresponding
@@ -137,13 +204,17 @@ component values, or `undefined` if no such entity exists.
 
 `QueryResult`\<`Cs`, `Ms`\>
 
+#### Remarks
+
+With [Query.on](/toucan/api/types/query/#on), only the first matching message is read.
+
 ***
 
 ### forEach()
 
 > **forEach**(`callback`): `void`
 
-Defined in: [query.ts:196](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L196)
+Defined in: [query.ts:244](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L244)
 
 Iterates over each entity that matches the query, calling the provided `callback`
 with the entity itself and its corresponding component values.
@@ -164,7 +235,7 @@ with the entity itself and its corresponding component values.
 
 > **map**\<`R`\>(`mapper`): `R`[]
 
-Defined in: [query.ts:232](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L232)
+Defined in: [query.ts:283](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L283)
 
 Maps each entity that matches the query to a new value using the provided
 `mapper` function, returning an array of the resulting values.
@@ -196,7 +267,7 @@ used sparingly in performance-critical code.
 
 > **on**\<`NewMs`\>(...`terms`): `Query`\<`Cs`, `NewMs`\>
 
-Defined in: [query.ts:180](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L180)
+Defined in: [query.ts:228](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L228)
 
 Reads messages that have _all_ of the specified components or pairs, pairing
 each one with every entity that matches this query.
@@ -228,7 +299,7 @@ Messages can be read even by systems that run before they're emitted, at the cos
 - The query's own terms never match message entities unless `MessageSequence`
   is explicitly required; `on()` is the cursor-aware way to read them.
 - Calling `on()` more than once will throw an error.
-- Calling `on()` outside of a system will throw an error.
+- Iterating a query with `on()` outside of a system will throw an error.
 
 #### Examples
 
@@ -253,142 +324,11 @@ function announceDamage() {
 
 ***
 
-### onAdded()
-
-> **onAdded**\<`C`\>(`component`, `callback`): `DisconnectFn`
-
-Defined in: [query.ts:355](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L355)
-
-Registers a callback that fires whenever the specified component is added to an
-entity that matches this query.
-
-The callback receives the entity, the values of the queried components, and the
-newly added component's value.
-
-#### Type Parameters
-
-##### C
-
-`C` *extends* [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\>
-
-#### Parameters
-
-##### component
-
-`C`
-
-##### callback
-
-(`entity`, ...`componentValues`) => `void`
-
-#### Returns
-
-`DisconnectFn`
-
-#### Example
-
-```ts
-query(Player).onAdded(Health, (entity, player, health) => {
-    print(`${health}hp was added to ${player}!`)
-})
-```
-
-***
-
-### onChanged()
-
-> **onChanged**\<`C`\>(`component`, `callback`): `DisconnectFn`
-
-Defined in: [query.ts:388](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L388)
-
-Registers a callback that fires whenever the specified component's value changes
-on an entity that matches this query.
-
-The callback receives the entity, the values of the queried components, the
-new value of the changed component, and its previous value.
-
-#### Type Parameters
-
-##### C
-
-`C` *extends* [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\>
-
-#### Parameters
-
-##### component
-
-`C`
-
-##### callback
-
-(`entity`, ...`componentValues`) => `void`
-
-#### Returns
-
-`DisconnectFn`
-
-#### Example
-
-```ts
-query(Player).onChanged(Health, (entity, player, newHealth, oldHealth) => {
-    print(`${player}'s health changed from ${oldHealth} to ${newHealth}!`)
-})
-```
-
-***
-
-### onRemoved()
-
-> **onRemoved**\<`C`\>(`component`, `callback`): `DisconnectFn`
-
-Defined in: [query.ts:432](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L432)
-
-Registers a callback that fires whenever the specified component is removed from
-an entity that matches this query, or when the entity itself is despawned.
-
-The callback receives the entity, the values of the queried components, the
-component's last known value before removal, and a boolean indicating if the
-removal was caused by the entity despawning.
-
-#### Type Parameters
-
-##### C
-
-`C` *extends* [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\>
-
-#### Parameters
-
-##### component
-
-`C`
-
-##### callback
-
-(`entity`, ...`componentValues`) => `void`
-
-#### Returns
-
-`DisconnectFn`
-
-#### Example
-
-```ts
-query(Player).onRemoved(Health, (entity, player, oldHealth, despawned) => {
-    if (despawned) {
-        print(`${player} had ${oldHealth}hp before their entity was completely annihilated.`)
-    } else {
-        print(`${player} had ${oldHealth}hp before their Health component was removed.`)
-    }
-})
-```
-
-***
-
 ### reduce()
 
 > **reduce**\<`R`\>(`reducer`, `initialValue`): `R`
 
-Defined in: [query.ts:247](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L247)
+Defined in: [query.ts:298](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L298)
 
 Reduces the entities that match the query to a single value using the provided
 `reducer` function and `initialValue`.
@@ -463,7 +403,7 @@ Does not append the values of these components to the results.
 
 > **without**(...`components`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:115](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L115)
+Defined in: [query.ts:116](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L116)
 
 Excludes entities with _all_ of the specified components from the query's results.
 
@@ -483,7 +423,7 @@ Excludes entities with _all_ of the specified components from the query's result
 
 > **withoutAny**(...`components`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:123](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L123)
+Defined in: [query.ts:124](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L124)
 
 Excludes entities with _any_ of the specified components from the query's results.
 

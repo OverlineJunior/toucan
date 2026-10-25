@@ -7,7 +7,7 @@ title: "Builtin"
 
 > `const` **Builtin**: `object`
 
-Defined in: [index.ts:50](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L50)
+Defined in: [index.ts:53](https://github.com/OverlineJunior/toucan/blob/master/src/index.ts#L53)
 
 A collection of built-in [Handle](/toucan/api/types/handle/)s.
 
@@ -38,6 +38,12 @@ assert(bob.parent() === alice)
 > **Component**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
 
 Built-in component used to distinguish entities that represent components.
+
+### Entity
+
+> **Entity**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+
+Built-in component used to distinguish regular entities from components and resources.
 
 ### Internal
 
@@ -88,6 +94,27 @@ Built-in component used to...
 
 Built-in component used to distinguish entities that represent plugins.
 
+### QueryHidden
+
+> **QueryHidden**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
+
+Built-in component that marks other components as hidden from queries.
+
+Entities with a component marked with `QueryHidden` are excluded from queries
+by default. Use [Query.allow](/toucan/api/types/query/#allow) or [Query.allowAll](/toucan/api/types/query/#allowall) to include them.
+
+#### Example
+
+```ts
+const Marker = component()
+const Hidden = component().set(Builtin.QueryHidden)
+
+entity().set(Marker).set(Hidden)
+
+query(Marker).collect() // Excluded by default.
+query(Marker).allow(Hidden).collect() // Included.
+```
+
 ### Resource
 
 > **Resource**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
@@ -116,19 +143,14 @@ Built-in component used to distinguish entities created by third-party packages.
 
 > **Wildcard**: [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`undefined`\>
 
-Built-in component that acts as a wildcard in queries. It has two use cases:
-1. To query for all entities, including variations, such as components, systems and so on;
-2. To query for all sources or targets of a relationship, without caring about the other end of the relationship.
+Built-in component that acts as a wildcard in relationship pairs.
+
+It can be used to query for all sources or targets of a relationship without caring about the other end of it.
 
 #### Example
 
 ```ts
-// 1. Query all simple entities (entities that are not also components, systems, resources or plugins):
-query(Wildcard).withoutAny(Component, System, Resource, Plugin).forEach((id) => {
-    ...
-})
-
-// 2. Query all entities that are children of any other entity:
+// Query all entities that are children of any other entity.
 query(pair(ChildOf, Wildcard)).forEach((child) => {
     const parent = child.targetOf(ChildOf)
 })

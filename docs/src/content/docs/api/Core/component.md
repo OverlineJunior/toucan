@@ -7,7 +7,7 @@ title: "component"
 
 > **component**\<`Value`\>(`label?`): [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`Value`\>
 
-Defined in: [handle/index.ts:574](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L574)
+Defined in: [handle/index.ts:621](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L621)
 
 Creates a new [ComponentHandle](/toucan/api/types/componenthandle/).
 

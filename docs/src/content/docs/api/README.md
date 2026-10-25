@@ -12,6 +12,7 @@ title: "@rbxts/toucan"
 ## Functions
 
 - [\_\_despawnScheduler](/toucan/api/functions/__despawnscheduler/)
+- [\_\_simulateThirdParty](/toucan/api/functions/__simulatethirdparty/)
 - [message](/toucan/api/functions/message/)
 
 ## Core

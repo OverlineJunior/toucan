@@ -5,13 +5,13 @@ prev: false
 title: "ResourceHandle"
 ---
 
-Defined in: [handle/index.ts:607](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L607)
+Defined in: [handle/index.ts:654](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L654)
 
 A handle for resources spawned with `resource()`.
 
 ## Extends
 
-- [`Handle`](/toucan/api/types/handle/)
+- [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`Value`\>
 
 ## Type Parameters
 
@@ -25,7 +25,11 @@ A handle for resources spawned with `resource()`.
 
 > **\[VALUE\_SYMBOL\]**: `Value`
 
-Defined in: [handle/index.ts:608](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L608)
+Defined in: [handle/index.ts:655](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L655)
+
+#### Overrides
+
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`[VALUE_SYMBOL]`](/toucan/api/types/componenthandle/#value_symbol)
 
 ***
 
@@ -33,7 +37,7 @@ Defined in: [handle/index.ts:608](https://github.com/OverlineJunior/toucan/blob/
 
 > `readonly` **id**: [`RawId`](/toucan/api/types/rawid/)
 
-Defined in: [handle/index.ts:132](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L132)
+Defined in: [handle/index.ts:100](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L100)
 
 A numerical entity identifier used internally.
 
@@ -46,7 +50,7 @@ In order to get back the appropriate handle from an ID, use the
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`id`](/toucan/api/types/handle/#id)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`id`](/toucan/api/types/componenthandle/#id)
 
 ## Methods
 
@@ -54,7 +58,7 @@ In order to get back the appropriate handle from an ID, use the
 
 > **changed**(`listener`): () => `void`
 
-Defined in: [handle/index.ts:636](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L636)
+Defined in: [handle/index.ts:683](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L683)
 
 Registers a listener that is called whenever the value of this resource changes.
 
@@ -76,7 +80,7 @@ The returned function can be called to unregister the listener.
 
 > **children**(): [`Handle`](/toucan/api/types/handle/)[]
 
-Defined in: [handle/index.ts:385](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L385)
+Defined in: [handle/index.ts:361](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L361)
 
 Gets all children (the sources of `ChildOf` relationships) for this entity.
 
@@ -96,7 +100,7 @@ const children = alice.children() // [charlie, bob]
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`children`](/toucan/api/types/handle/#children)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`children`](/toucan/api/types/componenthandle/#children)
 
 ***
 
@@ -104,7 +108,7 @@ const children = alice.children() // [charlie, bob]
 
 > **clear**(): `this`
 
-Defined in: [handle/index.ts:287](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L287)
+Defined in: [handle/index.ts:255](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L255)
 
 Clears all components and relationship pairs from this entity,
 but does not despawn the entity.
@@ -118,7 +122,7 @@ Components and relationship pairs with the `Persistent` component
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`clear`](/toucan/api/types/handle/#clear)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`clear`](/toucan/api/types/componenthandle/#clear)
 
 ***
 
@@ -126,7 +130,7 @@ Components and relationship pairs with the `Persistent` component
 
 > **components**(): [`ComponentHandle`](/toucan/api/types/componenthandle/)\<`unknown`\>[]
 
-Defined in: [handle/index.ts:309](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L309)
+Defined in: [handle/index.ts:277](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L277)
 
 Returns all components associated with this entity.
 
@@ -136,7 +140,7 @@ Returns all components associated with this entity.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`components`](/toucan/api/types/handle/#components)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`components`](/toucan/api/types/componenthandle/#components)
 
 ***
 
@@ -144,7 +148,7 @@ Returns all components associated with this entity.
 
 > **despawn**(): `void`
 
-Defined in: [handle/index.ts:493](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L493)
+Defined in: [handle/index.ts:469](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L469)
 
 Completely deletes this entity from the world.
 
@@ -156,7 +160,7 @@ Throws an error if the entity is marked as persistent.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`despawn`](/toucan/api/types/handle/#despawn)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`despawn`](/toucan/api/types/componenthandle/#despawn)
 
 ***
 
@@ -164,7 +168,7 @@ Throws an error if the entity is marked as persistent.
 
 > **exists**(): `boolean`
 
-Defined in: [handle/index.ts:400](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L400)
+Defined in: [handle/index.ts:376](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L376)
 
 Returns `true` if this entity exists in the world.
 
@@ -174,7 +178,7 @@ Returns `true` if this entity exists in the world.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`exists`](/toucan/api/types/handle/#exists)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`exists`](/toucan/api/types/componenthandle/#exists)
 
 ***
 
@@ -182,7 +186,7 @@ Returns `true` if this entity exists in the world.
 
 > **get**\<`Args`\>(...`componentsOrPairs`): `WrapLuaTuple`\<`Flatten`\<`Nullable`\<[`InferValues`](/toucan/api/types/infervalues/)\<`Args`\>\>\>\>
 
-Defined in: [handle/index.ts:220](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L220)
+Defined in: [handle/index.ts:188](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L188)
 
 Retrieves the values of up to 4 components or relationship pairs on
 this entity.
@@ -217,7 +221,7 @@ const carCount = myEntity.get(pair(Owns, car))
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`get`](/toucan/api/types/handle/#get)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`get`](/toucan/api/types/componenthandle/#get)
 
 ***
 
@@ -225,7 +229,7 @@ const carCount = myEntity.get(pair(Owns, car))
 
 > **has**(...`componentsOrPairs`): `boolean`
 
-Defined in: [handle/index.ts:250](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L250)
+Defined in: [handle/index.ts:218](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L218)
 
 Returns `true` if this entity has _all_ of the specified components or
 relationship pairs.
@@ -260,7 +264,114 @@ if (bob.has(IsDead, pair(Owns, house))) {
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`has`](/toucan/api/types/handle/#has)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`has`](/toucan/api/types/componenthandle/#has)
+
+***
+
+### onAdded()
+
+> **onAdded**(`callback`): () => `void`
+
+Defined in: [handle/index.ts:544](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L544)
+
+Registers a callback that fires whenever this component is added to an entity.
+
+#### Parameters
+
+##### callback
+
+(`entity`, `value`) => `void`
+
+#### Returns
+
+() => `void`
+
+#### Example
+
+```ts
+const Health = component<number>()
+
+Health.onAdded((entity, health) => {
+    print(`${health}hp was added to entity ${entity.id}!`)
+})
+```
+
+#### Inherited from
+
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`onAdded`](/toucan/api/types/componenthandle/#onadded)
+
+***
+
+### onChanged()
+
+> **onChanged**(`callback`): () => `void`
+
+Defined in: [handle/index.ts:565](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L565)
+
+Registers a callback that fires whenever this component's value changes on an entity.
+
+#### Parameters
+
+##### callback
+
+(`entity`, `newValue`, `oldValue`) => `void`
+
+#### Returns
+
+() => `void`
+
+#### Example
+
+```ts
+const Health = component<number>()
+
+Health.onChanged((entity, newHealth, oldHealth) => {
+    print(`Entity ${entity.id}'s health changed from ${oldHealth} to ${newHealth}!`)
+})
+```
+
+#### Inherited from
+
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`onChanged`](/toucan/api/types/componenthandle/#onchanged)
+
+***
+
+### onRemoved()
+
+> **onRemoved**(`callback`): () => `void`
+
+Defined in: [handle/index.ts:593](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L593)
+
+Registers a callback that fires whenever this component is removed from an
+entity, or when the entity itself is despawned.
+
+#### Parameters
+
+##### callback
+
+(`entity`, `oldValue`, `despawned`) => `void`
+
+#### Returns
+
+() => `void`
+
+#### Example
+
+```ts
+const Health = component<number>()
+
+Health.onRemoved((entity, oldHealth, despawned) => {
+    if (despawned) {
+        print(`Entity ${entity.id} had ${oldHealth}hp before being despawned.`)
+    } else {
+        print(`Entity ${entity.id} had ${oldHealth}hp before losing Health.`)
+    }
+})
+```
+
+#### Inherited from
+
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`onRemoved`](/toucan/api/types/componenthandle/#onremoved)
 
 ***
 
@@ -268,7 +379,7 @@ if (bob.has(IsDead, pair(Owns, house))) {
 
 > **parent**(): [`Handle`](/toucan/api/types/handle/)
 
-Defined in: [handle/index.ts:368](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L368)
+Defined in: [handle/index.ts:344](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L344)
 
 Gets the parent (the target of a `ChildOf` relationship) for this entity, if such a relationship exists.
 
@@ -287,7 +398,7 @@ const parent = charlie.parent() // alice
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`parent`](/toucan/api/types/handle/#parent)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`parent`](/toucan/api/types/componenthandle/#parent)
 
 ***
 
@@ -295,7 +406,7 @@ const parent = charlie.parent() // alice
 
 > **read**(): `Value`
 
-Defined in: [handle/index.ts:616](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L616)
+Defined in: [handle/index.ts:663](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L663)
 
 Returns the current value of this resource.
 
@@ -312,7 +423,7 @@ components attached to resources, just like with entities.
 
 > **relationships**(): [`Pair`](/toucan/api/types/pair/)\<`unknown`\>[]
 
-Defined in: [handle/index.ts:327](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L327)
+Defined in: [handle/index.ts:295](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L295)
 
 Returns all relationship pairs associated with this entity.
 
@@ -322,7 +433,7 @@ Returns all relationship pairs associated with this entity.
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`relationships`](/toucan/api/types/handle/#relationships)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`relationships`](/toucan/api/types/componenthandle/#relationships)
 
 ***
 
@@ -330,7 +441,7 @@ Returns all relationship pairs associated with this entity.
 
 > **remove**(`componentOrPair`): `this`
 
-Defined in: [handle/index.ts:263](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L263)
+Defined in: [handle/index.ts:231](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L231)
 
 Removes a component or relationship pair from this entity.
 
@@ -349,7 +460,7 @@ with the `Persistent` component (i.e. most built-in components).
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`remove`](/toucan/api/types/handle/#remove)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`remove`](/toucan/api/types/componenthandle/#remove)
 
 ***
 
@@ -359,7 +470,7 @@ with the `Persistent` component (i.e. most built-in components).
 
 > **set**(`tagComponent`): `this`
 
-Defined in: [handle/index.ts:149](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L149)
+Defined in: [handle/index.ts:117](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L117)
 
 Assigns a tag component to this entity.
 
@@ -382,13 +493,13 @@ myEntity.set(IsAlive)
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`set`](/toucan/api/types/handle/#set)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`set`](/toucan/api/types/componenthandle/#set)
 
 #### Call Signature
 
 > **set**\<`V`\>(`component`, `value`): `this`
 
-Defined in: [handle/index.ts:163](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L163)
+Defined in: [handle/index.ts:131](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L131)
 
 Assigns a component and its value to this entity.
 
@@ -425,13 +536,13 @@ entity()
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`set`](/toucan/api/types/handle/#set)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`set`](/toucan/api/types/componenthandle/#set)
 
 #### Call Signature
 
 > **set**(`tagPair`): `this`
 
-Defined in: [handle/index.ts:176](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L176)
+Defined in: [handle/index.ts:144](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L144)
 
 Assigns a relationship pair to this entity.
 
@@ -457,13 +568,13 @@ const alice = entity()
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`set`](/toucan/api/types/handle/#set)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`set`](/toucan/api/types/componenthandle/#set)
 
 #### Call Signature
 
 > **set**\<`P`\>(`pair`, `value`): `this`
 
-Defined in: [handle/index.ts:192](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L192)
+Defined in: [handle/index.ts:160](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L160)
 
 Assigns a relationship pair and its value to this entity.
 
@@ -502,7 +613,7 @@ const alice = entity()
 
 ##### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`set`](/toucan/api/types/handle/#set)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`set`](/toucan/api/types/componenthandle/#set)
 
 ***
 
@@ -510,7 +621,7 @@ const alice = entity()
 
 > **targetOf**(`relation`, `nth?`): [`Handle`](/toucan/api/types/handle/)
 
-Defined in: [handle/index.ts:425](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L425)
+Defined in: [handle/index.ts:401](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L401)
 
 Returns the target entity of a relationship pair from this entity.
 
@@ -549,7 +660,7 @@ const maybeCharlie = alice.targetOf(Likes, 1)
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`targetOf`](/toucan/api/types/handle/#targetof)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`targetOf`](/toucan/api/types/componenthandle/#targetof)
 
 ***
 
@@ -557,7 +668,7 @@ const maybeCharlie = alice.targetOf(Likes, 1)
 
 > **targetsOf**(`relation`): [`Handle`](/toucan/api/types/handle/)[]
 
-Defined in: [handle/index.ts:446](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L446)
+Defined in: [handle/index.ts:422](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L422)
 
 Returns all target entities of a relationship pair from this entity.
 
@@ -587,7 +698,7 @@ const likedEntities = alice.targetsOf(Likes)
 
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`targetsOf`](/toucan/api/types/handle/#targetsof)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`targetsOf`](/toucan/api/types/componenthandle/#targetsof)
 
 ***
 
@@ -595,7 +706,7 @@ const likedEntities = alice.targetsOf(Likes)
 
 > **toString**(): `string`
 
-Defined in: [handle/index.ts:353](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L353)
+Defined in: [handle/index.ts:324](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L324)
 
 Gets the label assigned to this entity.
 
@@ -603,9 +714,13 @@ Gets the label assigned to this entity.
 
 `string`
 
+#### Remarks
+
+If the entity has been despawned, it will return a label indicating that.
+
 #### Inherited from
 
-[`Handle`](/toucan/api/types/handle/).[`toString`](/toucan/api/types/handle/#tostring)
+[`ComponentHandle`](/toucan/api/types/componenthandle/).[`toString`](/toucan/api/types/componenthandle/#tostring)
 
 ***
 
@@ -613,7 +728,7 @@ Gets the label assigned to this entity.
 
 > **write**(`value`): `this`
 
-Defined in: [handle/index.ts:626](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L626)
+Defined in: [handle/index.ts:673](https://github.com/OverlineJunior/toucan/blob/master/src/handle/index.ts#L673)
 
 Updates the value of the resource.
 
