@@ -5,7 +5,7 @@ prev: false
 title: "Query"
 ---
 
-Defined in: [query.ts:71](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L71)
+Defined in: [query.ts:72](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L72)
 
 The type for queries created with [query](/toucan/api/core/query/).
 
@@ -28,12 +28,11 @@ terms passed to [Query.on](/toucan/api/types/query/#on) (empty when the query do
 
 > **allow**(...`hiddenComponents`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:156](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L156)
+Defined in: [query.ts:158](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L158)
 
 Allows entities with the specified hidden components to appear in the query's results.
 
-The default hidden components are `Component`, `Resource` and `MessageSequence`. That
-means queries can only see regular entities by default.
+See [Builtin.QueryHidden](/toucan/api/variables/builtin/#queryhidden) for more details.
 
 #### Parameters
 
@@ -49,7 +48,9 @@ means queries can only see regular entities by default.
 
 ```ts
 // We add Description to both entities and components, and we wanna query from both.
-query(Description).allow(Builtin.Component).forEach(...)
+query(Description)
+    .allow(Builtin.Component)
+    .forEach(...)
 ```
 
 ***
@@ -58,12 +59,11 @@ query(Description).allow(Builtin.Component).forEach(...)
 
 > **allowAll**(): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:186](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L186)
+Defined in: [query.ts:187](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L187)
 
 Allows entities with any hidden components to appear in the query's results.
 
-The default hidden components are `Component`, `Resource` and `MessageSequence`. That
-means queries can only see regular entities by default.
+See [Builtin.QueryHidden](/toucan/api/variables/builtin/#queryhidden) for more details.
 
 #### Returns
 
@@ -95,7 +95,7 @@ for (const enttKind of allEntityKinds) {
 
 > **bind**(`callback`): [`SystemFn`](/toucan/api/types/systemfn/)\<\[\]\>
 
-Defined in: [query.ts:369](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L369)
+Defined in: [query.ts:370](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L370)
 
 Converts the query into a callback that can be scheduled just like a regular system function.
 
@@ -148,7 +148,7 @@ scheduler()
 
 > **collect**(): `QueryResult`\<`Cs`, `Ms`\>[]
 
-Defined in: [query.ts:324](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L324)
+Defined in: [query.ts:325](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L325)
 
 Collects all entities that match the query, returning an array of the entities
 themselves and their corresponding component values.
@@ -168,7 +168,7 @@ used sparingly in performance-critical code.
 
 > **filter**(`predicate`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:132](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L132)
+Defined in: [query.ts:133](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L133)
 
 Adds a filter predicate to the query that entities must satisfy in order to be queried.
 
@@ -188,7 +188,7 @@ Adds a filter predicate to the query that entities must satisfy in order to be q
 
 > **find**(`predicate`): `QueryResult`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:256](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L256)
+Defined in: [query.ts:257](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L257)
 
 Finds the first entity that matches the query _and_ satisfies the provided
 `predicate` function, returning the entity itself and its corresponding
@@ -214,7 +214,7 @@ With [Query.on](/toucan/api/types/query/#on), only the first matching message is
 
 > **forEach**(`callback`): `void`
 
-Defined in: [query.ts:244](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L244)
+Defined in: [query.ts:245](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L245)
 
 Iterates over each entity that matches the query, calling the provided `callback`
 with the entity itself and its corresponding component values.
@@ -235,7 +235,7 @@ with the entity itself and its corresponding component values.
 
 > **map**\<`R`\>(`mapper`): `R`[]
 
-Defined in: [query.ts:283](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L283)
+Defined in: [query.ts:284](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L284)
 
 Maps each entity that matches the query to a new value using the provided
 `mapper` function, returning an array of the resulting values.
@@ -267,7 +267,7 @@ used sparingly in performance-critical code.
 
 > **on**\<`NewMs`\>(...`terms`): `Query`\<`Cs`, `NewMs`\>
 
-Defined in: [query.ts:228](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L228)
+Defined in: [query.ts:229](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L229)
 
 Reads messages that have _all_ of the specified components or pairs, pairing
 each one with every entity that matches this query.
@@ -328,7 +328,7 @@ function announceDamage() {
 
 > **reduce**\<`R`\>(`reducer`, `initialValue`): `R`
 
-Defined in: [query.ts:298](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L298)
+Defined in: [query.ts:299](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L299)
 
 Reduces the entities that match the query to a single value using the provided
 `reducer` function and `initialValue`.
@@ -359,7 +359,7 @@ Reduces the entities that match the query to a single value using the provided
 
 > **with**(...`components`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:97](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L97)
+Defined in: [query.ts:98](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L98)
 
 Includes only entities with _all_ of the specified components in the query's results.
 
@@ -381,7 +381,7 @@ Does not append the values of these components to the results.
 
 > **withAny**(...`components`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:107](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L107)
+Defined in: [query.ts:108](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L108)
 
 Includes entities with _any_ of the specified components in the query's results.
 
@@ -403,7 +403,7 @@ Does not append the values of these components to the results.
 
 > **without**(...`components`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:116](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L116)
+Defined in: [query.ts:117](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L117)
 
 Excludes entities with _all_ of the specified components from the query's results.
 
@@ -423,7 +423,7 @@ Excludes entities with _all_ of the specified components from the query's result
 
 > **withoutAny**(...`components`): `Query`\<`Cs`, `Ms`\>
 
-Defined in: [query.ts:124](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L124)
+Defined in: [query.ts:125](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L125)
 
 Excludes entities with _any_ of the specified components from the query's results.
 

@@ -8,6 +8,7 @@ import {
 import { MessageSequence } from './handle/builtins'
 import type { Pair } from './handle/pair'
 import type { RawId } from './id'
+import type { Builtin } from './index'
 import { advanceMessageCursor, getCurrentMessageSequence } from './message'
 import { hiddenComponentIds } from './queryHidden'
 import type { SystemFn } from './scheduler'
@@ -144,7 +145,7 @@ export class Query<
 	/**
 	 * Allows entities with the specified hidden components to appear in the query's results.
 	 *
-	 * See {@link QueryHidden} for more details.
+	 * See {@link Builtin.QueryHidden} for more details.
 	 *
 	 * @example
 	 * ```ts
@@ -162,7 +163,7 @@ export class Query<
 	/**
 	 * Allows entities with any hidden components to appear in the query's results.
 	 *
-	 * See {@link QueryHidden} for more details.
+	 * See {@link Builtin.QueryHidden} for more details.
 	 *
 	 * @example
 	 * ```ts

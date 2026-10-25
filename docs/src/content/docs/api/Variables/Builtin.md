@@ -103,6 +103,9 @@ Built-in component that marks other components as hidden from queries.
 Entities with a component marked with `QueryHidden` are excluded from queries
 by default. Use [Query.allow](/toucan/api/types/query/#allow) or [Query.allowAll](/toucan/api/types/query/#allowall) to include them.
 
+The default hidden components are `Component`, `Resource` and `MessageSequence`.
+That means queries can only see regular entities by default.
+
 #### Example
 
 ```ts
@@ -111,8 +114,8 @@ const Hidden = component().set(Builtin.QueryHidden)
 
 entity().set(Marker).set(Hidden)
 
-query(Marker).collect() // Excluded by default.
-query(Marker).allow(Hidden).collect() // Included.
+query(Marker) // Excluded by default.
+query(Marker).allow(Hidden) // Included.
 ```
 
 ### Resource
