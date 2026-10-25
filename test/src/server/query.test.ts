@@ -179,7 +179,7 @@ class QueryTests {
 		Assert.equal(
 			results.size(),
 			1,
-			'Expected exactly 1 entity to match the withAny and withoutAny query',
+			'Expected exactly 1 entity to match the withAny and withoutAll query',
 		)
 		Assert.equal(results[0][0], bob, 'Expected Bob to match the complex query')
 	}
@@ -401,6 +401,123 @@ class QueryTests {
 			query(Marker).collect().size(),
 			0,
 			'Expected the entity to be hidden after its component is marked as hidden',
+		)
+	}
+
+	@Test
+	public without_excludesEntitiesWithAnyOfTheComponents() {
+		const Foo = component('Foo')
+		const Bar = component('Bar')
+		const Baz = component('Baz')
+		const fooOnly = entity('FooOnly').set(Foo)
+		entity('FooBar').set(Foo).set(Bar)
+		entity('FooBaz').set(Foo).set(Baz)
+		entity('FooBarBaz').set(Foo).set(Bar).set(Baz)
+
+		const results = query(Foo).without(Bar, Baz).collect()
+
+		Assert.equal(
+			results.size(),
+			1,
+			'Expected without to exclude entities that have any of the listed components',
+		)
+		Assert.equal(
+			results[0][0],
+			fooOnly,
+			'Expected only the entity with neither Bar nor Baz to match',
+		)
+	}
+
+	@Test
+	public withoutAll_excludesOnlyEntitiesWithEveryComponent() {
+		const Foo = component('Foo')
+		const Bar = component('Bar')
+		const Baz = component('Baz')
+		const fooOnly = entity('FooOnly').set(Foo)
+		const fooBar = entity('FooBar').set(Foo).set(Bar)
+		const fooBaz = entity('FooBaz').set(Foo).set(Baz)
+		const fooBarBaz = entity('FooBarBaz').set(Foo).set(Bar).set(Baz)
+
+		const results = query(Foo).withoutAll(Bar, Baz).collect()
+		const matched = (e: typeof fooOnly) =>
+			results.find((r) => r[0] === e) !== undefined
+
+		Assert.equal(
+			results.size(),
+			3,
+			'Expected withoutAll to match every entity except the one with both Bar and Baz',
+		)
+		Assert.true(matched(fooOnly), 'Expected the entity with neither to match')
+		Assert.true(matched(fooBar), 'Expected the entity missing Baz to match')
+		Assert.true(matched(fooBaz), 'Expected the entity missing Bar to match')
+		Assert.false(
+			matched(fooBarBaz),
+			'Expected the entity with both Bar and Baz to be excluded',
+		)
+	}
+
+	@Test
+	public without_andWithoutAll_divergeOnPartialMatch() {
+		const Foo = component('Foo')
+		const Bar = component('Bar')
+		const Baz = component('Baz')
+		entity().set(Foo).set(Bar)
+
+		let withoutCalls = 0
+		query(Foo)
+			.without(Bar, Baz)
+			.forEach(() => {
+				withoutCalls += 1
+			})
+
+		let withoutAllCalls = 0
+		query(Foo)
+			.withoutAll(Bar, Baz)
+			.forEach(() => {
+				withoutAllCalls += 1
+			})
+
+		Assert.equal(
+			withoutCalls,
+			0,
+			'Expected without to exclude an entity that has Bar, even though it lacks Baz',
+		)
+		Assert.equal(
+			withoutAllCalls,
+			1,
+			'Expected withoutAll to include an entity that has Bar but lacks Baz',
+		)
+	}
+
+	@Test
+	public withoutAll_withSingleComponentBehavesLikeWithout() {
+		const Foo = component('Foo')
+		const Bar = component('Bar')
+		const fooOnly = entity('FooOnly').set(Foo)
+		entity('FooBar').set(Foo).set(Bar)
+
+		const withoutResults = query(Foo).without(Bar).collect()
+		const withoutAllResults = query(Foo).withoutAll(Bar).collect()
+
+		Assert.equal(
+			withoutResults.size(),
+			1,
+			'Expected without(Bar) to match 1 entity',
+		)
+		Assert.equal(
+			withoutAllResults.size(),
+			1,
+			'Expected withoutAll(Bar) to match 1 entity',
+		)
+		Assert.equal(
+			withoutResults[0][0],
+			fooOnly,
+			'Expected without(Bar) to match FooOnly',
+		)
+		Assert.equal(
+			withoutAllResults[0][0],
+			fooOnly,
+			'Expected withoutAll(Bar) to match FooOnly',
 		)
 	}
 }
