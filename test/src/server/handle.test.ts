@@ -528,28 +528,29 @@ class HandleTests {
 	}
 
 	@Test
-	changed_firesCallbackWhenResourceIsWritten() {
+	onChanged_reportsPreviousValueWhenResourceIsWritten() {
 		const GameState = resource('lobby', 'GameState')
-		let called = false
+		let oldValue: string | undefined
 		let newValue: string | undefined
 
-		const unsubscribe = GameState.changed((v) => {
-			called = true
-			newValue = v
+		const unsubscribe = GameState.onChanged((newV, oldV) => {
+			newValue = newV
+			oldValue = oldV
 		})
 
 		GameState.write('in-game')
-		Assert.true(
-			called,
-			'Expected changed callback to be fired after writing to resource',
+		unsubscribe()
+
+		Assert.equal(
+			oldValue,
+			'lobby',
+			'Expected onChanged to report the initial value as the old value',
 		)
 		Assert.equal(
 			newValue,
 			'in-game',
-			'Expected callback to receive the new resource value',
+			'Expected onChanged to report the written value as the new value',
 		)
-
-		unsubscribe()
 	}
 
 	@Test

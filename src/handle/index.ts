@@ -517,6 +517,23 @@ export function entity(label?: string): EntityHandle {
 	return handle
 }
 
+/**
+ * Shared implementation for `onChanged` on components and resources.
+ *
+ * @internal
+ */
+function subscribeToChanges<Value>(
+	componentId: RawId,
+	callback: (entity: Handle, newValue: Value, oldValue: Value) => void,
+): () => void {
+	return world.changed(componentId, (id, _, value) => {
+		const e = resolveId(id)
+		if (!e) return
+
+		callback(e, value as Value, entityHistory.get(id, componentId)! as Value)
+	})
+}
+
 // -----------------------------------------------------------------------------
 // Component
 // -----------------------------------------------------------------------------
@@ -565,12 +582,7 @@ export class ComponentHandle<Value = unknown> extends Handle {
 	onChanged(
 		callback: (entity: Handle, newValue: Value, oldValue: Value) => void,
 	): () => void {
-		return world.changed(this.id, (id, _, value) => {
-			const e = resolveId(id)
-			if (!e) return
-
-			callback(e, value as Value, entityHistory.get(id, this.id)! as Value)
-		})
+		return subscribeToChanges(this.id, callback)
 	}
 
 	/**
@@ -651,7 +663,7 @@ export function addDefaultComponentMetadata<C extends ComponentHandle>(
  *
  * @group Types
  */
-export class ResourceHandle<Value = unknown> extends ComponentHandle<Value> {
+export class ResourceHandle<Value = unknown> extends Handle {
 	declare [VALUE_SYMBOL]: Value
 
 	/**
@@ -661,7 +673,7 @@ export class ResourceHandle<Value = unknown> extends ComponentHandle<Value> {
 	 * components attached to resources, just like with entities.
 	 */
 	read(): Value {
-		return this.get(this) as Value
+		return world.get(this.id, this.id) as Value
 	}
 
 	/**
@@ -671,19 +683,27 @@ export class ResourceHandle<Value = unknown> extends ComponentHandle<Value> {
 	 * components attached to resources, just like with entities.
 	 */
 	write(value: Value): this {
-		this.set(this, value)
+		world.set(this.id, this.id, value)
+		entityHistory.set(this.id, this.id, value)
 		return this
 	}
 
 	/**
-	 * Registers a listener that is called whenever the value of this resource changes.
+	 * Registers a callback that fires whenever this resource's value changes.
 	 *
-	 * The returned function can be called to unregister the listener.
+	 * @example
+	 * ```ts
+	 * const GameState = resource('lobby')
+	 *
+	 * GameState.onChanged((resource, newState, oldState) => {
+	 *     print(`Game state changed from ${oldState} to ${newState}!`)
+	 * })
+	 * ```
 	 */
-	changed(listener: (newValue: Value) => void): () => void {
-		return world.changed(this.id, (_a, _b, v) => {
-			listener(v as Value)
-		})
+	onChanged(callback: (newValue: Value, oldValue: Value) => void): () => void {
+		return subscribeToChanges<Value>(this.id, (_e, newV, oldV) =>
+			callback(newV, oldV),
+		)
 	}
 }
 
@@ -715,6 +735,7 @@ export function resource<Value extends NonNullable<unknown>>(
 ): ResourceHandle<Value> {
 	const rawId = world.component<Value>()
 	world.set(rawId, rawId, value)
+	entityHistory.set(rawId, rawId, value)
 
 	const handle = new ResourceHandle<Value>(rawId)
 		.set(getBuiltin('Resource'))
