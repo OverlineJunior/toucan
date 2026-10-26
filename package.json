@@ -42,13 +42,13 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.4.15",
 		"@rbxts/compiler-types": "^3.0.0-types.0",
-		"@rbxts/types": "^1.0.918",
+		"@rbxts/types": "^1.0.959",
 		"concurrently": "^9.2.1",
 		"roblox-ts": "^3.0.0",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@rbxts/jecs": "^0.10.4",
+		"@rbxts/jecs": "^0.11.0",
 		"@rbxts/services": "^1.6.0"
 	}
 }

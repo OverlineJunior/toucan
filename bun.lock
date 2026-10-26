@@ -5,13 +5,13 @@
     "": {
       "name": "@rbxts/toucan",
       "dependencies": {
-        "@rbxts/jecs": "^0.10.4",
+        "@rbxts/jecs": "^0.11.0",
         "@rbxts/services": "^1.6.0",
       },
       "devDependencies": {
         "@biomejs/biome": "2.4.15",
         "@rbxts/compiler-types": "^3.0.0-types.0",
-        "@rbxts/types": "^1.0.918",
+        "@rbxts/types": "^1.0.959",
         "concurrently": "^9.2.1",
         "roblox-ts": "^3.0.0",
         "typescript": "^5.9.3",
@@ -39,11 +39,11 @@
 
     "@rbxts/compiler-types": ["@rbxts/compiler-types@3.0.0-types.0", "", {}, "sha512-VGOHJPoL7+56NTatMGqQj3K7xWuzEV+aP4QD5vZiHu+bcff3kiTmtoadaF6NkJrmwfFAvbsd4Dg764ZjWNceag=="],
 
-    "@rbxts/jecs": ["@rbxts/jecs@0.10.4", "", {}, "sha512-VSuBrRiRpel/95t16yaGp8Lf5Kd1FdO3uL4UgC/kbldiWw+9YAVeEtZUdxH9LYWqQzgRk2jlDQAgq9WK5bJHyQ=="],
+    "@rbxts/jecs": ["@rbxts/jecs@0.11.0", "", {}, "sha512-rJPZkqrL8PXVX5YP5a9gMcddm8U7TeXZDYEbBTAXs81r9IKhTWNVxGoFRPTbsDT4BhwM0LMvydvWDAqHvWzHpA=="],
 
     "@rbxts/services": ["@rbxts/services@1.6.0", "", {}, "sha512-YH02E1/tGHeMXB0Mam8qPdAZa2fjQWdylEscSL4Zn0RIaQeByYImA2qUsXM3nBdhcyKHDwltzSznDKyCGfFEWA=="],
 
-    "@rbxts/types": ["@rbxts/types@1.0.923", "", {}, "sha512-u6yR1wj+gKUbGFlMQZfMBnXVk9PkPpAi6p7EkLPpS52UoeQYKKmrcwo9FZ6CMpyl8UdFEk4JID1bz1nOdlSwzg=="],
+    "@rbxts/types": ["@rbxts/types@1.0.959", "", {}, "sha512-UyqSEnNsAZsL+3z1smoOFBHXmqXRhMb8hy8sL2IST/C78C96uXop4qYSaBifXjKMye/tckB7j8ILZEmdOD88nQ=="],
 
     "@roblox-ts/luau-ast": ["@roblox-ts/luau-ast@2.0.0", "", {}, "sha512-cmMi093IdwBOLVxwuordhM8AmtbyTIyRpsTbB0D/JauidW4SXsQRQowSwWjHo4QP0DRJBXvOIlxtqEQi50uNzQ=="],
 
