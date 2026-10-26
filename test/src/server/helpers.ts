@@ -15,13 +15,11 @@ export function clearWorld(): void {
 		Builtin.Entity,
 		Builtin.Component,
 		Builtin.Resource,
-		// Message entities are only queried when explicitly requested.
-		Builtin.MessageSequence,
 	]) {
 		query(enttKind)
+			.allowAll()
 			.without(Builtin.Internal)
-			.collect() // We collect due to iterator invalidation; see issue #2.
-			.forEach(([e]) => forceDespawn(e))
+			.forEach((e) => forceDespawn(e))
 	}
 
 	__despawnScheduler()
