@@ -1,6 +1,6 @@
 import { pair as jecsPair } from '@rbxts/jecs'
 import type { RawId } from '../id'
-import type { Component, Entity, EntityLike } from '.'
+import type { EntityLike, InferValue } from '.'
 import { VALUE_SYMBOL } from '.'
 
 /**
@@ -38,6 +38,14 @@ export class Pair<Value = unknown> {
 		return `Pair #${this.id}`
 	}
 }
+
+type PairValue<Rel extends EntityLike, Tar extends EntityLike> = [
+	InferValue<Rel>,
+] extends [undefined]
+	? [InferValue<Tar>] extends [never]
+		? undefined
+		: InferValue<Tar>
+	: InferValue<Rel>
 
 /**
  * Creates a relationship {@link Pair} of `relation -> target` (e.g.: `Likes -> Bob`),
@@ -77,21 +85,9 @@ export class Pair<Value = unknown> {
  *
  * @group Core
  */
-export function pair<R>(
-	relation: Component<R>,
-	target: Component<undefined>,
-): Pair<R>
-export function pair<T>(
-	relation: Component<undefined>,
-	target: Component<T>,
-): Pair<T>
-export function pair<R, T>(
-	relation: Component<R>,
-	target: Component<T>,
-): Pair<R>
-export function pair<R>(relation: Component<R>, target: Entity): Pair<R>
-export function pair<T>(relation: Entity, target: Component<T>): Pair<T>
-export function pair(relation: Entity, target: Entity): Pair<undefined>
-export function pair(relation: Entity | Component, target: Entity | Component) {
+export function pair<Rel extends EntityLike, Tar extends EntityLike>(
+	relation: Rel,
+	target: Tar,
+): Pair<PairValue<Rel, Tar>> {
 	return new Pair(relation, target)
 }
