@@ -1,7 +1,7 @@
 ---
 title: Instrospection
 sidebar:
-    order: 6
+    order: 7
 ---
 
 WIP

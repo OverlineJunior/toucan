@@ -1,5 +1,5 @@
 ---
-title: System & The Scheduler
+title: Systems
 sidebar:
     order: 3
 ---

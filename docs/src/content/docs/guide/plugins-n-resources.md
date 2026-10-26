@@ -1,5 +1,5 @@
 ---
-title: Plugins
+title: Plugins & Resources
 sidebar:
     order: 4
 ---
