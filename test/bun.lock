@@ -5,31 +5,28 @@
     "": {
       "name": "toucan-test",
       "dependencies": {
-        "@rbxts/jecs": "^0.10.4",
+        "@rbxts/jecs": "^0.11.0",
         "@rbxts/lunit": "^4.0.2",
-        "@rbxts/planck": "^0.3.0-alpha.1",
         "@rbxts/services": "^1.6.0",
       },
       "devDependencies": {
         "@rbxts/compiler-types": "^3.0.0-types.0",
-        "@rbxts/types": "^1.0.918",
+        "@rbxts/types": "^1.0.959",
         "roblox-ts": "^3.0.0",
-        "typescript": "^6.0.3",
+        "typescript": "^5.9.3",
       },
     },
   },
   "packages": {
     "@rbxts/compiler-types": ["@rbxts/compiler-types@3.0.0-types.0", "", {}, "sha512-VGOHJPoL7+56NTatMGqQj3K7xWuzEV+aP4QD5vZiHu+bcff3kiTmtoadaF6NkJrmwfFAvbsd4Dg764ZjWNceag=="],
 
-    "@rbxts/jecs": ["@rbxts/jecs@0.10.4", "", {}, "sha512-VSuBrRiRpel/95t16yaGp8Lf5Kd1FdO3uL4UgC/kbldiWw+9YAVeEtZUdxH9LYWqQzgRk2jlDQAgq9WK5bJHyQ=="],
+    "@rbxts/jecs": ["@rbxts/jecs@0.11.0", "", {}, "sha512-rJPZkqrL8PXVX5YP5a9gMcddm8U7TeXZDYEbBTAXs81r9IKhTWNVxGoFRPTbsDT4BhwM0LMvydvWDAqHvWzHpA=="],
 
     "@rbxts/lunit": ["@rbxts/lunit@4.0.2", "", {}, "sha512-fYovDAxFAEQQhzvN7kBdzTImsW+EK1/RjqbPmGj5C1ul7UJ+gQkv77mCiwE4WBvv81gmwvjMcfgPxQy4noZJlQ=="],
 
-    "@rbxts/planck": ["@rbxts/planck@0.3.0-alpha.2", "", {}, "sha512-zdJRRxeVqYmNC8EtR+RobG5Lkeu0oS1UQkyUQ9RVqPiD+cQDGMbStcq4rHjQAVmBhUG8KGVOjoedPyuKzElbxA=="],
-
     "@rbxts/services": ["@rbxts/services@1.6.0", "", {}, "sha512-YH02E1/tGHeMXB0Mam8qPdAZa2fjQWdylEscSL4Zn0RIaQeByYImA2qUsXM3nBdhcyKHDwltzSznDKyCGfFEWA=="],
 
-    "@rbxts/types": ["@rbxts/types@1.0.918", "", {}, "sha512-PNtzv1jitSkr+v5j06A44Xa98NMTTkSxZ1vvUcUzW4q1WZ7A750FeFhZqjyKP2rcR8XMSiQWcycC4svSFV6RJw=="],
+    "@rbxts/types": ["@rbxts/types@1.0.959", "", {}, "sha512-UyqSEnNsAZsL+3z1smoOFBHXmqXRhMb8hy8sL2IST/C78C96uXop4qYSaBifXjKMye/tckB7j8ILZEmdOD88nQ=="],
 
     "@roblox-ts/luau-ast": ["@roblox-ts/luau-ast@2.0.0", "", {}, "sha512-cmMi093IdwBOLVxwuordhM8AmtbyTIyRpsTbB0D/JauidW4SXsQRQowSwWjHo4QP0DRJBXvOIlxtqEQi50uNzQ=="],
 
@@ -125,7 +122,7 @@
 
     "to-regex-range": ["to-regex-range@5.0.1", "", { "dependencies": { "is-number": "^7.0.0" } }, "sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ=="],
 
-    "typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+    "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "universalify": ["universalify@2.0.1", "", {}, "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw=="],
 
