@@ -19,9 +19,7 @@ const Owns = component<number>("Owns");
 const bob = entity("Bob");
 const car = entity("Car");
 
-const alice = entity("Alice")
-  .set(pair(Likes, bob))
-  .set(pair(Owns, car), 2);
+const alice = entity("Alice").set(pair(Likes, bob)).set(pair(Owns, car), 2);
 
 alice.has(pair(Likes, bob)); // true
 alice.get(pair(Owns, car)); // 2
@@ -101,9 +99,7 @@ The callback receives the entity that held the pair, not the target. `onAdded` a
 const bob = entity("Bob");
 const charlie = entity("Charlie");
 
-const alice = entity("Alice")
-  .set(pair(Likes, bob))
-  .set(pair(Likes, charlie));
+const alice = entity("Alice").set(pair(Likes, bob)).set(pair(Likes, charlie));
 
 alice.targetsOf(Likes); // [bob, charlie]
 alice.relationships(); // [pair(Likes, bob), pair(Likes, charlie)]
@@ -126,7 +122,3 @@ alice.children(); // [bob, charlie]
 ```
 
 Assigning a new `ChildOf` pair doesn't remove the previous one, so remove the old pair when reparenting.
-
-## What's Next?
-
-Relationships let you model connections between entities without extra bookkeeping. Next, learn how to inspect the world at runtime with introspection.

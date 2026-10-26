@@ -85,7 +85,3 @@ query()
 ## When Not to Use Messages
 
 Every message is a new entity, so emitting them at a high frequency — every frame, for example — creates a lot of short-lived entities and adds overhead. For state that changes often, prefer reacting to the component itself with [`onChanged`](/toucan/api/types/component/#onchanged).
-
-## What's Next?
-
-Messages let systems react to events without knowing about each other. Next, learn how to model connections between entities with relationships.

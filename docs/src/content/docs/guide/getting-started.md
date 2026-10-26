@@ -28,4 +28,4 @@ That said, there's a lot more to the pattern than this overview can cover. If yo
 
 ## What's Next?
 
-As the guide is still being worked on, the remaining topics are still being written. Because of this, I recommend reading the [API reference](/toucan/api/core/component) instead, which has already been written.
+Next, learn how to organize your game's data with entities and components.

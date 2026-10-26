@@ -147,7 +147,3 @@ query(Builtin.ThirdParty).forEach((e) => {
   print(`${e} came from a third-party package`);
 });
 ```
-
-## What's Next?
-
-Introspection lets you inspect and debug the world at runtime. Next, learn the practices that keep a Toucan codebase healthy.

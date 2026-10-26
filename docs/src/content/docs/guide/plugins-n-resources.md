@@ -4,7 +4,7 @@ sidebar:
   order: 4
 ---
 
-Now that you know how to schedule systems, let's look at how to organize them into plugins and how to share global state with resources.
+Now that you know how to schedule systems, let's look at how to organize them into plugins and how to share global state with resources!
 
 ## Plugins
 
@@ -99,7 +99,3 @@ const unsubscribe = GameState.onChanged((newState, oldState) => {
 Resources are handles to mutable state, not copies. Passing one to a plugin gives it a stable reference that always reads the current value; a plain global would only pass a snapshot, and wrapping it in a table would force you to change how the rest of your game accesses it.
 
 Resources also encourage splitting game state into focused pieces instead of one god object, so each plugin depends only on what it needs.
-
-## What's Next?
-
-Plugins and resources help you structure larger games. Next, learn how to send events between systems with messages.

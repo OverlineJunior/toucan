@@ -136,7 +136,3 @@ const names = query(Name).map((_e, name) => name); // string[]
 // Returns an optimized function that runs this query.
 const dmgOverTime = query(Health).bind((e, hp) => e.set(Health, hp - 1));
 ```
-
-## What's Next?
-
-Entities, components, and queries are the data side of Toucan. Next, learn how to organize that logic into systems and schedules.

@@ -125,7 +125,3 @@ scheduler()
 ```
 
 Systems inherit their set's ordering and `runIf` conditions. A system can belong to more than one set, and the same set can be used across different schedules.
-
-## What's Next?
-
-Systems and schedules are how your game comes alive. Next, learn how to organize larger pieces of it with plugins and share game state with resources.
