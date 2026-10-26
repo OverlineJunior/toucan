@@ -111,7 +111,7 @@ query(Health)
 
 ### Consuming results
 
-Besides `forEach`, queries can be consumed in a few other ways:
+Besides [`forEach`](/toucan/api/types/query/#foreach), queries can be consumed in a few other ways:
 
 ```ts
 const allPeople = query(Name).collect(); // [entity, name][]
