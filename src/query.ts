@@ -245,6 +245,21 @@ export class Query<
 	/**
 	 * Iterates over each entity that matches the query, calling the provided `callback`
 	 * with the entity itself and its corresponding component values.
+	 *
+	 * @remarks
+	 * Entities are iterated live. Modifying the current entity is safe, but adding or
+	 * removing components on _other_ entities that match this query can shift entities
+	 * the query hasn't visited yet, causing them to be visited twice.
+	 * Use {@link Query.collect} first if you need to do this.
+	 *
+	 * @example
+	 * ```ts
+	 * const Health = component<number>()
+	 *
+	 * query(Health).forEach((e, health) => {
+	 *     print(`${e} has ${health}hp`)
+	 * })
+	 * ```
 	 */
 	forEach(callback: QueryCallback<Cs, Ms>): void {
 		this.runQuery(callback as unknown as AnyIterateFn)
