@@ -3,9 +3,27 @@ import { Builtin } from './entities/builtins'
 import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import type { SystemData } from './scheduler/system'
+import { isArray } from './util'
 import { world } from './world'
 
 type Term = Component | Pair
+
+type Payload = Term | readonly [Term, unknown]
+
+type NormalizedArg<Arg> = Arg extends readonly [infer T, infer V]
+	? [T, V]
+	: [Arg, undefined]
+
+type ValidArg<Arg> =
+	NormalizedArg<Arg> extends [infer T extends Term, infer V]
+		? [V] extends [InferValue<T>]
+			? Arg
+			: never
+		: never
+
+type ValidArgs<Args extends readonly Payload[]> = Args & {
+	readonly [K in keyof Args]: ValidArg<Args[K]>
+}
 
 // Sequence number given to the next emitted message. Never reused.
 let nextSequence = 0
@@ -68,33 +86,46 @@ export function clearStaleMessages() {
 	for (const id of staleIds) world.delete(id)
 }
 
-class MessageBuilder {
-	private readonly termValues: [Term, unknown][] = []
+/**
+ * Spawns a message entity with the given terms and emits it.
+ *
+ * Tags are passed as bare components or pairs, while components and pairs with
+ * a value are passed as `[term, value]` tuples.
+ *
+ * See {@link Query.on} to read messages.
+ *
+ * @example
+ * ```ts
+ * const Died = component()
+ * const Damage = component<number>()
+ * const Attacker = component()
+ * const Bounty = component<number>()
+ *
+ * const goblin = entity()
+ *
+ * message(
+ *     Died,
+ *     [Damage, 25],
+ *     pair(Attacker, goblin),
+ *     [pair(Bounty, goblin), 10],
+ * )
+ * ```
+ *
+ * @group Core
+ */
+export function message<const Args extends readonly [Payload, ...Payload[]]>(
+	...args: ValidArgs<Args>
+): void {
+	// TODO! Creating a raw entity would be more performant.
+	// Or better yet, optimizing `entity()` so that's not needed.
+	const e = entity().set(Builtin.MessageSequence, nextSequence++)
 
-	set(tagComponent: Component<undefined>): this
-	set<C extends Component>(component: C, value: InferValue<C>): this
-	set(tagPair: Pair<undefined>): this
-	set<P extends Pair>(pair: P, value: InferValue<P>): this
-	set(term: Term, value?: unknown): this {
-		this.termValues.push([term, value])
-		return this
-	}
-
-	emit() {
-		if (this.termValues.isEmpty()) {
-			error('Cannot emit a message with no component or pair')
+	for (const arg of args) {
+		if (isArray(arg)) {
+			const [term, value] = arg as readonly [Term, unknown]
+			e.set(term as Component, value)
+		} else {
+			e.set(arg as Component, undefined)
 		}
-
-		// TODO! Creating a raw entity would be more performant.
-		// Or better yet, optimizing `entity()` so that's not needed.
-		const e = entity().set(Builtin.MessageSequence, nextSequence++)
-
-		for (const [t, v] of this.termValues) {
-			e.set(t as Component, v)
-		}
 	}
-}
-
-export function message(): MessageBuilder {
-	return new MessageBuilder()
 }

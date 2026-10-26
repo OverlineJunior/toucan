@@ -34,7 +34,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired, 1).emit()
+		 message([Fired, 1])
 		sched.__tick()
 
 		Assert.true(seenEntity !== undefined, 'Expected the message to be read')
@@ -56,7 +56,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired).emit()
+		message(Fired)
 		sched.__tick()
 
 		Assert.equal(
@@ -83,7 +83,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(A, 1).set(B, 2).emit()
+		message([A, 1], [B, 2])
 		sched.__tick()
 
 		Assert.equal(seenA, 1, 'Expected the first term value to be 1')
@@ -106,7 +106,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(ownsCar, 5).emit()
+		message([ownsCar, 5])
 		sched.__tick()
 
 		Assert.equal(seenValue, 5, 'Expected the pair value to be 5')
@@ -128,7 +128,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(likesBob).emit()
+		message(likesBob)
 		sched.__tick()
 
 		Assert.equal(seenValue, undefined, 'Expected a tag pair to pass undefined')
@@ -149,7 +149,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Value, value).emit()
+		message([Value, value])
 		sched.__tick()
 
 		Assert.equal(
@@ -157,30 +157,6 @@ class MessageTests {
 			value,
 			`Expected ${tostring(value)} to be preserved`,
 		)
-	}
-
-	@Test
-	message_emit_withNoTerms_throws() {
-		const sched = scheduler()
-		const Fired = component<number>('Fired')
-		let called = false
-
-		sched.useSystem('update', () => {
-			query()
-				.on(Fired)
-				.forEach(() => {
-					called = true
-				})
-		})
-
-		Assert.throws(
-			() => message().emit(),
-			undefined,
-			'Expected emitting a message with no terms to throw',
-		)
-
-		sched.__tick()
-		Assert.false(called, 'Expected no message to be read')
 	}
 
 	@Test
@@ -197,9 +173,9 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired, 1).emit()
-		message().set(Fired, 2).emit()
-		message().set(Fired, 3).emit()
+		message([Fired, 1])
+		message([Fired, 2])
+		message([Fired, 3])
 		sched.__tick()
 
 		Assert.equal(seen.size(), 3, 'Expected three messages to be read')
@@ -230,7 +206,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired, 42).emit()
+		message([Fired, 42])
 		sched.__tick()
 
 		Assert.true(seenEntity !== undefined, 'Expected the message to be read')
@@ -259,7 +235,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Damaged, 10).emit()
+		message([Damaged, 10])
 		sched.__tick()
 
 		Assert.equal(seenEntity, alice, 'Expected the base entity to be Alice')
@@ -285,7 +261,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Msg, 3).emit()
+		message([Msg, 3])
 		sched.__tick()
 
 		Assert.true(seen !== undefined, 'Expected the message to be read')
@@ -311,8 +287,8 @@ class MessageTests {
 				})
 		})
 
-		message().set(A, 1).emit()
-		message().set(A, 2).set(B, 3).emit()
+		message([A, 1])
+		message([A, 2], [B, 3])
 		sched.__tick()
 
 		Assert.equal(
@@ -344,7 +320,7 @@ class MessageTests {
 				.forEach((_msg, b) => seenB.push(b))
 		})
 
-		message().set(A, 1).set(B, 2).emit()
+		message([A, 1], [B, 2])
 		sched.__tick()
 
 		Assert.equal(seenA.size(), 1, 'Expected on(A) to match the message')
@@ -368,7 +344,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Other, 1).emit()
+		message([Other, 1])
 		sched.__tick()
 
 		Assert.false(called, 'Expected an unrelated message not to match')
@@ -430,7 +406,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Damaged, 10).emit()
+		message([Damaged, 10])
 		sched.__tick()
 
 		Assert.equal(
@@ -468,7 +444,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Damaged, 10).emit()
+		message([Damaged, 10])
 		sched.__tick()
 
 		Assert.false(called, 'Expected no callback without matching base entities')
@@ -490,7 +466,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Health, 999).set(Damaged, 10).emit()
+		message([Health, 999], [Damaged, 10])
 		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected only the real entity to match')
@@ -521,7 +497,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Damaged, 10).emit()
+		message([Damaged, 10])
 		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected only Alice to match all criteria')
@@ -543,7 +519,7 @@ class MessageTests {
 				.forEach((_msg, value) => seen.push(value))
 		})
 
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected the message to be read only once')
@@ -568,7 +544,7 @@ class MessageTests {
 				.forEach((_msg, value) => seenB.push(value))
 		})
 
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 		sched.__tick()
 
 		Assert.equal(
@@ -600,8 +576,8 @@ class MessageTests {
 				.forEach((_msg, value) => seenB.push(value))
 		})
 
-		message().set(A, 1).emit()
-		message().set(B, 2).emit()
+		message([A, 1])
+		message([B, 2])
 		sched.__tick()
 
 		Assert.equal(seenA.size(), 1, 'Expected on(A) to read its message')
@@ -617,7 +593,7 @@ class MessageTests {
 		let seenValue: number | undefined
 
 		sched.useSystem('update', () => {
-			message().set(Fired, 1).emit()
+			message([Fired, 1])
 			query()
 				.on(Fired)
 				.forEach((_msg, value) => {
@@ -648,12 +624,12 @@ class MessageTests {
 					seen.push(value)
 					if (!emitted) {
 						emitted = true
-						message().set(Fired, 2).emit()
+						message([Fired, 2])
 					}
 				})
 		})
 
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 		sched.__tick()
 
 		Assert.equal(
@@ -686,7 +662,7 @@ class MessageTests {
 				.forEach((_msg, value) => seen.push(value))
 			if (!emitted) {
 				emitted = true
-				message().set(Fired, 1).emit()
+				message([Fired, 1])
 			}
 		})
 
@@ -721,7 +697,7 @@ class MessageTests {
 				})
 		})
 
-		message().set(Damaged, 10).emit()
+		message([Damaged, 10])
 		sched.__tick()
 
 		Assert.equal(
@@ -748,9 +724,9 @@ class MessageTests {
 			found = result?.[1]
 		})
 
-		message().set(Fired, 1).emit()
-		message().set(Fired, 2).emit()
-		message().set(Fired, 3).emit()
+		message([Fired, 1])
+		message([Fired, 2])
+		message([Fired, 3])
 		sched.__tick()
 
 		Assert.equal(found, 2, 'Expected find to return the matching message value')
@@ -782,8 +758,8 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired, 1).emit()
-		message().set(Fired, 2).emit()
+		message([Fired, 1])
+		message([Fired, 2])
 		sched.__tick()
 
 		Assert.equal(found, undefined, 'Expected find to return undefined')
@@ -811,8 +787,8 @@ class MessageTests {
 				})
 		})
 
-		message().set(Damaged, 10).emit()
-		message().set(Damaged, 20).emit()
+		message([Damaged, 10])
+		message([Damaged, 20])
 		sched.__tick()
 
 		Assert.equal(seen.size(), 1, 'Expected find to stop at the first pair')
@@ -829,7 +805,7 @@ class MessageTests {
 		const seen: number[] = []
 
 		function emit() {
-			message().set(Fired, 1).emit()
+			message([Fired, 1])
 		}
 
 		function read() {
@@ -865,7 +841,7 @@ class MessageTests {
 		function emit() {
 			if (emitted) return
 			emitted = true
-			message().set(Fired, 1).emit()
+			message([Fired, 1])
 		}
 
 		sched.useSystemChain('update', [read, emit])
@@ -898,7 +874,7 @@ class MessageTests {
 		function emit() {
 			if (emitted) return
 			emitted = true
-			message().set(Fired, 1).emit()
+			message([Fired, 1])
 		}
 
 		sched.useSystemChain('update', [read, emit])
@@ -931,7 +907,7 @@ class MessageTests {
 		function emit() {
 			if (emitted) return
 			emitted = true
-			message().set(Fired, 1).emit()
+			message([Fired, 1])
 		}
 
 		function read() {
@@ -976,7 +952,7 @@ class MessageTests {
 				.forEach((_msg, value) => seen.push(value))
 		})
 
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 		sched.__tick()
 
 		Assert.equal(
@@ -1006,9 +982,9 @@ class MessageTests {
 		function emit() {
 			frame++
 			if (frame === 1) {
-				message().set(Fired, 1).emit()
+				message([Fired, 1])
 			} else if (frame === 2) {
-				message().set(Fired, 2).emit()
+				message([Fired, 2])
 			}
 		}
 
@@ -1033,7 +1009,7 @@ class MessageTests {
 		sched.useSystem('startup', () => {
 			if (emitted) return
 			emitted = true
-			message().set(Fired, 1).emit()
+			message([Fired, 1])
 		})
 		sched.useSystem('update', () => {
 			query()
@@ -1059,7 +1035,7 @@ class MessageTests {
 	message_isNotMatchedByPlainQuery() {
 		const Fired = component<number>('Fired')
 
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 
 		Assert.equal(
 			query(Fired).collect().size(),
@@ -1072,7 +1048,7 @@ class MessageTests {
 	message_isNotMatchedByEntityQuery() {
 		const Fired = component<number>('Fired')
 
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 
 		const results = query(Builtin.Entity).collect()
 		Assert.true(
@@ -1136,9 +1112,9 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired, 1).emit()
-		message().set(Fired, 2).emit()
-		message().set(Fired, 3).emit()
+		message([Fired, 1])
+		message([Fired, 2])
+		message([Fired, 3])
 		sched.__tick()
 
 		Assert.equal(seen.size(), 3, 'Expected collect to return all messages')
@@ -1159,7 +1135,7 @@ class MessageTests {
 			})
 
 		sched.useSystem('update', bound)
-		message().set(Fired, 1).emit()
+		message([Fired, 1])
 		sched.__tick()
 
 		Assert.equal(
@@ -1184,7 +1160,7 @@ class MessageTests {
 			})
 
 		sched.useSystem('update', bound)
-		message().set(Damaged, 10).emit()
+		message([Damaged, 10])
 		sched.__tick()
 
 		Assert.equal(
@@ -1219,16 +1195,16 @@ class MessageTests {
 				})
 		})
 
-		message()
-			.set(C1, 1)
-			.set(C2, 2)
-			.set(C3, 3)
-			.set(C4, 4)
-			.set(C5, 5)
-			.set(C6, 6)
-			.set(C7, 7)
-			.set(C8, 8)
-			.emit()
+		message(
+			[C1, 1],
+			[C2, 2],
+			[C3, 3],
+			[C4, 4],
+			[C5, 5],
+			[C6, 6],
+			[C7, 7],
+			[C8, 8],
+		)
 		sched.__tick()
 
 		Assert.equal(seen.size(), 8, 'Expected all eight values to be received')
@@ -1251,9 +1227,9 @@ class MessageTests {
 				})
 		})
 
-		message().set(Fired, 1).emit()
-		message().set(Fired, 2).emit()
-		message().set(Fired, 3).emit()
+		message([Fired, 1])
+		message([Fired, 2])
+		message([Fired, 3])
 		sched.__tick()
 
 		Assert.equal(
