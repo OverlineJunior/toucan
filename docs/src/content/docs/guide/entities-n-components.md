@@ -61,6 +61,17 @@ bob.remove(IsAlive);
 bob.has(IsAlive); // false
 ```
 
+### Built-in components
+
+Toucan ships with a set of its own components under [`Builtin`](/toucan/api/variables/builtin/). Most are used internally, but a few are meant to be used by your code:
+
+- `Builtin.Persistent` marks entities that can't be despawned, and components that can't be removed.
+- `Builtin.ChildOf` is the relationship behind [`parent()`](/toucan/api/types/entitylike/#parent) and [`children()`](/toucan/api/types/entitylike/#children).
+- `Builtin.QueryHidden` keeps components out of queries — entities carrying them are invisible until a query opts in with [`allow()`](/toucan/api/types/query/#allow).
+- `Builtin.Wildcard` matches either end of a relationship pair, letting you query for it regardless of the other side.
+
+For the full list, see the [API reference](/toucan/api/variables/builtin/).
+
 ### Reacting to changes
 
 Components expose three lifecycle callbacks:
@@ -71,11 +82,13 @@ Health.onChanged((e, newHealth, oldHealth) => {
 });
 
 const unsubscribe = Health.onAdded((e, health) => {
-  print(`${health}hp was added to ${e}`)
+  print(`${health}hp was added to ${e}`);
 });
 
 Health.onRemoved((e, oldHealth, despawned) => {
-  print(despawned ? `${e} was despawned with ${oldHealth}hp` : `${e} lost Health`);
+  print(
+    despawned ? `${e} was despawned with ${oldHealth}hp` : `${e} lost Health`,
+  );
 });
 ```
 
