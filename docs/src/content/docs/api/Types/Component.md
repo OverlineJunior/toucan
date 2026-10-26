@@ -5,7 +5,7 @@ prev: false
 title: "Component"
 ---
 
-Defined in: [entities/index.ts:543](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L543)
+Defined in: [entities/index.ts:547](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L547)
 
 A component spawned with [component](/toucan/api/core/component/).
 
@@ -25,7 +25,7 @@ A component spawned with [component](/toucan/api/core/component/).
 
 > **\[VALUE\_SYMBOL\]**: `Value`
 
-Defined in: [entities/index.ts:544](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L544)
+Defined in: [entities/index.ts:548](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L548)
 
 ***
 
@@ -54,7 +54,7 @@ In order to get back the appropriate entity-like value from an ID, use the
 
 > **children**(): [`EntityLike`](/toucan/api/types/entitylike/)[]
 
-Defined in: [entities/index.ts:358](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L358)
+Defined in: [entities/index.ts:362](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L362)
 
 Gets all children (the sources of [Builtin.ChildOf](/toucan/api/variables/builtin/#childof) relationships) for this entity.
 
@@ -66,8 +66,10 @@ Gets all children (the sources of [Builtin.ChildOf](/toucan/api/variables/builti
 
 ```ts
 const alice = entity()
-const charlie = entity().set(pair(ChildOf, alice))
-const bob = entity().set(pair(ChildOf,  alice))
+const charlie = entity()
+    .set(pair(Builtin.ChildOf, alice))
+const bob = entity()
+    .set(pair(Builtin.ChildOf, alice))
 
 const children = alice.children() // [charlie, bob]
 ```
@@ -122,7 +124,7 @@ Returns all components associated with this entity.
 
 > **despawn**(): `void`
 
-Defined in: [entities/index.ts:466](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L466)
+Defined in: [entities/index.ts:470](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L470)
 
 Completely deletes this entity from the world.
 
@@ -142,7 +144,7 @@ Throws an error if the entity is marked as persistent.
 
 > **exists**(): `boolean`
 
-Defined in: [entities/index.ts:373](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L373)
+Defined in: [entities/index.ts:377](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L377)
 
 Returns `true` if this entity exists in the world.
 
@@ -246,7 +248,7 @@ if (bob.has(IsDead, pair(Owns, house))) {
 
 > **onAdded**(`callback`): () => `void`
 
-Defined in: [entities/index.ts:558](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L558)
+Defined in: [entities/index.ts:562](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L562)
 
 Registers a callback that fires whenever this component is added to an entity.
 
@@ -276,7 +278,7 @@ Health.onAdded((entity, health) => {
 
 > **onChanged**(`callback`): () => `void`
 
-Defined in: [entities/index.ts:579](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L579)
+Defined in: [entities/index.ts:583](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L583)
 
 Registers a callback that fires whenever this component's value changes on an entity.
 
@@ -306,7 +308,7 @@ Health.onChanged((entity, newHealth, oldHealth) => {
 
 > **onRemoved**(`callback`): () => `void`
 
-Defined in: [entities/index.ts:602](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L602)
+Defined in: [entities/index.ts:606](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L606)
 
 Registers a callback that fires whenever this component is removed from an
 entity, or when the entity itself is despawned.
@@ -341,9 +343,10 @@ Health.onRemoved((entity, oldHealth, despawned) => {
 
 > **parent**(): [`EntityLike`](/toucan/api/types/entitylike/)
 
-Defined in: [entities/index.ts:341](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L341)
+Defined in: [entities/index.ts:343](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L343)
 
-Gets the parent (the target of a [Builtin.ChildOf](/toucan/api/variables/builtin/#childof) relationship) for this entity, if such a relationship exists.
+Gets the parent (the target of a [Builtin.ChildOf](/toucan/api/variables/builtin/#childof) relationship) for this entity,
+if such a relationship exists.
 
 #### Returns
 
@@ -353,7 +356,8 @@ Gets the parent (the target of a [Builtin.ChildOf](/toucan/api/variables/builtin
 
 ```ts
 const alice = entity()
-const charlie = entity().set(pair(ChildOf, alice))
+const charlie = entity()
+    .set(pair(Builtin.ChildOf, alice))
 
 const parent = charlie.parent() // alice
 ```
@@ -566,7 +570,7 @@ const alice = entity()
 
 > **targetOf**(`relation`, `nth?`): [`EntityLike`](/toucan/api/types/entitylike/)
 
-Defined in: [entities/index.ts:398](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L398)
+Defined in: [entities/index.ts:402](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L402)
 
 Returns the target entity of a relationship pair from this entity.
 
@@ -613,7 +617,7 @@ const maybeCharlie = alice.targetOf(Likes, 1)
 
 > **targetsOf**(`relation`): [`EntityLike`](/toucan/api/types/entitylike/)[]
 
-Defined in: [entities/index.ts:419](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L419)
+Defined in: [entities/index.ts:423](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L423)
 
 Returns all target entities of a relationship pair from this entity.
 

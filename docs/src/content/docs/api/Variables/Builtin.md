@@ -29,7 +29,7 @@ Built-in component used to represent parent-child relationships between entities
 
 ```ts
 const alice = entity()
-const bob = entity().set(pair(ChildOf, alice))
+const bob = entity().set(pair(Builtin.ChildOf, alice))
 assert(bob.parent() === alice)
 ```
 
@@ -85,8 +85,8 @@ cursors for you.
 > **Persistent**: [`Component`](/toucan/api/types/component/)\<`undefined`\>
 
 Built-in component used to...
-1. Mark entities that cannot be despawned by any means;
-2. Mark components that cannot be removed by any means.
+1. Mark entities that cannot be despawned;
+2. Mark components that cannot be removed.
 
 ### Plugin
 
@@ -153,8 +153,9 @@ It can be used to query for all sources or targets of a relationship without car
 #### Example
 
 ```ts
-// Query all entities that are children of any other entity.
-query(pair(ChildOf, Wildcard)).forEach((child) => {
-    const parent = child.targetOf(ChildOf)
-})
+// Query all entities that are children of another.
+query(pair(Builtin.ChildOf, Builtin.Wildcard))
+    .forEach((child) => {
+        const parent = child.targetOf(ChildOf)
+    })
 ```

@@ -7,7 +7,7 @@ title: "query"
 
 > **query**\<`Cs`\>(...`components`): [`Query`](/toucan/api/types/query/)\<`Cs`\>
 
-Defined in: [query.ts:589](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L589)
+Defined in: [query.ts:608](https://github.com/OverlineJunior/toucan/blob/master/src/query.ts#L608)
 
 Creates a [Query](/toucan/api/types/query/), which represents a set of criteria used to filter and iterate over entities based on their components.
 

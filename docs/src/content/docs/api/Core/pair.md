@@ -5,131 +5,7 @@ prev: false
 title: "pair"
 ---
 
-## Call Signature
-
-> **pair**\<`R`\>(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`R`\>
-
-Defined in: [entities/pair.ts:80](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L80)
-
-Creates a relationship [Pair](/toucan/api/types/pair/) of `relation -> target` (e.g.: `Likes -> Bob`),
-where both `relation` and `target` can be either regular entities or components.
-Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
-
-Like components, pairs can be associated with values. The value type of a
-pair is determined by its `relation` and `target` arguments:
-- If `relation` is a component with a value, then the pair takes the same value type;
-- Else if `target` is a component with a value, then the pair takes the same value type;
-- Otherwise, the pair is a tag pair and does not hold a value.
-
-### Type Parameters
-
-#### R
-
-`R`
-
-### Parameters
-
-#### relation
-
-[`Component`](/toucan/api/types/component/)\<`R`\>
-
-#### target
-
-[`Component`](/toucan/api/types/component/)\<`undefined`\>
-
-### Returns
-
-[`Pair`](/toucan/api/types/pair/)\<`R`\>
-
-### Examples
-
-```ts
-const Likes = component()
-const Owns = component<number>()
-
-const car = entity()
-const bob = entity()
-    // Because neither `Likes` nor `car` hold values, we have no value to assign.
-    .set(pair(Likes, car))
-    // Because `Owns` holds a number value, the pair takes a number value.
-    .set(pair(Owns, car), 2)
-```
-
-```ts
-const Begin = component()
-const End = component()
-const Position = component<Vector3>()
-
-const line = entity()
-    // Because `Begin` and `End` hold no values, those pairs take the value from `Position`.
-    .set(pair(Begin, Position), new Vector3(0, 0, 0))
-    .set(pair(End, Position), new Vector3(10, 0, 0))
-```
-
-## Call Signature
-
-> **pair**\<`T`\>(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`T`\>
-
-Defined in: [entities/pair.ts:84](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L84)
-
-Creates a relationship [Pair](/toucan/api/types/pair/) of `relation -> target` (e.g.: `Likes -> Bob`),
-where both `relation` and `target` can be either regular entities or components.
-Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
-
-Like components, pairs can be associated with values. The value type of a
-pair is determined by its `relation` and `target` arguments:
-- If `relation` is a component with a value, then the pair takes the same value type;
-- Else if `target` is a component with a value, then the pair takes the same value type;
-- Otherwise, the pair is a tag pair and does not hold a value.
-
-### Type Parameters
-
-#### T
-
-`T`
-
-### Parameters
-
-#### relation
-
-[`Component`](/toucan/api/types/component/)\<`undefined`\>
-
-#### target
-
-[`Component`](/toucan/api/types/component/)\<`T`\>
-
-### Returns
-
-[`Pair`](/toucan/api/types/pair/)\<`T`\>
-
-### Examples
-
-```ts
-const Likes = component()
-const Owns = component<number>()
-
-const car = entity()
-const bob = entity()
-    // Because neither `Likes` nor `car` hold values, we have no value to assign.
-    .set(pair(Likes, car))
-    // Because `Owns` holds a number value, the pair takes a number value.
-    .set(pair(Owns, car), 2)
-```
-
-```ts
-const Begin = component()
-const End = component()
-const Position = component<Vector3>()
-
-const line = entity()
-    // Because `Begin` and `End` hold no values, those pairs take the value from `Position`.
-    .set(pair(Begin, Position), new Vector3(0, 0, 0))
-    .set(pair(End, Position), new Vector3(10, 0, 0))
-```
-
-## Call Signature
-
-> **pair**\<`R`, `T`\>(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`R`\>
+> **pair**\<`Rel`, `Tar`\>(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`PairValue`\<`Rel`, `Tar`\>\>
 
 Defined in: [entities/pair.ts:88](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L88)
 
@@ -143,208 +19,31 @@ pair is determined by its `relation` and `target` arguments:
 - Else if `target` is a component with a value, then the pair takes the same value type;
 - Otherwise, the pair is a tag pair and does not hold a value.
 
-### Type Parameters
+## Type Parameters
 
-#### R
+### Rel
 
-`R`
+`Rel` *extends* [`EntityLike`](/toucan/api/types/entitylike/)
 
-#### T
+### Tar
 
-`T`
+`Tar` *extends* [`EntityLike`](/toucan/api/types/entitylike/)
 
-### Parameters
+## Parameters
 
-#### relation
+### relation
 
-[`Component`](/toucan/api/types/component/)\<`R`\>
+`Rel`
 
-#### target
+### target
 
-[`Component`](/toucan/api/types/component/)\<`T`\>
+`Tar`
 
-### Returns
+## Returns
 
-[`Pair`](/toucan/api/types/pair/)\<`R`\>
+[`Pair`](/toucan/api/types/pair/)\<`PairValue`\<`Rel`, `Tar`\>\>
 
-### Examples
-
-```ts
-const Likes = component()
-const Owns = component<number>()
-
-const car = entity()
-const bob = entity()
-    // Because neither `Likes` nor `car` hold values, we have no value to assign.
-    .set(pair(Likes, car))
-    // Because `Owns` holds a number value, the pair takes a number value.
-    .set(pair(Owns, car), 2)
-```
-
-```ts
-const Begin = component()
-const End = component()
-const Position = component<Vector3>()
-
-const line = entity()
-    // Because `Begin` and `End` hold no values, those pairs take the value from `Position`.
-    .set(pair(Begin, Position), new Vector3(0, 0, 0))
-    .set(pair(End, Position), new Vector3(10, 0, 0))
-```
-
-## Call Signature
-
-> **pair**\<`R`\>(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`R`\>
-
-Defined in: [entities/pair.ts:92](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L92)
-
-Creates a relationship [Pair](/toucan/api/types/pair/) of `relation -> target` (e.g.: `Likes -> Bob`),
-where both `relation` and `target` can be either regular entities or components.
-Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
-
-Like components, pairs can be associated with values. The value type of a
-pair is determined by its `relation` and `target` arguments:
-- If `relation` is a component with a value, then the pair takes the same value type;
-- Else if `target` is a component with a value, then the pair takes the same value type;
-- Otherwise, the pair is a tag pair and does not hold a value.
-
-### Type Parameters
-
-#### R
-
-`R`
-
-### Parameters
-
-#### relation
-
-[`Component`](/toucan/api/types/component/)\<`R`\>
-
-#### target
-
-[`Entity`](/toucan/api/types/entity/)
-
-### Returns
-
-[`Pair`](/toucan/api/types/pair/)\<`R`\>
-
-### Examples
-
-```ts
-const Likes = component()
-const Owns = component<number>()
-
-const car = entity()
-const bob = entity()
-    // Because neither `Likes` nor `car` hold values, we have no value to assign.
-    .set(pair(Likes, car))
-    // Because `Owns` holds a number value, the pair takes a number value.
-    .set(pair(Owns, car), 2)
-```
-
-```ts
-const Begin = component()
-const End = component()
-const Position = component<Vector3>()
-
-const line = entity()
-    // Because `Begin` and `End` hold no values, those pairs take the value from `Position`.
-    .set(pair(Begin, Position), new Vector3(0, 0, 0))
-    .set(pair(End, Position), new Vector3(10, 0, 0))
-```
-
-## Call Signature
-
-> **pair**\<`T`\>(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`T`\>
-
-Defined in: [entities/pair.ts:93](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L93)
-
-Creates a relationship [Pair](/toucan/api/types/pair/) of `relation -> target` (e.g.: `Likes -> Bob`),
-where both `relation` and `target` can be either regular entities or components.
-Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
-
-Like components, pairs can be associated with values. The value type of a
-pair is determined by its `relation` and `target` arguments:
-- If `relation` is a component with a value, then the pair takes the same value type;
-- Else if `target` is a component with a value, then the pair takes the same value type;
-- Otherwise, the pair is a tag pair and does not hold a value.
-
-### Type Parameters
-
-#### T
-
-`T`
-
-### Parameters
-
-#### relation
-
-[`Entity`](/toucan/api/types/entity/)
-
-#### target
-
-[`Component`](/toucan/api/types/component/)\<`T`\>
-
-### Returns
-
-[`Pair`](/toucan/api/types/pair/)\<`T`\>
-
-### Examples
-
-```ts
-const Likes = component()
-const Owns = component<number>()
-
-const car = entity()
-const bob = entity()
-    // Because neither `Likes` nor `car` hold values, we have no value to assign.
-    .set(pair(Likes, car))
-    // Because `Owns` holds a number value, the pair takes a number value.
-    .set(pair(Owns, car), 2)
-```
-
-```ts
-const Begin = component()
-const End = component()
-const Position = component<Vector3>()
-
-const line = entity()
-    // Because `Begin` and `End` hold no values, those pairs take the value from `Position`.
-    .set(pair(Begin, Position), new Vector3(0, 0, 0))
-    .set(pair(End, Position), new Vector3(10, 0, 0))
-```
-
-## Call Signature
-
-> **pair**(`relation`, `target`): [`Pair`](/toucan/api/types/pair/)\<`undefined`\>
-
-Defined in: [entities/pair.ts:94](https://github.com/OverlineJunior/toucan/blob/master/src/entities/pair.ts#L94)
-
-Creates a relationship [Pair](/toucan/api/types/pair/) of `relation -> target` (e.g.: `Likes -> Bob`),
-where both `relation` and `target` can be either regular entities or components.
-Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
-
-Like components, pairs can be associated with values. The value type of a
-pair is determined by its `relation` and `target` arguments:
-- If `relation` is a component with a value, then the pair takes the same value type;
-- Else if `target` is a component with a value, then the pair takes the same value type;
-- Otherwise, the pair is a tag pair and does not hold a value.
-
-### Parameters
-
-#### relation
-
-[`Entity`](/toucan/api/types/entity/)
-
-#### target
-
-[`Entity`](/toucan/api/types/entity/)
-
-### Returns
-
-[`Pair`](/toucan/api/types/pair/)\<`undefined`\>
-
-### Examples
+## Examples
 
 ```ts
 const Likes = component()

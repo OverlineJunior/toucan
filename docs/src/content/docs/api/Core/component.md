@@ -7,7 +7,7 @@ title: "component"
 
 > **component**\<`Value`\>(`label?`): [`Component`](/toucan/api/types/component/)\<`Value`\>
 
-Defined in: [entities/index.ts:630](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L630)
+Defined in: [entities/index.ts:634](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L634)
 
 Creates a new [Component](/toucan/api/types/component/).
 
