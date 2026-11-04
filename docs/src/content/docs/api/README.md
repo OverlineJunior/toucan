@@ -41,6 +41,8 @@ title: "@rbxts/toucan"
 - [Scheduler](/toucan/api/types/scheduler/)
 - [SetConfig](/toucan/api/types/setconfig/)
 - [SystemSet](/toucan/api/types/systemset/)
+- [ComponentLike](/toucan/api/types/componentlike/)
+- [ComponentPayloadItem](/toucan/api/types/componentpayloaditem/)
 - [InferValue](/toucan/api/types/infervalue/)
 - [InferValues](/toucan/api/types/infervalues/)
 - [PluginFn](/toucan/api/types/pluginfn/)
@@ -51,3 +53,4 @@ title: "@rbxts/toucan"
 - [SystemConfig](/toucan/api/types/systemconfig/)
 - [SystemFn](/toucan/api/types/systemfn/)
 - [UpdateSchedules](/toucan/api/types/updateschedules/)
+- [ValidatedComponentPayload](/toucan/api/types/validatedcomponentpayload/)

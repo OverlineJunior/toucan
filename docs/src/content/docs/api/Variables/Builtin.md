@@ -55,7 +55,10 @@ Built-in component used to distinguish entities created internally by Toucan.
 
 > **Label**: [`Component`](/toucan/api/types/component/)\<`string`\>
 
-Built-in component used by Toucan to assign human-readable labels to entities.
+Built-in component that stores a human-readable label.
+
+Assigned when a label is explicitly provided, or inferred from a system's
+function name.
 
 ### MessageSequence
 

@@ -84,6 +84,8 @@ GameState.write("in-game");
 print(GameState.read()); // in-game
 ```
 
+The label is optional; unlabeled resources print as `Resource #<id>`.
+
 ### Reacting to changes
 
 Resources expose an `onChanged` callback, which returns a function that unsubscribes:

@@ -17,7 +17,7 @@ const bob = entity();
 const alice = entity("Alice");
 ```
 
-If you pass a label, Toucan uses it whenever the entity needs to be printed, which makes debugging much easier. Because it's good practice, we'll be using it from here on.
+If you pass a label, Toucan uses it whenever the entity needs to be printed, which makes debugging much easier. Without one, it falls back to `Entity #<id>`. Because it's good practice, we'll be using it from here on.
 
 Entities live until they're despawned, removing them entirely from the world:
 
@@ -43,6 +43,8 @@ const Health = component<number>();
 const Name = component<string>("Name"); // Components can also have labels!
 const IsAlive = component("IsAlive");
 ```
+
+Labels are optional for components too; unlabeled ones print as `Component #<id>`.
 
 Pass a value type for components that hold data. Components without one are by convention called **tags**: they carry no value and are only used to mark entities.
 

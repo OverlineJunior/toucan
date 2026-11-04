@@ -10,7 +10,7 @@ Every entity in Toucan is one of three kinds: a regular **entity**, a **componen
 
 ## Entity-Likes are Everywhere
 
-Most things in Toucan are entity-likes. Components and resources are entity-likes by definition, but so are systems, schedules, plugins, and messages: each is a regular entity carrying a built-in marker component. Because they all share the same underlying representation, the same introspection tools work across all of them — they all have an `id`, a label, and can be queried.
+Most things in Toucan are entity-likes. Components and resources are entity-likes by definition, but so are systems, schedules, plugins, and messages: each is a regular entity carrying a built-in marker component. Because they all share the same underlying representation, the same introspection tools work across all of them — they all have an `id`, can be queried, and may have a label.
 
 ## IDs
 
@@ -52,7 +52,7 @@ alice.components(); // [Health, ...built-ins]
 alice.relationships(); // [pair(Likes, bob)]
 ```
 
-Keep in mind that `components()` includes Toucan's built-in components, such as `Builtin.Entity` and `Builtin.Label`, so filter them out if you only care about your own.
+Keep in mind that `components()` includes Toucan's built-in components, such as `Builtin.Entity` (and `Builtin.Label` when a label was provided), so filter them out if you only care about your own.
 
 ## Inspecting the World
 

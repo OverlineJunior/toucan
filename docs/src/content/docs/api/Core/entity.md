@@ -7,11 +7,12 @@ title: "entity"
 
 > **entity**(`label?`): [`Entity`](/toucan/api/types/entity/)
 
-Defined in: [entities/index.ts:503](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L503)
+Defined in: [entities/index.ts:516](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L516)
 
 Spawns a new, empty [Entity](/toucan/api/types/entity/) and returns it.
 
-Additionally, a `label` can be provided for easier identification.
+Additionally, a `label` can be provided for easier identification. Without
+one, `toString` falls back to `Entity #<id>`.
 
 ## Parameters
 

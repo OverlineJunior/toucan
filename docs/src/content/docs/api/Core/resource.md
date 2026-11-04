@@ -7,7 +7,7 @@ title: "resource"
 
 > **resource**\<`Value`\>(`value`, `label?`): [`Resource`](/toucan/api/types/resource/)\<`Value`\>
 
-Defined in: [entities/index.ts:731](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L731)
+Defined in: [entities/index.ts:749](https://github.com/OverlineJunior/toucan/blob/master/src/entities/index.ts#L749)
 
 Creates a new [Resource](/toucan/api/types/resource/) with the given initial `value`.
 
