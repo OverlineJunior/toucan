@@ -185,6 +185,14 @@ export const Builtin = {
 	/**
 	 * Built-in component used to distinguish entities that represent systems.
 	 *
+	 * Properties:
+	 * - `cursors`: a system's message cursors, keyed by a signature of the terms it
+	 *   reads messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
+	 *   message sequence that the system hasn't read yet. Created lazily the first
+	 *   time the system reads messages with {@link Query.on}.
+	 * - `_inSets`: system sets are ephemeral information for the scheduler - they all
+	 *   get reduced into systems at runtime.
+	 *
 	 * @group Built-ins
 	 */
 	System: registerBuiltin(
@@ -197,20 +205,7 @@ export const Builtin = {
 			after: (SystemFn | SystemSet)[]
 			runIfs: RunCondition[]
 			runtimeMs: number
-			/**
-			 * A system's message cursors, keyed by a signature of the terms it reads
-			 * messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
-			 * message sequence that the system hasn't read yet.
-			 *
-			 * Created lazily the first time the system reads messages with {@link Query.on}.
-			 */
 			cursors?: Map<string, number>
-			/**
-			 * System sets are ephemeral information for the scheduler - they all get
-			 * reduced into systems at runtime.
-			 *
-			 * @internal
-			 */
 			_inSets: SystemSet[]
 		}>(world.component()),
 	),

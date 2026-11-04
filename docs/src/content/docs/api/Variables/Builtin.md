@@ -135,9 +135,17 @@ Built-in component used to distinguish entities that represent schedules.
 
 ### System
 
-> **System**: [`Component`](/toucan/api/types/component/)\<\{ `after`: ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]; `cursors?`: `Map`\<`string`, `number`\>; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `runtimeMs`: `number`; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
+> **System**: [`Component`](/toucan/api/types/component/)\<\{ `_inSets`: [`SystemSet`](/toucan/api/types/systemset/)[]; `after`: ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]; `args`: `unknown`[]; `before`: ([`SystemFn`](/toucan/api/types/systemfn/) \| [`SystemSet`](/toucan/api/types/systemset/))[]; `cursors?`: `Map`\<`string`, `number`\>; `fn`: [`SystemFn`](/toucan/api/types/systemfn/); `runIfs`: `RunCondition`[]; `runtimeMs`: `number`; `schedule`: [`Schedules`](/toucan/api/types/schedules/); \}\>
 
 Built-in component used to distinguish entities that represent systems.
+
+Properties:
+- `cursors`: a system's message cursors, keyed by a signature of the terms it
+  reads messages with (e.g. `"123"` or `"123,456"`), mapping each to the first
+  message sequence that the system hasn't read yet. Created lazily the first
+  time the system reads messages with [Query.on](/toucan/api/types/query/#on).
+- `_inSets`: system sets are ephemeral information for the scheduler - they all
+  get reduced into systems at runtime.
 
 ### ThirdParty
 
