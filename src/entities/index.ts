@@ -6,7 +6,13 @@ import {
 	type RawId,
 } from '../id'
 import { getActivePluginEntity } from '../scheduler/pluginContext'
-import type { Flatten, Nullable, OneUpToFour, WrapLuaTuple } from '../util'
+import type {
+	ComponentLike,
+	Flatten,
+	Nullable,
+	OneUpToFour,
+	WrapLuaTuple,
+} from '../util'
 import { getAllComponentIdsIn, world } from '../world'
 import { getBuiltin } from './builtinRegistry'
 import { type Pair, pair } from './pair'
@@ -157,7 +163,7 @@ export abstract class EntityLike {
 	 * ```
 	 */
 	set<P extends Pair>(pair: P, value: InferValue<P>): this
-	set(term: Component | Pair, value?: unknown) {
+	set(term: ComponentLike, value?: unknown) {
 		if (value === undefined) {
 			world.add(this.id, term.id)
 		} else {
@@ -184,7 +190,7 @@ export abstract class EntityLike {
 	 * const carCount = myEntity.get(pair(Owns, car))
 	 * ```
 	 */
-	get<Args extends OneUpToFour<Component | Pair>>(
+	get<Args extends OneUpToFour<ComponentLike>>(
 		...componentsOrPairs: Args
 	): GetComponentValues<Args> {
 		return world.get(
@@ -214,7 +220,7 @@ export abstract class EntityLike {
 	 * }
 	 * ```
 	 */
-	has(...componentsOrPairs: OneUpToFour<Component | Pair>): boolean {
+	has(...componentsOrPairs: OneUpToFour<ComponentLike>): boolean {
 		return world.has(
 			this.id,
 			...(componentsOrPairs.map((c) => c.id) as OneUpToFour<RawId>),
@@ -227,7 +233,7 @@ export abstract class EntityLike {
 	 * Throws an error if trying to remove a component or relationship pair
 	 * with the {@link Builtin.Persistent} component (i.e. most built-in components).
 	 */
-	remove(componentOrPair: Component | Pair): this {
+	remove(componentOrPair: ComponentLike): this {
 		const targetId = isPairId(componentOrPair.id)
 			? getPairRelationFromId(componentOrPair.id, world)
 			: componentOrPair.id

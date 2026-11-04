@@ -6,19 +6,18 @@ import {
 	resolveId,
 } from './entities'
 import { Builtin as BuiltinComponents } from './entities/builtins'
-import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import type { Builtin } from './index'
 import { advanceMessageCursor, getCurrentMessageSequence } from './message'
 import { hiddenComponentIds } from './queryHidden'
 import type { SystemFn } from './scheduler'
 import { getActiveSystemEntity } from './scheduler/systemContext'
-import type { OneUpToEight, ZeroUpToEight } from './util'
+import type { ComponentLike, OneUpToEight, ZeroUpToEight } from './util'
 import { world } from './world'
 
 export type QueryResult<
-	Cs extends (Component | Pair)[],
-	Ms extends (Component | Pair)[] = [],
+	Cs extends ComponentLike[],
+	Ms extends ComponentLike[] = [],
 > = [] extends Ms
 	? [EntityLike, ...InferValues<Cs>]
 	: [] extends Cs
@@ -34,8 +33,8 @@ export type QueryResult<
  * @group Types
  */
 export type QueryCallback<
-	Cs extends (Component | Pair)[],
-	Ms extends (Component | Pair)[] = [],
+	Cs extends ComponentLike[],
+	Ms extends ComponentLike[] = [],
 	Ret = void,
 > = (...args: QueryResult<Cs, Ms>) => Ret
 
@@ -70,8 +69,8 @@ interface MessageSnapshot {
  * @group Types
  */
 export class Query<
-	Cs extends (Component | Pair)[],
-	Ms extends (Component | Pair)[] = [],
+	Cs extends ComponentLike[],
+	Ms extends ComponentLike[] = [],
 > {
 	private readonly requiredIds: RawId[]
 	private readonly includedIds: RawId[] = []
@@ -95,7 +94,7 @@ export class Query<
 	 *
 	 * Does not append the values of these components to the results.
 	 */
-	with(...components: (Component | Pair)[]): Query<Cs, Ms> {
+	with(...components: ComponentLike[]): Query<Cs, Ms> {
 		components.forEach((c) => this.includedIds.push(c.id))
 		return this
 	}
@@ -105,7 +104,7 @@ export class Query<
 	 *
 	 * Does not append the values of these components to the results.
 	 */
-	withAny(...components: (Component | Pair)[]): Query<Cs, Ms> {
+	withAny(...components: ComponentLike[]): Query<Cs, Ms> {
 		components.forEach((c) => this.anyIds.push(c.id))
 		this.filters.push((e) => components.some((c) => e.has(c)))
 		return this
@@ -114,7 +113,7 @@ export class Query<
 	/**
 	 * Excludes entities with _any_ of the specified components from the query's results.
 	 */
-	without(...components: (Component | Pair)[]): Query<Cs, Ms> {
+	without(...components: ComponentLike[]): Query<Cs, Ms> {
 		components.forEach((c) => this.excludedIds.push(c.id))
 		return this
 	}
@@ -122,7 +121,7 @@ export class Query<
 	/**
 	 * Excludes entities with _all_ of the specified components from the query's results.
 	 */
-	withoutAll(...components: (Component | Pair)[]): Query<Cs, Ms> {
+	withoutAll(...components: ComponentLike[]): Query<Cs, Ms> {
 		this.filters.push((e) => components.some((c) => !e.has(c)))
 		return this
 	}
@@ -230,7 +229,7 @@ export class Query<
 	 * }
 	 * ```
 	 */
-	on<NewMs extends OneUpToEight<Component | Pair>>(
+	on<NewMs extends OneUpToEight<ComponentLike>>(
 		...terms: NewMs
 	): Query<Cs, NewMs> {
 		if (this.onSignature !== undefined)
@@ -605,7 +604,7 @@ export class Query<
  *
  * @group Core
  */
-export function query<Cs extends ZeroUpToEight<Component | Pair>>(
+export function query<Cs extends ZeroUpToEight<ComponentLike>>(
 	...components: Cs
 ): Query<Cs> {
 	return new Query<Cs>(...components)
