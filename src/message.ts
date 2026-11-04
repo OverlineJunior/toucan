@@ -1,29 +1,16 @@
-import { type Component, entity, type InferValue } from './entities'
+import { type Component, entity } from './entities'
 import { Builtin } from './entities/builtins'
-import type { Pair } from './entities/pair'
 import type { RawId } from './id'
 import type { SystemData } from './scheduler/system'
-import { isArray } from './util'
+import {
+	type ComponentLike,
+	type ComponentPayloadItem,
+	isArray,
+	type ValidatedComponentPayload,
+} from './util'
 import { world } from './world'
 
-type Term = Component | Pair
-
-type Payload = Term | readonly [Term, unknown]
-
-type NormalizedArg<Arg> = Arg extends readonly [infer T, infer V]
-	? [T, V]
-	: [Arg, undefined]
-
-type ValidArg<Arg> =
-	NormalizedArg<Arg> extends [infer T extends Term, infer V]
-		? [V] extends [InferValue<T>]
-			? Arg
-			: never
-		: never
-
-type ValidArgs<Args extends readonly Payload[]> = Args & {
-	readonly [K in keyof Args]: ValidArg<Args[K]>
-}
+type MessagePayload = [ComponentPayloadItem, ...ComponentPayloadItem[]]
 
 // Sequence number given to the next emitted message. Never reused.
 let nextSequence = 0
@@ -113,8 +100,8 @@ export function clearStaleMessages() {
  *
  * @group Core
  */
-export function message<const Args extends readonly [Payload, ...Payload[]]>(
-	...args: ValidArgs<Args>
+export function message<const Payload extends MessagePayload>(
+	...args: ValidatedComponentPayload<Payload>
 ): void {
 	// TODO! Creating a raw entity would be more performant.
 	// Or better yet, optimizing `entity()` so that's not needed.
@@ -122,7 +109,7 @@ export function message<const Args extends readonly [Payload, ...Payload[]]>(
 
 	for (const arg of args) {
 		if (isArray(arg)) {
-			const [term, value] = arg as readonly [Term, unknown]
+			const [term, value] = arg as [ComponentLike, unknown]
 			e.set(term as Component, value)
 		} else {
 			e.set(arg as Component, undefined)

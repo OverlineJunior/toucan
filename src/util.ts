@@ -1,3 +1,6 @@
+import type { Component, InferValue } from './entities'
+import type { Pair } from './entities/pair'
+
 export type Flatten<T extends unknown[]> = T extends [infer U] ? U : T
 
 export type Nullable<T extends unknown[]> = { [K in keyof T]: T[K] | undefined }
@@ -26,6 +29,67 @@ export type OneUpToEight<T> =
 	| [T, T, T, T, T, T]
 	| [T, T, T, T, T, T, T]
 	| [T, T, T, T, T, T, T, T]
+
+/**
+ * A component or a relationship pair.
+ *
+ * @group Types
+ */
+export type ComponentLike = Component | Pair
+
+/**
+ * A single item in a component payload: either a non valued
+ * {@link ComponentLike} or a `[componentLike, value]` tuple.
+ *
+ * See {@link ValidatedComponentPayload}.
+ *
+ * @group Types
+ */
+export type ComponentPayloadItem =
+	| ComponentLike
+	| readonly [ComponentLike, unknown]
+
+type NormalizedPayloadItem<Item> = Item extends readonly [infer T, infer V]
+	? [T, V]
+	: [Item, undefined]
+
+type ValidatedPayloadItem<Item> =
+	NormalizedPayloadItem<Item> extends [infer T extends ComponentLike, infer V]
+		? [V] extends [InferValue<T>]
+			? Item
+			: never
+		: never
+
+/**
+ * A component payload whose items are checked against their component value
+ * types.
+ *
+ * Bare items must be tags, while `[componentLike, value]` tuples require `value`
+ * to match the component's value type.
+ *
+ * @example
+ * ```ts
+ * const Died = component()
+ * const Damage = component<number>()
+ *
+ * function emit<
+ *     const Payload extends ComponentPayloadItem[],
+ * >(...payload: ValidatedComponentPayload<Payload>): void {
+ *     message<Payload>(...payload)
+ * }
+ *
+ * emit(Died)           // ok, tag
+ * emit([Damage, 25])   // ok, number
+ * emit([Damage, '25']) // type error
+ * ```
+ *
+ * @group Types
+ */
+export type ValidatedComponentPayload<
+	Payload extends readonly ComponentPayloadItem[],
+> = Payload & {
+	readonly [K in keyof Payload]: ValidatedPayloadItem<Payload[K]>
+}
 
 export function deepEqual(a: unknown, b: unknown): boolean {
 	if (a === b) return true

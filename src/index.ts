@@ -31,3 +31,8 @@ export {
 	systemSet,
 	type UpdateSchedules,
 } from './scheduler'
+export type {
+	ComponentLike,
+	ComponentPayloadItem,
+	ValidatedComponentPayload,
+} from './util'

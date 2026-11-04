@@ -34,7 +34,7 @@ class MessageTests {
 				})
 		})
 
-		 message([Fired, 1])
+		message([Fired, 1])
 		sched.__tick()
 
 		Assert.true(seenEntity !== undefined, 'Expected the message to be read')
