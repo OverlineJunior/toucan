@@ -43,6 +43,20 @@ class EntitiesTests {
 	}
 
 	@Test
+	entity_withoutLabel_doesNotAssignLabel() {
+		const e = entity()
+		Assert.false(
+			e.has(Builtin.Label),
+			'Expected entity without an explicit label to not have a Label component',
+		)
+		Assert.equal(
+			e.toString(),
+			`Entity #${e.id}`,
+			'Expected fallback string to use the entity ID',
+		)
+	}
+
+	@Test
 	despawn_removesEntity() {
 		const e = entity()
 		Assert.true(e.exists(), 'Expected entity to exist before despawn')
@@ -136,15 +150,12 @@ class EntitiesTests {
 
 	@Test
 	remove_throwsErrorWhenComponentIsPersistent() {
-		const e = entity()
-		Assert.true(
-			e.has(Builtin.Label),
-			'Expected entity to have persistent Label component',
-		)
+		const C = component().set(Builtin.Persistent)
+		const e = entity().set(C)
 		Assert.throws(
-			() => e.remove(Builtin.Label),
+			() => e.remove(C),
 			undefined,
-			'Expected remove(Label) to throw because it is persistent',
+			'Expected remove(C) to throw because it is persistent',
 		)
 	}
 
@@ -219,6 +230,20 @@ class EntitiesTests {
 		Assert.true(
 			C.has(Builtin.Component),
 			'Expected the entity to have the internal Component tag',
+		)
+	}
+
+	@Test
+	component_withoutLabel_doesNotAssignLabel() {
+		const C = component()
+		Assert.false(
+			C.has(Builtin.Label),
+			'Expected component without an explicit label to not have a Label component',
+		)
+		Assert.equal(
+			C.toString(),
+			`Component #${C.id}`,
+			'Expected fallback string to use the component ID',
 		)
 	}
 
@@ -514,16 +539,20 @@ class EntitiesTests {
 	}
 
 	@Test
-	resource_generatesFallbackLabelWhenOmitted() {
+	resource_withoutLabel_doesNotAssignLabel() {
 		const GameState = resource('test')
 		Assert.true(
 			GameState.exists(),
 			'Expected resource without explicit label to exist',
 		)
+		Assert.false(
+			GameState.has(Builtin.Label),
+			'Expected resource without an explicit label to not have a Label component',
+		)
 		Assert.equal(
 			GameState.toString(),
 			`Resource #${GameState.id}`,
-			'Expected fallback label to use the resource ID',
+			'Expected fallback string to use the resource ID',
 		)
 	}
 
@@ -622,7 +651,10 @@ class EntitiesTests {
 			after,
 			'Expected component count to remain unchanged for an empty entity',
 		)
-		Assert.true(e.has(Builtin.Label), 'Expected Label to still be present')
+		Assert.true(
+			e.has(Builtin.Entity),
+			'Expected the persistent Entity tag to still be present',
+		)
 	}
 
 	@Test
@@ -664,6 +696,32 @@ class EntitiesTests {
 			tostring(e),
 			`Entity #${id} (despawned)`,
 			'Expected tostring to return a fallback label for a despawned entity',
+		)
+	}
+
+	@Test
+	toString_returnsFallbackForDespawnedComponent() {
+		const C = component('TestComponent')
+		const id = C.id
+		C.despawn()
+
+		Assert.equal(
+			tostring(C),
+			`Component #${id} (despawned)`,
+			'Expected tostring to return a fallback label for a despawned component',
+		)
+	}
+
+	@Test
+	toString_returnsFallbackForDespawnedResource() {
+		const R = resource('test', 'TestResource')
+		const id = R.id
+		R.despawn()
+
+		Assert.equal(
+			tostring(R),
+			`Resource #${id} (despawned)`,
+			'Expected tostring to return a fallback label for a despawned resource',
 		)
 	}
 

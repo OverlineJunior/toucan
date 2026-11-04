@@ -319,18 +319,24 @@ export abstract class EntityLike {
 	}
 
 	/**
-	 * Gets the label assigned to this entity.
+	 * Returns the label assigned to this entity, if any, or a fallback based on
+	 * its kind and ID.
 	 *
 	 * @remarks
-	 * If the entity has been despawned, it will return a label indicating that.
+	 * If the entity has been despawned, the fallback will indicate that.
 	 */
 	toString(): string {
 		const label = this.get(getBuiltin('Label'))
 		if (label !== undefined) return label
 
-		return this.exists()
-			? `Entity #${this.id}`
-			: `Entity #${this.id} (despawned)`
+		const kind =
+			this instanceof Component
+				? 'Component'
+				: this instanceof Resource
+					? 'Resource'
+					: 'Entity'
+
+		return `${kind} #${this.id}${this.exists() ? '' : ' (despawned)'}`
 	}
 
 	/**
@@ -502,15 +508,18 @@ export class Entity extends EntityLike {
 /**
  * Spawns a new, empty {@link Entity} and returns it.
  *
- * Additionally, a `label` can be provided for easier identification.
+ * Additionally, a `label` can be provided for easier identification. Without
+ * one, `toString` falls back to `Entity #<id>`.
  *
  * @group Core
  */
 export function entity(label?: string): Entity {
 	const rawId = world.entity()
-	const e = new Entity(rawId)
-		.set(getBuiltin('Entity'))
-		.set(getBuiltin('Label'), label ?? `Entity #${rawId}`)
+	const e = new Entity(rawId).set(getBuiltin('Entity'))
+
+	if (label !== undefined) {
+		e.set(getBuiltin('Label'), label)
+	}
 
 	if (hasThirdPartyCaller()) {
 		e.set(getBuiltin('ThirdParty'))
@@ -624,7 +633,8 @@ export class Component<Value = unknown> extends EntityLike {
 /**
  * Creates a new {@link Component}.
  *
- * Additionally, a `label` can be provided for easier identification.
+ * Additionally, a `label` can be provided for easier identification. Without
+ * one, `toString` falls back to `Component #<id>`.
  *
  * @example
  * ```ts
@@ -639,20 +649,22 @@ export class Component<Value = unknown> extends EntityLike {
  */
 export function component<Value = undefined>(label?: string): Component<Value> {
 	const rawId = world.component<Value>()
-	return addDefaultComponentMetadata(
-		new Component<Value>(rawId),
-		label ?? `Component #${rawId}`,
-	)
+	return addDefaultComponentMetadata(new Component<Value>(rawId), label)
 }
 
 /**
  * Adds metadata components that **every** component should have.
+ *
+ * The `Label` component is only assigned when a `label` is provided.
  */
 export function addDefaultComponentMetadata<C extends Component>(
 	comp: C,
-	label: string,
+	label?: string,
 ): C {
-	comp.set(getBuiltin('Component')).set(getBuiltin('Label'), label)
+	comp.set(getBuiltin('Component'))
+	if (label !== undefined) {
+		comp.set(getBuiltin('Label'), label)
+	}
 	if (hasThirdPartyCaller()) {
 		comp.set(getBuiltin('ThirdParty'))
 	}
@@ -742,9 +754,10 @@ export function resource<Value extends NonNullable<unknown>>(
 	world.set(rawId, rawId, value)
 	entityHistory.set(rawId, rawId, value)
 
-	const r = new Resource<Value>(rawId)
-		.set(getBuiltin('Resource'))
-		.set(getBuiltin('Label'), label ?? `Resource #${rawId}`)
+	const r = new Resource<Value>(rawId).set(getBuiltin('Resource'))
+	if (label !== undefined) {
+		r.set(getBuiltin('Label'), label)
+	}
 	if (hasThirdPartyCaller()) {
 		r.set(getBuiltin('ThirdParty'))
 	}

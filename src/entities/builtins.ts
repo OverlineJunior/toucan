@@ -61,7 +61,10 @@ export const Builtin = {
 	),
 
 	/**
-	 * Built-in component used by Toucan to assign human-readable labels to entities.
+	 * Built-in component that stores a human-readable label.
+	 *
+	 * Assigned when a label is explicitly provided, or inferred from a system's
+	 * function name.
 	 */
 	Label: registerBuiltin('Label', new Component<string>(world.component())),
 
