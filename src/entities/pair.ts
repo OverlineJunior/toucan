@@ -1,6 +1,6 @@
 import { pair as jecsPair } from '@rbxts/jecs'
 import type { RawId } from '../id'
-import type { EntityLike, InferValue } from '.'
+import type { Component, EntityLike, InferValue } from '.'
 import { VALUE_SYMBOL } from '.'
 
 /**
@@ -12,9 +12,9 @@ export class Pair<Value = unknown> {
 	declare [VALUE_SYMBOL]: Value
 
 	/**
-	 * The relation entity of this pair.
+	 * The relation component of this pair.
 	 */
-	public readonly relation: EntityLike
+	public readonly relation: Component
 	/**
 	 * The target entity of this pair.
 	 */
@@ -22,7 +22,7 @@ export class Pair<Value = unknown> {
 	/** @internal */
 	public readonly id: RawId
 
-	constructor(relation: EntityLike, target: EntityLike) {
+	constructor(relation: Component, target: EntityLike) {
 		this.relation = relation
 		this.target = target
 		this.id = jecsPair(relation.id, target.id) as unknown as RawId
@@ -39,7 +39,7 @@ export class Pair<Value = unknown> {
 	}
 }
 
-type PairValue<Rel extends EntityLike, Tar extends EntityLike> = [
+type PairValue<Rel extends Component, Tar extends EntityLike> = [
 	InferValue<Rel>,
 ] extends [undefined]
 	? [InferValue<Tar>] extends [never]
@@ -49,12 +49,12 @@ type PairValue<Rel extends EntityLike, Tar extends EntityLike> = [
 
 /**
  * Creates a relationship {@link Pair} of `relation -> target` (e.g.: `Likes -> Bob`),
- * where both `relation` and `target` can be either regular entities or components.
+ * where `relation` is a component and `target` is any entity-like.
  * Pairs can be assigned to any entity, forming something like `Alice → Likes → Bob`.
  *
  * Like components, pairs can be associated with values. The value type of a
  * pair is determined by its `relation` and `target` arguments:
- * - If `relation` is a component with a value, then the pair takes the same value type;
+ * - If `relation` holds a value, then the pair takes the same value type;
  * - Else if `target` is a component with a value, then the pair takes the same value type;
  * - Otherwise, the pair is a tag pair and does not hold a value.
  *
@@ -85,7 +85,7 @@ type PairValue<Rel extends EntityLike, Tar extends EntityLike> = [
  *
  * @group Core
  */
-export function pair<Rel extends EntityLike, Tar extends EntityLike>(
+export function pair<Rel extends Component, Tar extends EntityLike>(
 	relation: Rel,
 	target: Tar,
 ): Pair<PairValue<Rel, Tar>> {

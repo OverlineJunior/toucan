@@ -1,14 +1,14 @@
 ---
 title: Relationships
 sidebar:
-  order: 6
+    order: 6
 ---
 
 Now that you know how systems send events to each other with messages, let's look at how to model connections between entities with relationships!
 
 ## Pairs
 
-A [pair](/toucan/api/core/pair) links a relation to a target, forming something like `Alice → Likes → Bob`. Both ends can be entities or components, and a pair is assigned to an entity just like a component:
+A [pair](/toucan/api/core/pair) links a relation to a target, forming something like `Alice → Likes → Bob`. The relation is always a component, while the target can be any entity-like. A pair is assigned to an entity just like a component:
 
 ```ts
 import { component, entity, pair } from "@rbxts/toucan";
@@ -37,9 +37,9 @@ const End = component("End");
 const Position = component<Vector3>("Position");
 
 const line = entity("Line")
-  // `Begin` and `End` are tags, so these pairs take `Position`'s value type.
-  .set(pair(Begin, Position), new Vector3(0, 0, 0))
-  .set(pair(End, Position), new Vector3(10, 0, 0));
+    // `Begin` and `End` are tags, so these pairs take `Position`'s value type.
+    .set(pair(Begin, Position), new Vector3(0, 0, 0))
+    .set(pair(End, Position), new Vector3(10, 0, 0));
 ```
 
 If neither end holds a value, the pair holds no value either and is by convention called a tag pair.
@@ -52,7 +52,7 @@ Pairs are query terms too, so you can find entities by the relationships they ha
 import { query } from "@rbxts/toucan";
 
 query(pair(Owns, car)).forEach((e, amount) => {
-  print(`${e} owns ${amount} cars!`);
+    print(`${e} owns ${amount} cars!`);
 });
 ```
 
@@ -67,7 +67,7 @@ import { Builtin } from "@rbxts/toucan";
 const children = pair(Builtin.ChildOf, Builtin.Wildcard);
 
 query(children).forEach((child) => {
-  print(`${child} is a child of ${child.parent()}`);
+    print(`${child} is a child of ${child.parent()}`);
 });
 ```
 
@@ -82,8 +82,8 @@ const bob = entity("Bob");
 const alice = entity("Alice").set(pair(Likes, bob));
 
 Likes.onRemoved((entity, _value, despawned) => {
-  if (despawned) return;
-  print(`${entity} lost a Likes relationship`);
+    if (despawned) return;
+    print(`${entity} lost a Likes relationship`);
 });
 
 alice.remove(pair(Likes, bob));
