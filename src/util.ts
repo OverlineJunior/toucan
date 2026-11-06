@@ -45,9 +45,9 @@ export type ComponentLike = Component | Pair
  *
  * @group Types
  */
-export type ComponentPayloadItem =
-	| ComponentLike
-	| readonly [ComponentLike, unknown]
+export type ComponentPayloadItem<C extends ComponentLike = ComponentLike> =
+	| C
+	| readonly [C, unknown]
 
 type NormalizedPayloadItem<Item> = Item extends readonly [infer T, infer V]
 	? [T, V]
