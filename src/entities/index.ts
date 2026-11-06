@@ -47,9 +47,7 @@ export declare const VALUE_SYMBOL: unique symbol
  *
  * @group Core
  */
-export function resolveId(
-	rawId: RawId,
-): Entity | Component | Resource | undefined {
+export function resolveId(rawId: RawId): EntityLike | undefined {
 	if (!world.contains(rawId)) {
 		return
 	}
@@ -307,11 +305,10 @@ export abstract class EntityLike {
 			const relationId = getPairRelationFromId(compId, world)
 			const targetId = getPairTargetFromId(compId, world)
 
-			const relationEntity = resolveId(relationId)
-			const targetEntity = resolveId(targetId)
-
-			if (relationEntity && targetEntity) {
-				rels.push(pair(relationEntity as Entity, targetEntity as Entity))
+			const rel = resolveId(relationId) as Component
+			const tar = resolveId(targetId)
+			if (rel && tar) {
+				rels.push(pair(rel, tar))
 			}
 		})
 
